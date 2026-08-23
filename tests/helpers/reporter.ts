@@ -1,8 +1,6 @@
 // Custom Test Reporter for Kohinoor Gemstone QA Automation
 // Provides formatted test results and summary statistics
 
-import { TestResult, TestCase } from '@playwright/test';
-
 export interface TestSummary {
   total: number;
   passed: number;
@@ -30,7 +28,7 @@ export function formatDuration(ms: number): string {
 }
 
 // Generate test summary from results
-export function generateSummary(results: TestResult[]): TestSummary {
+export function generateSummary(results: Array<{ testFile: string; duration: number; status: string }>): TestSummary {
   const summary: TestSummary = {
     total: results.length,
     passed: 0,
