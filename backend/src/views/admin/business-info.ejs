@@ -533,16 +533,16 @@
                                                 <div class="flex items-center justify-between min-w-0 flex-shrink-0">
                                                     <span class="font-medium text-gray-700 text-sm whitespace-nowrap">📅 Monday</span>
                                                     <label class="relative inline-flex items-center cursor-pointer ml-4">
-                                                        <input type="checkbox" class="sr-only peer day-toggle" data-day="monday" checked>
+                                                        <input type="checkbox" class="sr-only peer day-toggle" data-day="monday" <%= businessInfo && businessInfo.businessHours && businessInfo.businessHours.monday && !businessInfo.businessHours.monday.closed ? 'checked' : '' %>>
                                                         <div class="w-8 h-4 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[1px] after:left-[1px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-blue-600"></div>
                                                         <span class="ml-2 text-xs text-gray-500 peer-checked:hidden whitespace-nowrap">Closed</span>
                                                         <span class="ml-2 text-xs text-green-600 hidden peer-checked:inline whitespace-nowrap">Open</span>
                                                     </label>
                                                 </div>
                                                 <div class="flex items-center space-x-2 flex-shrink-0 min-w-0">
-                                                    <input type="time" name="hours[monday][open]" class="time-input text-sm px-2 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 w-20 min-w-20 max-w-20" value="10:00">
+                                                    <input type="time" name="hours[monday][open]" class="time-input text-sm px-2 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 w-20 min-w-20 max-w-20" value="<%= businessInfo && businessInfo.businessHours && businessInfo.businessHours.monday && businessInfo.businessHours.monday.open ? businessInfo.businessHours.monday.open : '' %>">
                                                     <span class="text-sm text-gray-500 whitespace-nowrap">to</span>
-                                                    <input type="time" name="hours[monday][close]" class="time-input text-sm px-2 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 w-20 min-w-20 max-w-20" value="20:00">
+                                                    <input type="time" name="hours[monday][close]" class="time-input text-sm px-2 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 w-20 min-w-20 max-w-20" value="<%= businessInfo && businessInfo.businessHours && businessInfo.businessHours.monday && businessInfo.businessHours.monday.close ? businessInfo.businessHours.monday.close : '' %>">
                                                 </div>
                                             </div>
                                         </div>
@@ -553,16 +553,16 @@
                                                 <div class="flex items-center justify-between">
                                                     <span class="font-medium text-gray-700 text-sm">📅 Tuesday</span>
                                                     <label class="relative inline-flex items-center cursor-pointer">
-                                                        <input type="checkbox" class="sr-only peer day-toggle" data-day="tuesday" checked>
+                                                        <input type="checkbox" class="sr-only peer day-toggle" data-day="tuesday" <%= businessInfo && businessInfo.businessHours && businessInfo.businessHours.tuesday && !businessInfo.businessHours.tuesday.closed ? 'checked' : '' %>>
                                                         <div class="w-8 h-4 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[1px] after:left-[1px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-blue-600"></div>
                                                         <span class="ml-2 text-xs text-gray-500 peer-checked:hidden">Closed</span>
                                                         <span class="ml-2 text-xs text-green-600 hidden peer-checked:inline">Open</span>
                                                     </label>
                                                 </div>
                                                 <div class="flex items-center space-x-2 flex-shrink-0 min-w-0">
-                                                    <input type="time" name="hours[tuesday][open]" class="time-input text-sm px-2 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 w-20 min-w-20 max-w-20" value="10:00">
+                                                    <input type="time" name="hours[tuesday][open]" class="time-input text-sm px-2 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 w-20 min-w-20 max-w-20" value="<%= businessInfo && businessInfo.businessHours && businessInfo.businessHours.tuesday && businessInfo.businessHours.tuesday.open ? businessInfo.businessHours.tuesday.open : '' %>">
                                                     <span class="text-sm text-gray-500 whitespace-nowrap">to</span>
-                                                    <input type="time" name="hours[tuesday][close]" class="time-input text-sm px-2 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 w-20 min-w-20 max-w-20" value="20:00">
+                                                    <input type="time" name="hours[tuesday][close]" class="time-input text-sm px-2 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 w-20 min-w-20 max-w-20" value="<%= businessInfo && businessInfo.businessHours && businessInfo.businessHours.tuesday && businessInfo.businessHours.tuesday.close ? businessInfo.businessHours.tuesday.close : '' %>">
                                                 </div>
                                             </div>
                                         </div>
@@ -573,16 +573,16 @@
                                                 <div class="flex items-center justify-between">
                                                     <span class="font-medium text-gray-700 text-sm">📅 Wednesday</span>
                                                     <label class="relative inline-flex items-center cursor-pointer">
-                                                        <input type="checkbox" class="sr-only peer day-toggle" data-day="wednesday" checked>
+                                                        <input type="checkbox" class="sr-only peer day-toggle" data-day="wednesday" <%= businessInfo && businessInfo.businessHours && businessInfo.businessHours.wednesday && !businessInfo.businessHours.wednesday.closed ? 'checked' : '' %>>
                                                         <div class="w-8 h-4 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[1px] after:left-[1px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-blue-600"></div>
                                                         <span class="ml-2 text-xs text-gray-500 peer-checked:hidden">Closed</span>
                                                         <span class="ml-2 text-xs text-green-600 hidden peer-checked:inline">Open</span>
                                                     </label>
                                                 </div>
                                                 <div class="flex items-center space-x-2 flex-shrink-0 min-w-0">
-                                                    <input type="time" name="hours[wednesday][open]" class="time-input text-sm px-2 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 w-20 min-w-20 max-w-20" value="10:00">
+                                                    <input type="time" name="hours[wednesday][open]" class="time-input text-sm px-2 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 w-20 min-w-20 max-w-20" value="<%= businessInfo && businessInfo.businessHours && businessInfo.businessHours.wednesday && businessInfo.businessHours.wednesday.open ? businessInfo.businessHours.wednesday.open : '' %>">
                                                     <span class="text-sm text-gray-500 whitespace-nowrap">to</span>
-                                                    <input type="time" name="hours[wednesday][close]" class="time-input text-sm px-2 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 w-20 min-w-20 max-w-20" value="20:00">
+                                                    <input type="time" name="hours[wednesday][close]" class="time-input text-sm px-2 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 w-20 min-w-20 max-w-20" value="<%= businessInfo && businessInfo.businessHours && businessInfo.businessHours.wednesday && businessInfo.businessHours.wednesday.close ? businessInfo.businessHours.wednesday.close : '' %>">
                                                 </div>
                                             </div>
                                         </div>
@@ -593,16 +593,16 @@
                                                 <div class="flex items-center justify-between">
                                                     <span class="font-medium text-gray-700 text-sm">📅 Thursday</span>
                                                     <label class="relative inline-flex items-center cursor-pointer">
-                                                        <input type="checkbox" class="sr-only peer day-toggle" data-day="thursday" checked>
+                                                        <input type="checkbox" class="sr-only peer day-toggle" data-day="thursday" <%= businessInfo && businessInfo.businessHours && businessInfo.businessHours.thursday && !businessInfo.businessHours.thursday.closed ? 'checked' : '' %>>
                                                         <div class="w-8 h-4 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[1px] after:left-[1px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-blue-600"></div>
                                                         <span class="ml-2 text-xs text-gray-500 peer-checked:hidden">Closed</span>
                                                         <span class="ml-2 text-xs text-green-600 hidden peer-checked:inline">Open</span>
                                                     </label>
                                                 </div>
                                                 <div class="flex items-center space-x-2 flex-shrink-0 min-w-0">
-                                                    <input type="time" name="hours[thursday][open]" class="time-input text-sm px-2 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 w-20 min-w-20 max-w-20" value="10:00">
+                                                    <input type="time" name="hours[thursday][open]" class="time-input text-sm px-2 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 w-20 min-w-20 max-w-20" value="<%= businessInfo && businessInfo.businessHours && businessInfo.businessHours.thursday && businessInfo.businessHours.thursday.open ? businessInfo.businessHours.thursday.open : '' %>">
                                                     <span class="text-sm text-gray-500 whitespace-nowrap">to</span>
-                                                    <input type="time" name="hours[thursday][close]" class="time-input text-sm px-2 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 w-20 min-w-20 max-w-20" value="20:00">
+                                                    <input type="time" name="hours[thursday][close]" class="time-input text-sm px-2 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 w-20 min-w-20 max-w-20" value="<%= businessInfo && businessInfo.businessHours && businessInfo.businessHours.thursday && businessInfo.businessHours.thursday.close ? businessInfo.businessHours.thursday.close : '' %>">
                                                 </div>
                                             </div>
                                         </div>
@@ -613,16 +613,16 @@
                                                 <div class="flex items-center justify-between">
                                                     <span class="font-medium text-gray-700 text-sm">📅 Friday</span>
                                                     <label class="relative inline-flex items-center cursor-pointer">
-                                                        <input type="checkbox" class="sr-only peer day-toggle" data-day="friday" checked>
+                                                        <input type="checkbox" class="sr-only peer day-toggle" data-day="friday" <%= businessInfo && businessInfo.businessHours && businessInfo.businessHours.friday && !businessInfo.businessHours.friday.closed ? 'checked' : '' %>>
                                                         <div class="w-8 h-4 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[1px] after:left-[1px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-blue-600"></div>
                                                         <span class="ml-2 text-xs text-gray-500 peer-checked:hidden">Closed</span>
                                                         <span class="ml-2 text-xs text-green-600 hidden peer-checked:inline">Open</span>
                                                     </label>
                                                 </div>
                                                 <div class="flex items-center space-x-2 flex-shrink-0 min-w-0">
-                                                    <input type="time" name="hours[friday][open]" class="time-input text-sm px-2 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 w-20 min-w-20 max-w-20" value="10:00">
+                                                    <input type="time" name="hours[friday][open]" class="time-input text-sm px-2 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 w-20 min-w-20 max-w-20" value="<%= businessInfo && businessInfo.businessHours && businessInfo.businessHours.friday && businessInfo.businessHours.friday.open ? businessInfo.businessHours.friday.open : '' %>">
                                                     <span class="text-sm text-gray-500 whitespace-nowrap">to</span>
-                                                    <input type="time" name="hours[friday][close]" class="time-input text-sm px-2 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 w-20 min-w-20 max-w-20" value="20:00">
+                                                    <input type="time" name="hours[friday][close]" class="time-input text-sm px-2 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 w-20 min-w-20 max-w-20" value="<%= businessInfo && businessInfo.businessHours && businessInfo.businessHours.friday && businessInfo.businessHours.friday.close ? businessInfo.businessHours.friday.close : '' %>">
                                                 </div>
                                             </div>
                                         </div>
@@ -633,16 +633,16 @@
                                                 <div class="flex items-center justify-between">
                                                     <span class="font-medium text-gray-700 text-sm">📅 Saturday</span>
                                                     <label class="relative inline-flex items-center cursor-pointer">
-                                                        <input type="checkbox" class="sr-only peer day-toggle" data-day="saturday" checked>
+                                                        <input type="checkbox" class="sr-only peer day-toggle" data-day="saturday" <%= businessInfo && businessInfo.businessHours && businessInfo.businessHours.saturday && !businessInfo.businessHours.saturday.closed ? 'checked' : '' %>>
                                                         <div class="w-8 h-4 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[1px] after:left-[1px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-blue-600"></div>
                                                         <span class="ml-2 text-xs text-gray-500 peer-checked:hidden">Closed</span>
                                                         <span class="ml-2 text-xs text-green-600 hidden peer-checked:inline">Open</span>
                                                     </label>
                                                 </div>
                                                 <div class="flex items-center space-x-2 flex-shrink-0 min-w-0">
-                                                    <input type="time" name="hours[saturday][open]" class="time-input text-sm px-2 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 w-20 min-w-20 max-w-20" value="10:00">
+                                                    <input type="time" name="hours[saturday][open]" class="time-input text-sm px-2 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 w-20 min-w-20 max-w-20" value="<%= businessInfo && businessInfo.businessHours && businessInfo.businessHours.saturday && businessInfo.businessHours.saturday.open ? businessInfo.businessHours.saturday.open : '' %>">
                                                     <span class="text-sm text-gray-500 whitespace-nowrap">to</span>
-                                                    <input type="time" name="hours[saturday][close]" class="time-input text-sm px-2 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 w-20 min-w-20 max-w-20" value="20:00">
+                                                    <input type="time" name="hours[saturday][close]" class="time-input text-sm px-2 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 w-20 min-w-20 max-w-20" value="<%= businessInfo && businessInfo.businessHours && businessInfo.businessHours.saturday && businessInfo.businessHours.saturday.close ? businessInfo.businessHours.saturday.close : '' %>">
                                                 </div>
                                             </div>
                                         </div>
@@ -653,16 +653,16 @@
                                                 <div class="flex items-center justify-between">
                                                     <span class="font-medium text-gray-700 text-sm">📅 Sunday</span>
                                                     <label class="relative inline-flex items-center cursor-pointer">
-                                                        <input type="checkbox" class="sr-only peer day-toggle" data-day="sunday">
+                                                        <input type="checkbox" class="sr-only peer day-toggle" data-day="sunday" <%= businessInfo && businessInfo.businessHours && businessInfo.businessHours.sunday && !businessInfo.businessHours.sunday.closed ? 'checked' : '' %>>
                                                         <div class="w-8 h-4 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[1px] after:left-[1px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-blue-600"></div>
                                                         <span class="ml-2 text-xs text-gray-500 peer-checked:hidden">Closed</span>
                                                         <span class="ml-2 text-xs text-green-600 hidden peer-checked:inline">Open</span>
                                                     </label>
                                                 </div>
                                                 <div class="flex items-center space-x-2 flex-shrink-0 min-w-0">
-                                                    <input type="time" name="hours[sunday][open]" class="time-input text-sm px-2 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 w-20 min-w-20 max-w-20" value="10:00" disabled>
+                                                    <input type="time" name="hours[sunday][open]" class="time-input text-sm px-2 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 w-20 min-w-20 max-w-20" value="<%= businessInfo && businessInfo.businessHours && businessInfo.businessHours.sunday && businessInfo.businessHours.sunday.open ? businessInfo.businessHours.sunday.open : '' %>">
                                                     <span class="text-sm text-gray-500 whitespace-nowrap">to</span>
-                                                    <input type="time" name="hours[sunday][close]" class="time-input text-sm px-2 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 w-20 min-w-20 max-w-20" value="20:00" disabled>
+                                                    <input type="time" name="hours[sunday][close]" class="time-input text-sm px-2 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 w-20 min-w-20 max-w-20" value="<%= businessInfo && businessInfo.businessHours && businessInfo.businessHours.sunday && businessInfo.businessHours.sunday.close ? businessInfo.businessHours.sunday.close : '' %>">
                                                 </div>
                                             </div>
                                         </div>
