@@ -1,0 +1,39 @@
+{
+  "name": "kohinoor-qa-automation",
+  "version": "1.0.0",
+  "description": "Comprehensive QA Automation Framework for Kohinoor Gemstone - Wingify Internship Application",
+  "scripts": {
+    "test": "npx playwright test",
+    "test:headed": "npx playwright test --headed",
+    "test:ui": "npx playwright test --ui",
+    "test:debug": "npx playwright test --debug",
+    "test:api": "npx playwright test tests/api",
+    "test:e2e": "npx playwright test tests/e2e",
+    "test:visual": "npx playwright test tests/visual",
+    "test:auth": "npx playwright test tests/e2e/auth",
+    "test:product": "npx playwright test tests/e2e/product",
+    "test:cart": "npx playwright test tests/e2e/cart",
+    "test:checkout": "npx playwright test tests/e2e/checkout",
+    "test:profile": "npx playwright test tests/e2e/profile",
+    "report": "npx playwright show-report",
+    "report:html": "npx playwright show-report html-report",
+    "lint": "eslint tests/",
+    "lint:fix": "eslint tests/ --fix",
+    "format": "prettier --write tests/",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@faker-js/faker": "^9.3.0",
+    "@playwright/test": "^1.59.1",
+    "@types/node": "^26.4.0",
+    "@typescript-eslint/eslint-plugin": "^8.0.0",
+    "@typescript-eslint/parser": "^8.0.0",
+    "dotenv": "^16.4.7",
+    "eslint": "^9.33.0",
+    "prettier": "^3.4.0",
+    "typescript": "^5.7.3"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
