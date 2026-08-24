@@ -16,6 +16,7 @@ import {
   Copy,
   Check
 } from 'lucide-react';
+import { FaWhatsapp } from 'react-icons/fa';
 import WhatsAppButton from '../components/common/WhatsAppButton';
 import GemstoneCard from '../components/gemstone/GemstoneCard';
 import SEOHead from '../components/common/SEOHead';
@@ -369,13 +370,13 @@ const GemstoneDetail = () => {
 
                {/* Action Buttons */}
                <div className="space-y-4">
-                 <button
-                   onClick={handleWhatsAppClick}
-                   className="w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-4 rounded-xl transition-colors flex items-center justify-center space-x-2"
-                 >
-                   <MessageCircle className="w-5 h-5" />
-                   <span>Contact via WhatsApp</span>
-                 </button>
+                                 <button
+                  onClick={handleWhatsAppClick}
+                  className="w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-3 md:py-4 rounded-xl transition-colors flex items-center justify-center space-x-2"
+                >
+                  <FaWhatsapp className="w-5 h-5 md:w-6 md:h-6" />
+                  <span className="text-sm md:text-base">Buy via WhatsApp</span>
+                </button>
                  
                  <div className="grid grid-cols-2 gap-3">
                    <button

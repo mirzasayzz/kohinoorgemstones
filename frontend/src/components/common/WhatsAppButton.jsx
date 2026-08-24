@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { MessageCircle, Phone } from 'lucide-react';
+import { FaWhatsapp } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 import { useBusinessContext } from '../../context/BusinessContext';
 
@@ -29,19 +30,19 @@ const WhatsAppButton = ({
   // Size configurations
   const sizeConfig = {
     small: {
+      button: 'px-3 py-1.5 text-xs',
+      icon: 'w-3.5 h-3.5',
+      text: 'text-xs'
+    },
+    default: {
       button: 'px-4 py-2 text-sm',
       icon: 'w-4 h-4',
       text: 'text-sm'
     },
-    default: {
-      button: 'px-6 py-3 text-base',
+    large: {
+      button: 'px-5 py-2.5 text-base',
       icon: 'w-5 h-5',
       text: 'text-base'
-    },
-    large: {
-      button: 'px-8 py-4 text-lg',
-      icon: 'w-6 h-6',
-      text: 'text-lg'
     }
   };
 
@@ -96,11 +97,11 @@ const WhatsAppButton = ({
         
         {/* Content */}
         <div className="relative flex items-center space-x-2 z-10">
-          <MessageCircle className={currentSize.icon} />
+          <FaWhatsapp className={currentSize.icon} />
           
           {/* Mobile Text */}
           <span className={`md:hidden font-medium ${currentSize.text}`}>
-            Buy via WhatsApp
+            Buy
           </span>
           
           {/* Desktop Text */}
@@ -180,9 +181,9 @@ export const FloatingWhatsAppButton = ({
         onClick={handleClick}
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
-        className="bg-green-500 hover:bg-green-600 text-white p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 relative overflow-hidden"
+        className="bg-green-500 hover:bg-green-600 text-white p-3 md:p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 relative overflow-hidden"
       >
-        <MessageCircle className="w-6 h-6" />
+        <FaWhatsapp className="w-5 h-5 md:w-6 md:h-6" />
         
         {/* Animated Ring */}
         <motion.div

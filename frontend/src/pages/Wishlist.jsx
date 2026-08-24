@@ -14,6 +14,7 @@ import {
   Filter,
   SortDesc
 } from 'lucide-react';
+import { FaWhatsapp } from 'react-icons/fa';
 import { useWishlist } from '../context/WishlistContext';
 import { useBusinessContext } from '../context/BusinessContext';
 import GemstoneCard from '../components/gemstone/GemstoneCard';
@@ -118,10 +119,10 @@ const Wishlist = () => {
                 <div className="flex items-center space-x-2">
                   <button
                     onClick={handleWhatsAppAll}
-                    className="hidden sm:flex items-center space-x-2 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition-colors"
+                    className="hidden sm:flex items-center space-x-2 bg-green-500 hover:bg-green-600 text-white px-3 py-2 rounded-lg transition-colors"
                   >
-                    <MessageCircle className="w-4 h-4" />
-                    <span>Inquire All</span>
+                    <FaWhatsapp className="w-4 h-4" />
+                    <span className="text-sm">Inquire via WhatsApp</span>
                   </button>
                   
                   <button
@@ -203,10 +204,10 @@ const Wishlist = () => {
                 <div className="flex sm:hidden items-center space-x-2 w-full">
                   <button
                     onClick={handleWhatsAppAll}
-                    className="flex-1 flex items-center justify-center space-x-2 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition-colors"
+                    className="flex-1 flex items-center justify-center space-x-2 bg-green-500 hover:bg-green-600 text-white px-3 py-2 rounded-lg transition-colors"
                   >
-                    <MessageCircle className="w-4 h-4" />
-                    <span>Inquire All</span>
+                    <FaWhatsapp className="w-4 h-4" />
+                    <span className="text-sm">Inquire via WhatsApp</span>
                   </button>
                 </div>
               </div>

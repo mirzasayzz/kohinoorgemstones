@@ -72,10 +72,7 @@ const Header = () => {
                     className="w-10 h-10 sm:w-12 sm:h-12 object-contain transition-all duration-300 group-hover:scale-110 filter brightness-110 contrast-125"
                     style={{ opacity: 1 }}
                   />
-                  {/* Glow effect */}
-                  <div className="absolute inset-0 bg-luxury-gold/30 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-md scale-150"></div>
-                  {/* Stroke/border effect */}
-                  <div className="absolute inset-0 rounded-full border-2 border-luxury-gold/20 group-hover:border-luxury-gold/40 transition-colors duration-300"></div>
+
                 </div>
                 
                 {/* Brand Text - Enhanced */}
@@ -126,7 +123,7 @@ const Header = () => {
                         textShadow: '0 1px 1px rgba(0,0,0,0.2)'
                       }}
                     >
-                      Premium
+                      Premium Gemstones
                     </div>
                   </div>
                 </div>

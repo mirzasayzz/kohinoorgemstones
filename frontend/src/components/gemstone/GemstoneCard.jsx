@@ -15,6 +15,7 @@ import {
   Zap,
   Info
 } from 'lucide-react';
+import { FaWhatsapp } from 'react-icons/fa';
 import { useBusinessContext } from '../../context/BusinessContext';
 import { useWishlist } from '../../context/WishlistContext';
 import { GemstoneImage } from '../common/LazyImage';
@@ -260,11 +261,11 @@ const GemstoneCard = ({ gemstone, index = 0, variant = 'grid' }) => {
               <motion.button
                 onClick={handleWhatsAppClick}
                 whileTap={{ scale: 0.95 }}
-                className="bg-green-500 text-white p-2 sm:px-3 sm:py-2 rounded-full shadow-lg hover:bg-green-600 transition-colors backdrop-blur-sm flex items-center justify-center"
+                className="bg-green-500 text-white px-2 py-1.5 sm:px-3 sm:py-2 rounded-lg shadow-lg hover:bg-green-600 transition-colors backdrop-blur-sm flex items-center justify-center space-x-1.5"
                 title="Buy via WhatsApp"
               >
-                <MessageCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                <span className="hidden sm:inline-block ml-1.5 text-xs font-medium whitespace-nowrap">Buy</span>
+                <FaWhatsapp className="w-4 h-4 sm:w-5 sm:h-5" />
+                <span className="text-xs sm:text-sm font-medium whitespace-nowrap">Buy</span>
               </motion.button>
             </div>
           </motion.div>
@@ -285,7 +286,7 @@ const GemstoneCard = ({ gemstone, index = 0, variant = 'grid' }) => {
               <div className="flex items-center space-x-3">
                 {[
                   { icon: Eye, color: 'bg-sapphire hover:bg-sapphire/90', label: 'Quick View' },
-                  { icon: MessageCircle, color: 'bg-green-500 hover:bg-green-600', label: 'WhatsApp', onClick: handleWhatsAppClick },
+                  { icon: FaWhatsapp, color: 'bg-green-500 hover:bg-green-600', label: 'WhatsApp', onClick: handleWhatsAppClick },
                   { icon: Share2, color: 'bg-golden hover:bg-golden/90', label: 'Share', onClick: handleShare }
                 ].map((action, i) => (
                   <motion.button
@@ -327,7 +328,7 @@ const GemstoneCard = ({ gemstone, index = 0, variant = 'grid' }) => {
           {/* View Count */}
           {gemstone?.viewCount > 0 && (
             <motion.div 
-              className="absolute bottom-2 left-2 z-10"
+              className="absolute bottom-16 left-2 md:bottom-2 md:left-2 z-10"
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.5 }}
@@ -453,11 +454,11 @@ const GemstoneCard = ({ gemstone, index = 0, variant = 'grid' }) => {
             
             <button
               onClick={handleWhatsAppClick}
-              className="bg-green-500 hover:bg-green-600 text-white px-2 py-1 md:px-3 md:py-1.5 rounded-full transition-colors shadow-md flex items-center justify-center text-xs md:text-sm"
+              className="bg-green-500 hover:bg-green-600 text-white px-2 py-1.5 md:px-3 md:py-2 rounded-lg transition-colors shadow-md flex items-center justify-center text-xs md:text-sm space-x-1.5"
               title="Buy via WhatsApp"
             >
-              <MessageCircle className="w-3.5 h-3.5 md:w-4 md:h-4" />
-              <span className="hidden md:inline-block ml-1.5 whitespace-nowrap">Buy</span>
+              <FaWhatsapp className="w-3.5 h-3.5 md:w-4 md:h-4" />
+              <span className="font-medium whitespace-nowrap">Buy</span>
             </button>
           </div>
         </div>

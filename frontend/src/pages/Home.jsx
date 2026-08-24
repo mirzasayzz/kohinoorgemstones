@@ -6,13 +6,9 @@ import {
   Star, 
   Sparkles, 
   ArrowRight,
-  Shield,
-  Award,
-  Heart,
   Crown,
   Gem,
   CheckCircle,
-  Users,
   Clock,
   Filter,
   Grid3X3,
@@ -82,26 +78,6 @@ const Home = () => {
       {/* Ultra-Compact Header with Categories */}
       <section className="bg-white/95 dark:bg-luxury-charcoal/95 backdrop-blur-lg border-b border-luxury-platinum/30 dark:border-luxury-charcoal/30 py-3">
         <div className="max-w-7xl mx-auto px-4">
-          {/* Trust badges - inline, minimal */}
-          <div className="flex items-center justify-center text-xs text-neutral-warm-600 dark:text-neutral-warm-400 mb-3 space-x-6">
-            <span className="flex items-center space-x-1">
-              <Shield className="w-3 h-3 text-luxury-gold" />
-              <span>Certified</span>
-            </span>
-            <span className="flex items-center space-x-1">
-              <Award className="w-3 h-3 text-luxury-gold" />
-              <span>100% Natural</span>
-            </span>
-            <span className="flex items-center space-x-1">
-              <Users className="w-3 h-3 text-luxury-gold" />
-              <span>3 Generations</span>
-            </span>
-            <span className="flex items-center space-x-1">
-              <Heart className="w-3 h-3 text-luxury-gold" />
-              <span>1000+ Customers</span>
-            </span>
-          </div>
-          
           {/* Categories - compact pills */}
           <div className="flex items-center justify-start md:justify-center space-x-2 overflow-x-auto pb-2 px-4 md:px-0 -mx-4 md:mx-0 mobile-scroll">
             <div className="flex items-center space-x-2 min-w-max pl-4 pr-4 md:pl-0 md:pr-0">

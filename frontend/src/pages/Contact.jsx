@@ -7,6 +7,7 @@ import {
   MessageCircle,
   ExternalLink
 } from 'lucide-react';
+import { FaWhatsapp } from 'react-icons/fa';
 import { useBusinessContext } from '../context/BusinessContext';
 import SEOHead from '../components/common/SEOHead';
 import LoadingSpinner from '../components/common/LoadingSpinner';
@@ -113,9 +114,9 @@ const Contact = () => {
                       href={`https://wa.me/${businessInfo.contact.whatsapp.replace(/[^\d]/g, '')}?text=${encodeURIComponent("Hi! I'd like to inquire about your gemstones.")}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center justify-center space-x-2 bg-green-500 hover:bg-green-600 text-white px-4 py-3 rounded-lg transition-colors text-sm"
+                      className="flex items-center justify-center space-x-2 bg-green-500 hover:bg-green-600 text-white px-3 py-2.5 rounded-lg transition-colors text-sm"
                     >
-                      <MessageCircle className="w-4 h-4" />
+                      <FaWhatsapp className="w-4 h-4" />
                       <span>WhatsApp</span>
                     </a>
                   )}
