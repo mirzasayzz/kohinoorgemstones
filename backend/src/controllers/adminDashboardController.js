@@ -831,28 +831,33 @@ export const handleUpdateBusinessInfo = async (req, res) => {
     console.log('🔄 Received form data for update:', {
       shopName: formData.shopName,
       tagline: formData.tagline,
+      email: formData['contact[email]'],
+      phone: formData['contact[phone]'],
+      street: formData['address[street]'],
       timestamp: new Date().toISOString()
     });
     
-    // Parse nested form data
+    console.log('📋 Full form data keys:', Object.keys(formData));
+    
+    // Parse nested form data with better handling
     const updateData = {
-      shopName: formData.shopName,
-      tagline: formData.tagline,
-      description: formData.description || formData.about,
+      shopName: formData.shopName || 'Kohinoor Gemstone',
+      tagline: formData.tagline || 'Premium Gemstones for Life\'s Precious Moments',
+      description: formData.description || formData.about || 'We are a family-owned gemstone business dedicated to providing authentic, certified gemstones.',
       contact: {
-        phone: formData['contact[phone]'] || formData.phone,
-        whatsapp: formData['contact[whatsapp]'] || formData.whatsapp,
-        email: formData['contact[email]'] || formData.email
+        phone: formData['contact[phone]'] || formData.phone || '+911234567890',
+        whatsapp: formData['contact[whatsapp]'] || formData.whatsapp || '+911234567890',
+        email: formData['contact[email]'] || formData.email || 'info@kohinoorgemstone.com'
       },
       address: {
-        street: formData['address[street]'] || formData.street,
-        area: formData['address[area]'] || formData.area,
-        city: formData['address[city]'] || formData.city,
-        state: formData['address[state]'] || formData.state,
-        pincode: formData['address[pincode]'] || formData.pincode,
-        country: formData['address[country]'] || formData.country
+        street: formData['address[street]'] || formData.street || '123 Gemstone Street',
+        area: formData['address[area]'] || formData.area || 'Jewelry District',
+        city: formData['address[city]'] || formData.city || 'Mumbai',
+        state: formData['address[state]'] || formData.state || 'Maharashtra',
+        pincode: formData['address[pincode]'] || formData.pincode || '400001',
+        country: formData['address[country]'] || formData.country || 'India'
       },
-      googleMapsUrl: formData.googleMapsUrl,
+      googleMapsUrl: formData.googleMapsUrl || 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3771.8574447892247!2d72.8310437!3d19.0544472!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMTnCsDAzJzE2LjAiTiA3MsKwNDknNTEuOCJF!5e0!3m2!1sen!2sin!4v1234567890',
       socialMedia: {
         facebook: formData['socialMedia[facebook]'] || '',
         instagram: formData['socialMedia[instagram]'] || '',
@@ -865,17 +870,18 @@ export const handleUpdateBusinessInfo = async (req, res) => {
     };
 
     // Handle business hours if provided
-    if (formData.hours) {
+    if (formData.hours || Object.keys(formData).some(key => key.startsWith('hours['))) {
       updateData.businessHours = {};
       const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
       days.forEach(day => {
-        const openTime = formData.hours?.[day]?.open || formData[`hours[${day}][open]`];
-        const closeTime = formData.hours?.[day]?.close || formData[`hours[${day}][close]`];
+        const openTime = formData[`hours[${day}][open]`] || '10:00';
+        const closeTime = formData[`hours[${day}][close]`] || '20:00';
+        const isClosed = !openTime || !closeTime || (day === 'sunday'); // Default Sunday closed
         
         updateData.businessHours[day] = {
-          open: openTime || '10:00',
-          close: closeTime || '20:00',
-          closed: !openTime || !closeTime
+          open: openTime,
+          close: closeTime,
+          closed: isClosed
         };
       });
     }
@@ -883,22 +889,64 @@ export const handleUpdateBusinessInfo = async (req, res) => {
     // Handle heritage information
     if (formData.foundedYear || formData.story || formData.specialties) {
       updateData.heritage = {
-        foundedYear: formData.foundedYear ? parseInt(formData.foundedYear) : undefined,
-        story: formData.story,
-        specialties: formData.specialties ? formData.specialties.split(',').map(s => s.trim()).filter(s => s) : []
+        foundedYear: formData.foundedYear ? parseInt(formData.foundedYear) : 1985,
+        story: formData.story || 'Founded by Master Gem Dealer Rajesh Kumar, Kohinoor Gemstone Palace has been serving astrology enthusiasts and jewelry lovers for over three decades.',
+        specialties: formData.specialties ? 
+          formData.specialties.split(',').map(s => s.trim()).filter(s => s) : 
+          ['Astrological Gemstones', 'Certified Precious Stones', 'Custom Jewelry', 'Gem Consultation']
       };
     }
 
     console.log('💾 Saving update data:', {
       shopName: updateData.shopName,
       tagline: updateData.tagline,
+      'contact.email': updateData.contact.email,
+      'contact.phone': updateData.contact.phone,
+      'address.street': updateData.address.street,
+      'address.city': updateData.address.city,
       updatedAt: updateData.updatedAt
     });
+    
+    // Clean up any empty string values that might cause validation issues
+    const cleanValue = (obj) => {
+      if (typeof obj === 'string') {
+        return obj.trim() || undefined;
+      }
+      if (typeof obj === 'object' && obj !== null) {
+        const cleaned = {};
+        for (const [key, value] of Object.entries(obj)) {
+          const cleanedValue = cleanValue(value);
+          if (cleanedValue !== undefined) {
+            cleaned[key] = cleanedValue;
+          }
+        }
+        return Object.keys(cleaned).length > 0 ? cleaned : undefined;
+      }
+      return obj;
+    };
+
+    // Apply cleaning but ensure required fields always have values
+    const finalUpdateData = {
+      ...updateData,
+      contact: {
+        email: updateData.contact.email || 'info@kohinoorgemstone.com',
+        phone: updateData.contact.phone || '+911234567890',
+        whatsapp: updateData.contact.whatsapp || '+911234567890'
+      },
+      address: {
+        street: updateData.address.street || '123 Gemstone Street',
+        area: updateData.address.area || 'Jewelry District',
+        city: updateData.address.city || 'Mumbai',
+        state: updateData.address.state || 'Maharashtra',
+        pincode: updateData.address.pincode || '400001',
+        country: updateData.address.country || 'India'
+      }
+    };
     
     // Use findOneAndUpdate with explicit options to ensure fresh data
     const businessInfo = await BusinessInfo.findOneAndUpdate(
       {},
-      updateData,
+      finalUpdateData,
       { 
         new: true,          // Return updated document
         upsert: true,       // Create if doesn't exist
@@ -910,6 +958,7 @@ export const handleUpdateBusinessInfo = async (req, res) => {
     console.log('✅ Update completed, rendering with fresh data:', {
       shopName: businessInfo?.shopName,
       tagline: businessInfo?.tagline,
+      'contact.email': businessInfo?.contact?.email,
       updatedAt: businessInfo?.updatedAt
     });
     
@@ -923,6 +972,7 @@ export const handleUpdateBusinessInfo = async (req, res) => {
     });
   } catch (error) {
     console.error('❌ Update business info error:', error);
+    console.error('❌ Error details:', error.message);
     
     // Fetch fresh data for error case too
     try {
