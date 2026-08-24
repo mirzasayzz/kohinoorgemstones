@@ -1,8 +1,14 @@
 import { test, expect } from '@playwright/test';
+import { checkApiAvailable } from '../../../helpers/api-check';
 
 test.describe('Cart API', () => {
   const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:3001';
   let authToken: string;
+
+  test.beforeAll(async ({ request }) => {
+    const available = await checkApiAvailable(request, API_BASE_URL);
+    test.skip(!available, 'API server is not reachable - skipping API tests');
+  });
 
   test.beforeAll(async ({ request }) => {
     // Login to get auth token

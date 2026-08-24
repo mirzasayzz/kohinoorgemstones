@@ -1,10 +1,17 @@
 import { test, expect } from '@playwright/test';
 import { HomePage } from '../../../pages/HomePage';
 import { ProductPage } from '../../../pages/ProductPage';
+import { checkSiteAvailable } from '../../../helpers/site-check';
 
 test.describe('Product Browsing', () => {
   let homePage: HomePage;
   let productPage: ProductPage;
+
+  test.beforeAll(async ({ request }) => {
+    const baseUrl = process.env.BASE_URL || 'http://localhost:5173';
+    const available = await checkSiteAvailable(request, baseUrl);
+    test.skip(!available, 'Site is not reachable - skipping E2E tests');
+  });
 
   test.beforeEach(async ({ page }) => {
     homePage = new HomePage(page);

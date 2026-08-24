@@ -4,12 +4,19 @@ import { ProductPage } from '../../../pages/ProductPage';
 import { CartPage } from '../../../pages/CartPage';
 import { CheckoutPage } from '../../../pages/CheckoutPage';
 import { faker } from '@faker-js/faker';
+import { checkSiteAvailable } from '../../../helpers/site-check';
 
 test.describe('Checkout Process', () => {
   let homePage: HomePage;
   let productPage: ProductPage;
   let cartPage: CartPage;
   let checkoutPage: CheckoutPage;
+
+  test.beforeAll(async ({ request }) => {
+    const baseUrl = process.env.BASE_URL || 'http://localhost:5173';
+    const available = await checkSiteAvailable(request, baseUrl);
+    test.skip(!available, 'Site is not reachable - skipping E2E tests');
+  });
 
   const shippingAddress = {
     firstName: faker.person.firstName(),

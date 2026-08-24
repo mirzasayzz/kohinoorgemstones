@@ -1,10 +1,17 @@
 import { test, expect } from '@playwright/test';
 import { LoginPage } from '../../../pages/LoginPage';
 import { HomePage } from '../../../pages/HomePage';
+import { checkSiteAvailable } from '../../../helpers/site-check';
 
 test.describe('Login Functionality', () => {
   let loginPage: LoginPage;
   let homePage: HomePage;
+
+  test.beforeAll(async ({ request }) => {
+    const baseUrl = process.env.BASE_URL || 'http://localhost:5173';
+    const available = await checkSiteAvailable(request, baseUrl);
+    test.skip(!available, 'Site is not reachable - skipping E2E tests');
+  });
 
   test.beforeEach(async ({ page }) => {
     loginPage = new LoginPage(page);

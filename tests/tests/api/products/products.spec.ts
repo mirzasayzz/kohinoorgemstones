@@ -1,7 +1,13 @@
 import { test, expect } from '@playwright/test';
+import { checkApiAvailable } from '../../../helpers/api-check';
 
 test.describe('Products API', () => {
   const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:3001';
+
+  test.beforeAll(async ({ request }) => {
+    const available = await checkApiAvailable(request, API_BASE_URL);
+    test.skip(!available, 'API server is not reachable - skipping API tests');
+  });
 
   test.describe('Get All Products', () => {
     test('should get all products', async ({ request }) => {

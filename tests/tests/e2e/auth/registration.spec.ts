@@ -2,10 +2,17 @@ import { test, expect } from '@playwright/test';
 import { RegisterPage } from '../../../pages/RegisterPage';
 import { LoginPage } from '../../../pages/LoginPage';
 import { faker } from '@faker-js/faker';
+import { checkSiteAvailable } from '../../../helpers/site-check';
 
 test.describe('Registration Functionality', () => {
   let registerPage: RegisterPage;
   let loginPage: LoginPage;
+
+  test.beforeAll(async ({ request }) => {
+    const baseUrl = process.env.BASE_URL || 'http://localhost:5173';
+    const available = await checkSiteAvailable(request, baseUrl);
+    test.skip(!available, 'Site is not reachable - skipping E2E tests');
+  });
 
   test.beforeEach(async ({ page }) => {
     registerPage = new RegisterPage(page);
