@@ -91,8 +91,8 @@ const GemstoneDetail = () => {
   // Share functionality
   const handleShare = async () => {
     const shareData = {
-      title: `${gemstone?.name?.english} - Kohinoor Gemstone`,
-      text: gemstone?.summary || `Beautiful ${gemstone?.category} from Kohinoor Gemstone`,
+      title: gemstone?.name?.english || 'Gemstone',
+      text: gemstone?.summary || `Beautiful ${gemstone?.category}`,
       url: window.location.href
     };
 

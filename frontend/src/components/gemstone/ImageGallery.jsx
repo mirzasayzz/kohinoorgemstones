@@ -131,8 +131,8 @@ const ImageGallery = ({
   // Share functionality
   const handleShare = async () => {
     const shareData = {
-      title: `${gemstone?.name?.english} - Kohinoor Gemstone`,
-      text: `Check out this beautiful ${gemstone?.category} from Kohinoor Gemstone`,
+      title: gemstone?.name?.english || 'Gemstone',
+      text: `Check out this beautiful ${gemstone?.category}`,
       url: window.location.href
     };
 

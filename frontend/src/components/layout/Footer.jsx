@@ -18,7 +18,7 @@ const Footer = () => {
   // Format business hours for display
   const formatBusinessHours = () => {
     if (!businessInfo?.businessHours) {
-      return 'Mon-Sat: 10AM-7PM | Sun: Closed';
+      return '';
     }
 
     const hours = businessInfo.businessHours;
@@ -87,19 +87,15 @@ const Footer = () => {
 
   // Quick contact info for mobile
   const handleWhatsAppQuickChat = () => {
-    const message = `Hello ${businessInfo?.shopName || 'Kohinoor Gemstone'},
+    if (!businessInfo?.shopName) return;
+    const message = `Hello ${businessInfo?.shopName},\n\nI found your website and would like to get quick assistance with gemstone selection. Please help me choose the right gemstone for my needs.\n\nThank you!`;
 
-I found your website and would like to get quick assistance with gemstone selection. Please help me choose the right gemstone for my needs.
-
-Thank you!`;
-
-    // Use the enhanced WhatsApp integration
     const whatsappData = generateWhatsAppURL(null, message);
     if (whatsappData && whatsappData.open) {
       whatsappData.open();
     } else {
-      const url = typeof whatsappData === 'string' ? whatsappData : whatsappData.webUrl;
-      window.open(url, '_blank');
+      const url = typeof whatsappData === 'string' ? whatsappData : whatsappData?.webUrl;
+      if (url) window.open(url, '_blank');
     }
   };
 
@@ -118,6 +114,7 @@ Thank you!`;
           <button
             onClick={handleWhatsAppQuickChat}
             className="w-full flex items-center justify-center space-x-2 text-white font-medium"
+            disabled={!businessInfo?.contact?.whatsapp}
           >
             <MessageCircle className="w-4 h-4" />
             <span className="text-xs sm:text-sm">Chat with us on WhatsApp - Get instant help! 💎</span>
@@ -136,12 +133,12 @@ Thank you!`;
                 <Gem className="w-3 h-3 text-white" />
               </div>
               <span className="font-heading text-lg font-bold text-golden">
-                {businessInfo?.shopName || 'Kohinoor Gemstone'}
+                {businessInfo?.shopName || ''}
               </span>
             </Link>
             
             <p className="text-gray-300 text-xs mb-2 leading-tight max-w-xs">
-              {businessInfo?.tagline || 'Premium authentic gemstones. Family heritage of trust.'}
+              {businessInfo?.tagline || ''}
             </p>
 
             {/* Essential Links - Horizontal */}
@@ -199,18 +196,22 @@ Thank you!`;
               )}
 
               {/* Address - One Line */}
-              <div className="flex items-center space-x-1 text-gray-300 text-xs">
-                <MapPin className="w-3 h-3 flex-shrink-0" />
-                <span className="truncate">
-                  {businessInfo?.address?.city || 'Mumbai'}, {businessInfo?.address?.state || 'Maharashtra'}
-                </span>
-              </div>
+              {(businessInfo?.address?.city || businessInfo?.address?.state) && (
+                <div className="flex items-center space-x-1 text-gray-300 text-xs">
+                  <MapPin className="w-3 h-3 flex-shrink-0" />
+                  <span className="truncate">
+                    {[businessInfo?.address?.city, businessInfo?.address?.state].filter(Boolean).join(', ')}
+                  </span>
+                </div>
+              )}
 
               {/* Hours - One Line */}
-              <div className="flex items-center space-x-1 text-gray-300 text-xs">
-                <Clock className="w-3 h-3 flex-shrink-0" />
-                <span>{formatBusinessHours()}</span>
-              </div>
+              {formatBusinessHours() && (
+                <div className="flex items-center space-x-1 text-gray-300 text-xs">
+                  <Clock className="w-3 h-3 flex-shrink-0" />
+                  <span>{formatBusinessHours()}</span>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -220,7 +221,7 @@ Thank you!`;
       <div className="border-t border-gray-700 bg-sapphire/80 dark:bg-gray-900/80">
         <div className="max-w-7xl mx-auto px-4 py-2">
           <p className="text-center text-xs text-gray-400">
-            © {currentYear} {businessInfo?.shopName || 'Kohinoor Gemstone'}. All rights reserved. 💎
+            © {currentYear} {businessInfo?.shopName || ''}
           </p>
         </div>
       </div>

@@ -839,6 +839,9 @@ export const handleUpdateBusinessInfo = async (req, res) => {
 
     // Load singleton business info (creates default if missing)
     let businessInfo = await BusinessInfo.getBusinessInfo();
+    if (!businessInfo) {
+      businessInfo = new BusinessInfo({});
+    }
 
     // Helper to set value if provided (non-empty)
     const setIfProvided = (obj, key, value) => {

@@ -47,14 +47,14 @@ const Header = () => {
             >
               <img 
                 src="/kohinoor-logo.png" 
-                alt="Kohinoor Gemstone Logo" 
+                alt="Site Logo" 
                 className="w-8 h-8 object-contain"
               />
               <span className="font-heading text-xl font-bold gradient-text hidden sm:block">
-                {businessInfo?.shopName || 'Kohinoor Gemstone'}
+                {businessInfo?.shopName || ''}
               </span>
               <span className="font-heading text-lg font-bold gradient-text sm:hidden">
-                Kohinoor
+                {businessInfo?.shopName?.split(' ')?.[0] || ''}
               </span>
             </Link>
           </div>

@@ -125,7 +125,7 @@ const Contact = () => {
     <>
       <SEOHead 
         title="Contact Us - Get in Touch"
-        description="Contact Kohinoor Gemstone for expert consultation. Reach us via WhatsApp, phone, email or visit our store. Check our business hours and location."
+        description=""
         keywords="contact, gemstone consultation, WhatsApp, phone, store location, business hours"
       />
       
@@ -374,7 +374,7 @@ const Contact = () => {
                           loading="lazy"
                           referrerPolicy="no-referrer-when-downgrade"
                       className="w-full h-full"
-                          title="Kohinoor Gemstone Location"
+                          title="Location"
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">

@@ -281,7 +281,7 @@ Thanks!`;
       : null;
 
     const shareTitle = `${gemstone.name?.english || 'Beautiful Gemstone'}${gemstone.name?.urdu ? ` (${gemstone.name.urdu})` : ''}`;
-    const shareText = customMessage || `Check out this beautiful ${gemstone.category} gemstone from ${businessInfo?.shopName || 'Kohinoor Gemstone'}!`;
+    const shareText = customMessage || `Check out this beautiful ${gemstone.category}${businessInfo?.shopName ? ` from ${businessInfo.shopName}` : ''}!`;
     const shareUrl = `${SITE_CONFIG.BASE_URL}/gemstone/${gemstone.slug || gemstone._id}`;
 
     // Try native Web Share API first (supports images on mobile)
