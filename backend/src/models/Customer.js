@@ -50,6 +50,19 @@ const customerSchema = new mongoose.Schema({
     pincode: { type: String, trim: true },
     country: { type: String, default: 'India' }
   },
+  // Multiple saved addresses with default flag
+  addresses: [{
+    _id: { type: mongoose.Schema.Types.ObjectId, auto: true },
+    label: { type: String, trim: true, default: 'Home' }, // Home, Work, Other
+    fullName: { type: String, trim: true },
+    phone: { type: String, trim: true },
+    street: { type: String, trim: true },
+    city: { type: String, trim: true },
+    state: { type: String, trim: true },
+    pincode: { type: String, trim: true },
+    country: { type: String, default: 'India' },
+    isDefault: { type: Boolean, default: false }
+  }],
   // Email verification
   isEmailVerified: {
     type: Boolean,

@@ -796,4 +796,141 @@ router.post('/chat/read', authenticateCustomer, async (req, res) => {
   }
 });
 
+// ============================================
+// ADDRESS MANAGEMENT (Protected)
+// ============================================
+
+// GET all saved addresses
+router.get('/addresses', authenticateCustomer, async (req, res) => {
+  try {
+    res.json({ success: true, addresses: req.customer.addresses || [] });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Failed to fetch addresses' });
+  }
+});
+
+// POST add new address
+router.post('/addresses', authenticateCustomer, async (req, res) => {
+  try {
+    const { label, fullName, phone, street, city, state, pincode, country, isDefault } = req.body;
+
+    if (!fullName || !phone || !street || !city || !state || !pincode) {
+      return res.status(400).json({ success: false, message: 'All address fields are required' });
+    }
+
+    const customer = req.customer;
+
+    // If setting as default, unset all others
+    if (isDefault) {
+      customer.addresses.forEach(addr => { addr.isDefault = false; });
+    }
+
+    // If first address, auto-set as default
+    const makeDefault = isDefault || customer.addresses.length === 0;
+
+    customer.addresses.push({
+      label: label || 'Home',
+      fullName, phone, street, city, state,
+      pincode, country: country || 'India',
+      isDefault: makeDefault
+    });
+
+    await customer.save();
+
+    res.json({ success: true, message: 'Address saved!', addresses: customer.addresses });
+  } catch (error) {
+    console.error('Add address error:', error);
+    res.status(500).json({ success: false, message: 'Failed to save address' });
+  }
+});
+
+// PUT update existing address
+router.put('/addresses/:addressId', authenticateCustomer, async (req, res) => {
+  try {
+    const { addressId } = req.params;
+    const { label, fullName, phone, street, city, state, pincode, country, isDefault } = req.body;
+
+    const customer = req.customer;
+    const addr = customer.addresses.id(addressId);
+
+    if (!addr) {
+      return res.status(404).json({ success: false, message: 'Address not found' });
+    }
+
+    // If setting as default, unset all others first
+    if (isDefault) {
+      customer.addresses.forEach(a => { a.isDefault = false; });
+    }
+
+    if (label !== undefined) addr.label = label;
+    if (fullName !== undefined) addr.fullName = fullName;
+    if (phone !== undefined) addr.phone = phone;
+    if (street !== undefined) addr.street = street;
+    if (city !== undefined) addr.city = city;
+    if (state !== undefined) addr.state = state;
+    if (pincode !== undefined) addr.pincode = pincode;
+    if (country !== undefined) addr.country = country;
+    if (isDefault !== undefined) addr.isDefault = isDefault;
+
+    await customer.save();
+
+    res.json({ success: true, message: 'Address updated!', addresses: customer.addresses });
+  } catch (error) {
+    console.error('Update address error:', error);
+    res.status(500).json({ success: false, message: 'Failed to update address' });
+  }
+});
+
+// PATCH set address as default
+router.patch('/addresses/:addressId/default', authenticateCustomer, async (req, res) => {
+  try {
+    const { addressId } = req.params;
+    const customer = req.customer;
+
+    const addr = customer.addresses.id(addressId);
+    if (!addr) {
+      return res.status(404).json({ success: false, message: 'Address not found' });
+    }
+
+    // Unset all, set this one
+    customer.addresses.forEach(a => { a.isDefault = false; });
+    addr.isDefault = true;
+
+    await customer.save();
+
+    res.json({ success: true, message: 'Default address updated!', addresses: customer.addresses });
+  } catch (error) {
+    console.error('Set default address error:', error);
+    res.status(500).json({ success: false, message: 'Failed to set default address' });
+  }
+});
+
+// DELETE address
+router.delete('/addresses/:addressId', authenticateCustomer, async (req, res) => {
+  try {
+    const { addressId } = req.params;
+    const customer = req.customer;
+
+    const addrIndex = customer.addresses.findIndex(a => a._id.toString() === addressId);
+    if (addrIndex === -1) {
+      return res.status(404).json({ success: false, message: 'Address not found' });
+    }
+
+    const wasDefault = customer.addresses[addrIndex].isDefault;
+    customer.addresses.splice(addrIndex, 1);
+
+    // If deleted address was default, make first remaining address the default
+    if (wasDefault && customer.addresses.length > 0) {
+      customer.addresses[0].isDefault = true;
+    }
+
+    await customer.save();
+
+    res.json({ success: true, message: 'Address deleted!', addresses: customer.addresses });
+  } catch (error) {
+    console.error('Delete address error:', error);
+    res.status(500).json({ success: false, message: 'Failed to delete address' });
+  }
+});
+
 export default router;
