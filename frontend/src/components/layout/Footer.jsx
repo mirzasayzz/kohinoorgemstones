@@ -6,65 +6,51 @@ import {
   Mail, 
   MapPin, 
   MessageCircle,
-  Clock
+  Clock,
+  CheckCircle,
+  XCircle
 } from 'lucide-react';
 import { useBusinessContext } from '../../context/BusinessContext';
-import UpdateIndicator from '../common/UpdateIndicator';
 
 const Footer = () => {
   const { businessInfo, generateWhatsAppURL } = useBusinessContext();
   const [currentYear] = useState(new Date().getFullYear());
 
-  // Format business hours for display
-  const formatBusinessHours = () => {
-    if (!businessInfo?.businessHours) {
-      return '';
-    }
-
-    const hours = businessInfo.businessHours;
-    const workingDays = [];
-    const weekDays = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+  // Check if business is currently open
+  const isCurrentlyOpen = () => {
+    if (!businessInfo?.businessHours) return null;
     
-    // Group consecutive working days with same hours
-    let currentGroup = null;
-    let groupStart = null;
+    const now = new Date();
+    const currentDay = now.toLocaleLowerCase().substring(0, 3); // 'mon', 'tue', etc.
+    const currentTime = now.getHours() * 100 + now.getMinutes(); // Convert to HHMM format
     
-    weekDays.forEach((day, index) => {
-      const dayInfo = hours[day];
-      if (!dayInfo?.closed && dayInfo?.open && dayInfo?.close) {
-        const timeRange = `${formatTime(dayInfo.open)}-${formatTime(dayInfo.close)}`;
-        
-        if (!currentGroup || currentGroup.hours !== timeRange) {
-          if (currentGroup) {
-            workingDays.push(formatDayGroup(groupStart, weekDays[index - 1], currentGroup.hours));
-          }
-          currentGroup = { hours: timeRange };
-          groupStart = day;
-        }
-      } else {
-        if (currentGroup) {
-          workingDays.push(formatDayGroup(groupStart, weekDays[index - 1], currentGroup.hours));
-          currentGroup = null;
-        }
-      }
-    });
+    const dayMap = {
+      'sun': 'sunday',
+      'mon': 'monday', 
+      'tue': 'tuesday',
+      'wed': 'wednesday',
+      'thu': 'thursday',
+      'fri': 'friday',
+      'sat': 'saturday'
+    };
     
-    // Add the last group if exists
-    if (currentGroup) {
-      workingDays.push(formatDayGroup(groupStart, weekDays[weekDays.length - 1], currentGroup.hours));
+    const fullDayName = dayMap[currentDay];
+    const todayHours = businessInfo.businessHours[fullDayName];
+    
+    if (!todayHours || todayHours.closed) return false;
+    
+    if (todayHours.open && todayHours.close) {
+      const openTime = parseInt(todayHours.open.replace(':', ''));
+      const closeTime = parseInt(todayHours.close.replace(':', ''));
+      return currentTime >= openTime && currentTime <= closeTime;
     }
     
-    // Add closed days
-    const closedDays = weekDays.filter(day => hours[day]?.closed || (!hours[day]?.open && !hours[day]?.close));
-    if (closedDays.length > 0) {
-      const closedDayNames = closedDays.map(day => day.charAt(0).toUpperCase() + day.slice(1, 3));
-      workingDays.push(`${closedDayNames.join(', ')}: Closed`);
-    }
-    
-    return workingDays.join(' | ');
+    return false;
   };
 
+  // Format time for display
   const formatTime = (time) => {
+    if (!time) return '';
     const [hours, minutes] = time.split(':');
     const hour = parseInt(hours);
     const ampm = hour >= 12 ? 'PM' : 'AM';
@@ -72,157 +58,206 @@ const Footer = () => {
     return `${displayHour}${minutes !== '00' ? ':' + minutes : ''}${ampm}`;
   };
 
-  const formatDayGroup = (startDay, endDay, hours) => {
-    const dayNames = {
-      monday: 'Mon', tuesday: 'Tue', wednesday: 'Wed', 
-      thursday: 'Thu', friday: 'Fri', saturday: 'Sat', sunday: 'Sun'
+  // Get today's hours
+  const getTodayHours = () => {
+    if (!businessInfo?.businessHours) return '';
+    
+    const now = new Date();
+    const currentDay = now.toLocaleLowerCase().substring(0, 3);
+    
+    const dayMap = {
+      'sun': 'sunday',
+      'mon': 'monday', 
+      'tue': 'tuesday',
+      'wed': 'wednesday',
+      'thu': 'thursday',
+      'fri': 'friday',
+      'sat': 'saturday'
     };
     
-    if (startDay === endDay) {
-      return `${dayNames[startDay]}: ${hours}`;
-    } else {
-      return `${dayNames[startDay]}-${dayNames[endDay]}: ${hours}`;
+    const fullDayName = dayMap[currentDay];
+    const todayHours = businessInfo.businessHours[fullDayName];
+    
+    if (!todayHours || todayHours.closed) return 'Closed today';
+    
+    if (todayHours.open && todayHours.close) {
+      return `${formatTime(todayHours.open)} - ${formatTime(todayHours.close)}`;
     }
+    
+    return '';
   };
 
-  // Quick contact info for mobile
-  const handleWhatsAppQuickChat = () => {
-    if (!businessInfo?.shopName) return;
-    const message = `Hello ${businessInfo?.shopName},\n\nI found your website and would like to get quick assistance with gemstone selection. Please help me choose the right gemstone for my needs.\n\nThank you!`;
-
+  // Handle WhatsApp click
+  const handleWhatsAppClick = () => {
+    if (!businessInfo?.contact?.whatsapp) return;
+    
+    const message = `Hello! I found your website and would like to inquire about your gemstones. Could you please help me?`;
     const whatsappData = generateWhatsAppURL(null, message);
+    
     if (whatsappData && whatsappData.open) {
       whatsappData.open();
-    } else {
-      const url = typeof whatsappData === 'string' ? whatsappData : whatsappData?.webUrl;
-      if (url) window.open(url, '_blank');
     }
   };
 
-  // Essential links only
-  const essentialLinks = [
-    { name: 'About Us', href: '/about' },
-    { name: 'All Gemstones', href: '/gemstones' },
-    { name: 'Contact', href: '/contact' }
-  ];
+  const currentlyOpen = isCurrentlyOpen();
+  const todayHours = getTodayHours();
 
   return (
-    <footer className="bg-sapphire dark:bg-gray-900 text-white">
-      {/* Quick WhatsApp Contact - Compact */}
-      <div className="bg-green-600 hover:bg-green-700 transition-colors duration-300">
-        <div className="max-w-7xl mx-auto px-4 py-2">
-          <button
-            onClick={handleWhatsAppQuickChat}
-            className="w-full flex items-center justify-center space-x-2 text-white font-medium"
-            disabled={!businessInfo?.contact?.whatsapp}
-          >
-            <MessageCircle className="w-4 h-4" />
-            <span className="text-xs sm:text-sm">Chat with us on WhatsApp - Get instant help! 💎</span>
-          </button>
-        </div>
-      </div>
-
-      {/* Main Footer Content - Ultra Compact */}
-      <div className="max-w-7xl mx-auto px-4 py-4">
-        <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
+    <footer className="bg-gray-900 text-white border-t border-gray-800">
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           
-          {/* Company Info - Minimal */}
-          <div className="flex-1">
-            <Link to="/" className="flex items-center space-x-2 mb-2">
-              <div className="w-6 h-6 bg-gradient-to-r from-golden via-ruby to-emerald rounded-full flex items-center justify-center">
-                <Gem className="w-3 h-3 text-white" />
+          {/* Business Info */}
+          <div className="space-y-4">
+            <Link to="/" className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-gradient-to-r from-amber-400 via-red-500 to-emerald-500 rounded-full flex items-center justify-center">
+                <Gem className="w-4 h-4 text-white" />
               </div>
-              <span className="font-heading text-lg font-bold text-golden">
-                {businessInfo?.shopName || ''}
+              <span className="text-xl font-bold text-amber-400">
+                {businessInfo?.shopName || 'Gemstone Store'}
               </span>
             </Link>
             
-            <p className="text-gray-300 text-xs mb-2 leading-tight max-w-xs">
-              {businessInfo?.tagline || ''}
-            </p>
+            {businessInfo?.tagline && (
+              <p className="text-gray-400 text-sm leading-relaxed">
+                {businessInfo.tagline}
+              </p>
+            )}
 
-            {/* Essential Links - Horizontal */}
-            <div className="flex gap-3 mb-2">
-              {essentialLinks.map((link, index) => (
-                <Link 
-                  key={index}
-                  to={link.href}
-                  className="text-gray-300 hover:text-golden transition-colors text-xs"
-                >
-                  {link.name}
-                </Link>
-              ))}
+            {/* Quick Links */}
+            <div className="flex flex-wrap gap-4 text-sm">
+              <Link to="/about" className="text-gray-400 hover:text-amber-400 transition-colors">
+                About
+              </Link>
+              <Link to="/gemstones" className="text-gray-400 hover:text-amber-400 transition-colors">
+                Gemstones
+              </Link>
+              <Link to="/contact" className="text-gray-400 hover:text-amber-400 transition-colors">
+                Contact
+              </Link>
             </div>
-
-            {/* Update Indicator */}
-            <UpdateIndicator className="mt-2" />
           </div>
 
-          {/* Contact Info - Compact */}
-          <div className="flex-1 min-w-0">
-            <div className="grid grid-cols-1 gap-1">
-              {/* Phone & WhatsApp - Same Line */}
+          {/* Contact Information */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold text-amber-400">Contact Us</h3>
+            
+            <div className="space-y-3">
               {businessInfo?.contact?.phone && (
-                <div className="flex items-center justify-between">
-                  <a 
-                    href={`tel:${businessInfo.contact.phone}`}
-                    className="flex items-center space-x-1 text-gray-300 hover:text-golden transition-colors text-xs"
-                  >
-                    <Phone className="w-3 h-3" />
-                    <span>{businessInfo.contact.phone}</span>
-                  </a>
-                  
-                  {businessInfo?.contact?.whatsapp && (
-                    <button
-                      onClick={handleWhatsAppQuickChat}
-                      className="flex items-center space-x-1 text-gray-300 hover:text-green-400 transition-colors text-xs"
-                    >
-                      <MessageCircle className="w-3 h-3" />
-                      <span>WhatsApp</span>
-                    </button>
-                  )}
-                </div>
-              )}
-
-              {/* Email */}
-              {businessInfo?.contact?.email && (
                 <a 
-                  href={`mailto:${businessInfo.contact.email}`}
-                  className="flex items-center space-x-1 text-gray-300 hover:text-golden transition-colors text-xs"
+                  href={`tel:${businessInfo.contact.phone}`}
+                  className="flex items-center space-x-3 text-gray-300 hover:text-white transition-colors group"
                 >
-                  <Mail className="w-3 h-3" />
-                  <span className="truncate">{businessInfo.contact.email}</span>
+                  <Phone className="w-4 h-4 text-blue-400 group-hover:text-blue-300" />
+                  <span>{businessInfo.contact.phone}</span>
                 </a>
               )}
 
-              {/* Address - One Line */}
-              {(businessInfo?.address?.city || businessInfo?.address?.state) && (
-                <div className="flex items-center space-x-1 text-gray-300 text-xs">
-                  <MapPin className="w-3 h-3 flex-shrink-0" />
-                  <span className="truncate">
-                    {[businessInfo?.address?.city, businessInfo?.address?.state].filter(Boolean).join(', ')}
-                  </span>
-                </div>
+              {businessInfo?.contact?.whatsapp && (
+                <button
+                  onClick={handleWhatsAppClick}
+                  className="flex items-center space-x-3 text-gray-300 hover:text-white transition-colors group w-full text-left"
+                >
+                  <MessageCircle className="w-4 h-4 text-green-400 group-hover:text-green-300" />
+                  <span>WhatsApp: {businessInfo.contact.whatsapp}</span>
+                </button>
               )}
 
-              {/* Hours - One Line */}
-              {formatBusinessHours() && (
-                <div className="flex items-center space-x-1 text-gray-300 text-xs">
-                  <Clock className="w-3 h-3 flex-shrink-0" />
-                  <span>{formatBusinessHours()}</span>
+              {businessInfo?.contact?.email && (
+                <a 
+                  href={`mailto:${businessInfo.contact.email}`}
+                  className="flex items-center space-x-3 text-gray-300 hover:text-white transition-colors group"
+                >
+                  <Mail className="w-4 h-4 text-red-400 group-hover:text-red-300" />
+                  <span className="break-all">{businessInfo.contact.email}</span>
+                </a>
+              )}
+
+              {(businessInfo?.address?.street || businessInfo?.address?.city) && (
+                <div className="flex items-start space-x-3 text-gray-300">
+                  <MapPin className="w-4 h-4 text-amber-400 mt-0.5 flex-shrink-0" />
+                  <div className="text-sm leading-relaxed">
+                    {businessInfo.address.street && (
+                      <div>{businessInfo.address.street}</div>
+                    )}
+                    <div>
+                      {[
+                        businessInfo.address.area,
+                        businessInfo.address.city,
+                        businessInfo.address.state,
+                        businessInfo.address.pincode
+                      ].filter(Boolean).join(', ')}
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
           </div>
-        </div>
-      </div>
 
-      {/* Bottom Copyright - Ultra Compact */}
-      <div className="border-t border-gray-700 bg-sapphire/80 dark:bg-gray-900/80">
-        <div className="max-w-7xl mx-auto px-4 py-2">
-          <p className="text-center text-xs text-gray-400">
-            © {currentYear} {businessInfo?.shopName || ''}
-          </p>
+          {/* Business Hours & Status */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold text-amber-400">Store Hours</h3>
+            
+            {/* Current Status */}
+            <div className="flex items-center space-x-2 p-3 rounded-lg bg-gray-800">
+              {currentlyOpen === true ? (
+                <>
+                  <CheckCircle className="w-5 h-5 text-green-400" />
+                  <div>
+                    <div className="text-green-400 font-medium">Open Now</div>
+                    <div className="text-gray-400 text-sm">{todayHours}</div>
+                  </div>
+                </>
+              ) : currentlyOpen === false ? (
+                <>
+                  <XCircle className="w-5 h-5 text-red-400" />
+                  <div>
+                    <div className="text-red-400 font-medium">Closed</div>
+                    <div className="text-gray-400 text-sm">{todayHours}</div>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <Clock className="w-5 h-5 text-gray-400" />
+                  <div>
+                    <div className="text-gray-400 font-medium">Hours Not Set</div>
+                    <div className="text-gray-500 text-sm">Contact us for availability</div>
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* All Week Hours - Simplified */}
+            {businessInfo?.businessHours && (
+              <div className="space-y-1 text-sm">
+                {['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].map(day => {
+                  const dayInfo = businessInfo.businessHours[day];
+                  const dayName = day.charAt(0).toUpperCase() + day.slice(1, 3);
+                  
+                  return (
+                    <div key={day} className="flex justify-between items-center text-gray-400">
+                      <span>{dayName}</span>
+                      <span>
+                        {dayInfo?.closed || (!dayInfo?.open && !dayInfo?.close) 
+                          ? 'Closed' 
+                          : dayInfo?.open && dayInfo?.close 
+                            ? `${formatTime(dayInfo.open)} - ${formatTime(dayInfo.close)}`
+                            : 'N/A'
+                        }
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Bottom Copyright */}
+        <div className="border-t border-gray-800 mt-8 pt-6">
+          <div className="text-center text-gray-500 text-sm">
+            © {currentYear} {businessInfo?.shopName || 'Gemstone Store'}. All rights reserved.
+          </div>
         </div>
       </div>
     </footer>
