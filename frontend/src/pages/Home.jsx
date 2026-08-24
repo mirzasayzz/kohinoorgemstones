@@ -244,10 +244,10 @@ const Home = () => {
       <section className="py-6 sm:py-8 bg-gradient-to-r from-sapphire via-ruby to-emerald">
         <div className="max-w-4xl mx-auto px-4 text-center">
           <h2 className="font-heading text-xl sm:text-2xl font-bold text-white mb-3">
-            Find Your Perfect Gemstone
+            {businessInfo?.tagline || 'Find Your Perfect Gemstone'}
           </h2>
           <p className="text-white/90 text-sm sm:text-base mb-4 max-w-lg mx-auto">
-            Authentic, certified gemstones with our family guarantee
+            {businessInfo?.description || 'Authentic, certified gemstones with our family guarantee'}
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Link

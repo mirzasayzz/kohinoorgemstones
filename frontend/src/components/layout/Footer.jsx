@@ -14,6 +14,76 @@ const Footer = () => {
   const { businessInfo, generateWhatsAppURL } = useBusiness();
   const [currentYear] = useState(new Date().getFullYear());
 
+  // Format business hours for display
+  const formatBusinessHours = () => {
+    if (!businessInfo?.businessHours) {
+      return 'Mon-Sat: 10AM-7PM | Sun: Closed';
+    }
+
+    const hours = businessInfo.businessHours;
+    const workingDays = [];
+    const weekDays = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+    
+    // Group consecutive working days with same hours
+    let currentGroup = null;
+    let groupStart = null;
+    
+    weekDays.forEach((day, index) => {
+      const dayInfo = hours[day];
+      if (!dayInfo?.closed && dayInfo?.open && dayInfo?.close) {
+        const timeRange = `${formatTime(dayInfo.open)}-${formatTime(dayInfo.close)}`;
+        
+        if (!currentGroup || currentGroup.hours !== timeRange) {
+          if (currentGroup) {
+            workingDays.push(formatDayGroup(groupStart, weekDays[index - 1], currentGroup.hours));
+          }
+          currentGroup = { hours: timeRange };
+          groupStart = day;
+        }
+      } else {
+        if (currentGroup) {
+          workingDays.push(formatDayGroup(groupStart, weekDays[index - 1], currentGroup.hours));
+          currentGroup = null;
+        }
+      }
+    });
+    
+    // Add the last group if exists
+    if (currentGroup) {
+      workingDays.push(formatDayGroup(groupStart, weekDays[weekDays.length - 1], currentGroup.hours));
+    }
+    
+    // Add closed days
+    const closedDays = weekDays.filter(day => hours[day]?.closed || (!hours[day]?.open && !hours[day]?.close));
+    if (closedDays.length > 0) {
+      const closedDayNames = closedDays.map(day => day.charAt(0).toUpperCase() + day.slice(1, 3));
+      workingDays.push(`${closedDayNames.join(', ')}: Closed`);
+    }
+    
+    return workingDays.join(' | ');
+  };
+
+  const formatTime = (time) => {
+    const [hours, minutes] = time.split(':');
+    const hour = parseInt(hours);
+    const ampm = hour >= 12 ? 'PM' : 'AM';
+    const displayHour = hour > 12 ? hour - 12 : hour === 0 ? 12 : hour;
+    return `${displayHour}${minutes !== '00' ? ':' + minutes : ''}${ampm}`;
+  };
+
+  const formatDayGroup = (startDay, endDay, hours) => {
+    const dayNames = {
+      monday: 'Mon', tuesday: 'Tue', wednesday: 'Wed', 
+      thursday: 'Thu', friday: 'Fri', saturday: 'Sat', sunday: 'Sun'
+    };
+    
+    if (startDay === endDay) {
+      return `${dayNames[startDay]}: ${hours}`;
+    } else {
+      return `${dayNames[startDay]}-${dayNames[endDay]}: ${hours}`;
+    }
+  };
+
   // Quick contact info for mobile
   const handleWhatsAppQuickChat = () => {
     const message = `Hello ${businessInfo?.shopName || 'Kohinoor Gemstone'},
@@ -70,7 +140,7 @@ Thank you!`;
             </Link>
             
             <p className="text-gray-300 text-xs mb-2 leading-tight max-w-xs">
-              Premium authentic gemstones. Family heritage of trust.
+              {businessInfo?.tagline || 'Premium authentic gemstones. Family heritage of trust.'}
             </p>
 
             {/* Essential Links - Horizontal */}
@@ -135,7 +205,7 @@ Thank you!`;
               {/* Hours - One Line */}
               <div className="flex items-center space-x-1 text-gray-300 text-xs">
                 <Clock className="w-3 h-3 flex-shrink-0" />
-                <span>Mon-Sat: 10AM-7PM | Sun: Closed</span>
+                <span>{formatBusinessHours()}</span>
               </div>
             </div>
           </div>

@@ -340,6 +340,11 @@ function closeNotification(button) {
 }
 
 // Utility functions
+function editGemstone(gemstoneId) {
+    // Navigate to the edit gemstone page
+    window.location.href = `/admin/gemstones/edit/${gemstoneId}`;
+}
+
 function toggleTrending(gemstoneId) {
     if (confirm('Are you sure you want to toggle the trending status of this gemstone?')) {
         const form = document.createElement('form');
@@ -500,6 +505,7 @@ if (document.readyState === 'loading') {
 // Export functions for global use
 window.AdminJS = {
     showNotification,
+    editGemstone,
     toggleTrending,
     deleteGemstone,
     showLoading,
