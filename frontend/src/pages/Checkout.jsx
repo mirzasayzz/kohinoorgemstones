@@ -508,9 +508,9 @@ const Checkout = () => {
                   </ul>
                 </div>
               </div>
-              <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 mt-4 flex justify-between items-center text-[10px] text-neutral-400">
-                <span className="flex items-center gap-1.5"><ShieldCheck className="w-3.5 h-3.5 text-emerald-500" /> Razorpay Standard Checkout</span>
-                <span>Sandbox Mode</span>
+              <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 mt-4 flex items-center gap-1.5 text-[10px] text-neutral-400">
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
+                <span>Secured & powered by Razorpay — PCI DSS compliant</span>
               </div>
             </div>
           </div>

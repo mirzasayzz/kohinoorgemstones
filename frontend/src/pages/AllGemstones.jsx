@@ -262,49 +262,45 @@ const AllGemstones = () => {
             </div>
           </div>
 
-          {/* Search and Controls */}
-          <div className="space-y-3 sm:space-y-4">
-            {/* Search Bar */}
-            <SearchBar
-              onSearch={handleSearch}
-              placeholder="Search gemstones by name, category, or purpose..."
-              initialValue={searchQuery}
-              className="w-full"
-            />
+          {/* Search + Sort — single row on all screens */}
+          <div className="flex items-center gap-2">
+            {/* Search */}
+            <div className="flex-1">
+              <SearchBar
+                onSearch={handleSearch}
+                placeholder="Search gemstones..."
+                initialValue={searchQuery}
+                className="w-full"
+              />
+            </div>
 
-            {/* Mobile Controls Row */}
-            <div className="flex items-center justify-between space-x-3">
-              {/* Mobile Filter Button */}
-              <button
-                onClick={() => setIsFilterOpen(true)}
-                className="md:hidden flex items-center space-x-2 px-3 sm:px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
-              >
-                <Filter className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Filters
+            {/* Filter button — mobile only */}
+            <button
+              onClick={() => setIsFilterOpen(true)}
+              className="md:hidden flex items-center gap-1.5 px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors flex-shrink-0"
+            >
+              <Filter className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+              {getActiveFilterCount() > 0 && (
+                <span className="bg-amber-500 text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold leading-none">
+                  {getActiveFilterCount()}
                 </span>
-                {getActiveFilterCount() > 0 && (
-                  <span className="bg-sapphire text-white text-xs px-2 py-0.5 rounded-full">
-                    {getActiveFilterCount()}
-                  </span>
-                )}
-              </button>
+              )}
+            </button>
 
-              {/* Sort Dropdown */}
-              <div className="relative">
-                <select
-                  value={sortBy}
-                  onChange={(e) => handleSortChange(e.target.value)}
-                  className="appearance-none bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg px-3 sm:px-4 py-2 pr-8 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-sapphire"
-                >
-                  {sortOptions.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-                <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
-              </div>
+            {/* Sort dropdown */}
+            <div className="relative flex-shrink-0">
+              <select
+                value={sortBy}
+                onChange={(e) => handleSortChange(e.target.value)}
+                className="appearance-none bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg pl-3 pr-7 py-2 text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-500 cursor-pointer"
+              >
+                {sortOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-500 pointer-events-none" />
             </div>
           </div>
         </div>
