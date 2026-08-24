@@ -1,7 +1,6 @@
 {
   "name": "kohinoor-qa-automation",
   "version": "1.0.0",
-  "type": "module",
   "description": "Comprehensive QA Automation Framework for Kohinoor Gemstone - Wingify Internship Application",
   "scripts": {
     "test": "npx playwright test",
