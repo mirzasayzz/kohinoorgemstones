@@ -836,124 +836,93 @@ export const handleUpdateBusinessInfo = async (req, res) => {
       street: formData['address[street]'],
       timestamp: new Date().toISOString()
     });
-    
-    console.log('📋 Full form data keys:', Object.keys(formData));
-    
-    // Parse nested form data with better handling
-    const updateData = {
-      shopName: formData.shopName || 'Kohinoor Gemstone',
-      tagline: formData.tagline || 'Premium Gemstones for Life\'s Precious Moments',
-      description: formData.description || formData.about || 'We are a family-owned gemstone business dedicated to providing authentic, certified gemstones.',
-      contact: {
-        phone: formData['contact[phone]'] || formData.phone || '+911234567890',
-        whatsapp: formData['contact[whatsapp]'] || formData.whatsapp || '+911234567890',
-        email: formData['contact[email]'] || formData.email || 'info@kohinoorgemstone.com'
-      },
-      address: {
-        street: formData['address[street]'] || formData.street || '123 Gemstone Street',
-        area: formData['address[area]'] || formData.area || 'Jewelry District',
-        city: formData['address[city]'] || formData.city || 'Mumbai',
-        state: formData['address[state]'] || formData.state || 'Maharashtra',
-        pincode: formData['address[pincode]'] || formData.pincode || '400001',
-        country: formData['address[country]'] || formData.country || 'India'
-      },
-      googleMapsUrl: formData.googleMapsUrl || 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3771.8574447892247!2d72.8310437!3d19.0544472!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMTnCsDAzJzE2LjAiTiA3MsKwNDknNTEuOCJF!5e0!3m2!1sen!2sin!4v1234567890',
-      socialMedia: {
-        facebook: formData['socialMedia[facebook]'] || '',
-        instagram: formData['socialMedia[instagram]'] || '',
-        twitter: formData['socialMedia[twitter]'] || '',
-        youtube: formData['socialMedia[youtube]'] || '',
-        linkedin: formData['socialMedia[linkedin]'] || ''
-      },
-      // Ensure updatedAt is set to current timestamp
-      updatedAt: new Date()
+
+    // Load singleton business info (creates default if missing)
+    let businessInfo = await BusinessInfo.getBusinessInfo();
+
+    // Helper to set value if provided (non-empty)
+    const setIfProvided = (obj, key, value) => {
+      if (value !== undefined && value !== null && String(value).trim() !== '') {
+        obj[key] = value;
+      }
     };
 
-    // Handle business hours if provided
-    if (formData.hours || Object.keys(formData).some(key => key.startsWith('hours['))) {
-      updateData.businessHours = {};
-      const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+    // Basic info
+    setIfProvided(businessInfo, 'shopName', formData.shopName);
+    setIfProvided(businessInfo, 'tagline', formData.tagline);
+    // Prefer detailed about field, fallback to description
+    setIfProvided(businessInfo, 'description', formData.about ?? formData.description);
+
+    // Contact
+    businessInfo.contact = businessInfo.contact || {};
+    setIfProvided(businessInfo.contact, 'phone', formData['contact[phone]'] ?? formData.phone);
+    setIfProvided(businessInfo.contact, 'whatsapp', formData['contact[whatsapp]'] ?? formData.whatsapp);
+    setIfProvided(businessInfo.contact, 'email', formData['contact[email]'] ?? formData.email);
+
+    // Address
+    businessInfo.address = businessInfo.address || {};
+    setIfProvided(businessInfo.address, 'street', formData['address[street]'] ?? formData.street);
+    setIfProvided(businessInfo.address, 'area', formData['address[area]'] ?? formData.area);
+    setIfProvided(businessInfo.address, 'city', formData['address[city]'] ?? formData.city);
+    setIfProvided(businessInfo.address, 'state', formData['address[state]'] ?? formData.state);
+    setIfProvided(businessInfo.address, 'pincode', formData['address[pincode]'] ?? formData.pincode);
+    setIfProvided(businessInfo.address, 'country', formData['address[country]'] ?? formData.country);
+
+    // Google Maps URL
+    setIfProvided(businessInfo, 'googleMapsUrl', formData.googleMapsUrl);
+
+    // Social media
+    businessInfo.socialMedia = businessInfo.socialMedia || {};
+    setIfProvided(businessInfo.socialMedia, 'facebook', formData['socialMedia[facebook]']);
+    setIfProvided(businessInfo.socialMedia, 'instagram', formData['socialMedia[instagram]']);
+    setIfProvided(businessInfo.socialMedia, 'twitter', formData['socialMedia[twitter]']);
+    setIfProvided(businessInfo.socialMedia, 'youtube', formData['socialMedia[youtube]']);
+    setIfProvided(businessInfo.socialMedia, 'linkedin', formData['socialMedia[linkedin]']);
+
+    // Business hours from hours[day][open/close]
+    const days = ['monday','tuesday','wednesday','thursday','friday','saturday','sunday'];
+    const hasAnyHourField = Object.keys(formData).some(k => k.startsWith('hours['));
+    if (hasAnyHourField) {
+      businessInfo.businessHours = businessInfo.businessHours || {};
       days.forEach(day => {
-        const openTime = formData[`hours[${day}][open]`] || '10:00';
-        const closeTime = formData[`hours[${day}][close]`] || '20:00';
-        const isClosed = !openTime || !closeTime || (day === 'sunday'); // Default Sunday closed
-        
-        updateData.businessHours[day] = {
-          open: openTime,
-          close: closeTime,
-          closed: isClosed
+        const openKey = `hours[${day}][open]`;
+        const closeKey = `hours[${day}][close]`;
+        const open = formData[openKey];
+        const close = formData[closeKey];
+        const closed = !open || !close || day === 'sunday';
+        businessInfo.businessHours[day] = {
+          open: open || businessInfo.businessHours[day]?.open || '10:00',
+          close: close || businessInfo.businessHours[day]?.close || '20:00',
+          closed
         };
       });
     }
 
-    // Handle heritage information
-    if (formData.foundedYear || formData.story || formData.specialties) {
-      updateData.heritage = {
-        foundedYear: formData.foundedYear ? parseInt(formData.foundedYear) : 1985,
-        story: formData.story || 'Founded by Master Gem Dealer Rajesh Kumar, Kohinoor Gemstone Palace has been serving astrology enthusiasts and jewelry lovers for over three decades.',
-        specialties: formData.specialties ? 
-          formData.specialties.split(',').map(s => s.trim()).filter(s => s) : 
-          ['Astrological Gemstones', 'Certified Precious Stones', 'Custom Jewelry', 'Gem Consultation']
-      };
+    // Heritage info
+    const foundedYear = formData.foundedYear ? parseInt(formData.foundedYear) : undefined;
+    const story = formData.story;
+    const specialtiesStr = formData.specialties; // comma-separated
+    if (foundedYear || story || specialtiesStr) {
+      businessInfo.heritage = businessInfo.heritage || {};
+      if (!Number.isNaN(foundedYear)) {
+        setIfProvided(businessInfo.heritage, 'foundedYear', foundedYear);
+      }
+      setIfProvided(businessInfo.heritage, 'story', story);
+      if (specialtiesStr !== undefined) {
+        const arr = String(specialtiesStr)
+          .split(',')
+          .map(s => s.trim())
+          .filter(Boolean);
+        businessInfo.heritage.specialties = arr;
+      }
     }
 
-    console.log('💾 Saving update data:', {
-      shopName: updateData.shopName,
-      tagline: updateData.tagline,
-      'contact.email': updateData.contact.email,
-      'contact.phone': updateData.contact.phone,
-      'address.street': updateData.address.street,
-      'address.city': updateData.address.city,
-      updatedAt: updateData.updatedAt
-    });
-    
-    // Clean up any empty string values that might cause validation issues
-    const cleanValue = (obj) => {
-      if (typeof obj === 'string') {
-        return obj.trim() || undefined;
-      }
-      if (typeof obj === 'object' && obj !== null) {
-        const cleaned = {};
-        for (const [key, value] of Object.entries(obj)) {
-          const cleanedValue = cleanValue(value);
-          if (cleanedValue !== undefined) {
-            cleaned[key] = cleanedValue;
-          }
-        }
-        return Object.keys(cleaned).length > 0 ? cleaned : undefined;
-      }
-      return obj;
-    };
+    // Set lastUpdatedBy if session user exists
+    if (req.session?.user?.id) {
+      businessInfo.lastUpdatedBy = req.session.user.id;
+    }
 
-    // Apply cleaning but ensure required fields always have values
-    const finalUpdateData = {
-      ...updateData,
-      contact: {
-        email: updateData.contact.email || 'info@kohinoorgemstone.com',
-        phone: updateData.contact.phone || '+911234567890',
-        whatsapp: updateData.contact.whatsapp || '+911234567890'
-      },
-      address: {
-        street: updateData.address.street || '123 Gemstone Street',
-        area: updateData.address.area || 'Jewelry District',
-        city: updateData.address.city || 'Mumbai',
-        state: updateData.address.state || 'Maharashtra',
-        pincode: updateData.address.pincode || '400001',
-        country: updateData.address.country || 'India'
-      }
-    };
-    
-    // Use findOneAndUpdate with explicit options to ensure fresh data
-    const businessInfo = await BusinessInfo.findOneAndUpdate(
-      {},
-      finalUpdateData,
-      { 
-        new: true,          // Return updated document
-        upsert: true,       // Create if doesn't exist
-        runValidators: true, // Run schema validation
-        setDefaultsOnInsert: true
-      }
-    );
+    await businessInfo.save(); // triggers pre('save') to recompute fullAddress and updates timestamps
 
     console.log('✅ Update completed, rendering with fresh data:', {
       shopName: businessInfo?.shopName,
@@ -961,20 +930,19 @@ export const handleUpdateBusinessInfo = async (req, res) => {
       'contact.email': businessInfo?.contact?.email,
       updatedAt: businessInfo?.updatedAt
     });
-    
-    // Render the page with the updated data
+
+    // Render with the updated document
     res.render('admin/business-info', {
       title: 'Business Information - Kohinoor Gemstone',
       user: req.session.user,
-      businessInfo,
+      businessInfo: businessInfo.toObject(),
       error: null,
       success: 'Business information updated successfully!'
     });
   } catch (error) {
     console.error('❌ Update business info error:', error);
     console.error('❌ Error details:', error.message);
-    
-    // Fetch fresh data for error case too
+
     try {
       const businessInfo = await BusinessInfo.findOne().lean();
       res.render('admin/business-info', {

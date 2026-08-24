@@ -95,11 +95,18 @@ export const BusinessProvider = ({ children, onBusinessUpdate }) => {
       setLastUpdated(serverUpdatedAt);
       
       // Merge the responses - correctly access nested businessInfo
+      const backendBusiness = businessResponse.data.businessInfo || {};
+      const completeContact = contactResponse.data?.contact || {};
       const mergedBusinessInfo = {
-        ...businessResponse.data.businessInfo,
-        contact: contactResponse.data.contact || {},
-        address: contactResponse.data.address || {},
-        googleMapsUrl: contactResponse.data.googleMapsUrl || ''
+        ...backendBusiness,
+        contact: {
+          ...backendBusiness.contact,
+          whatsapp: completeContact.whatsapp ?? backendBusiness.contact?.whatsapp,
+          phone: completeContact.phone ?? backendBusiness.contact?.phone,
+          email: completeContact.email ?? backendBusiness.contact?.email
+        },
+        address: completeContact.address || backendBusiness.address || {},
+        googleMapsUrl: completeContact.googleMapsUrl ?? backendBusiness.googleMapsUrl || ''
       };
       
       setBusinessInfo(mergedBusinessInfo);
