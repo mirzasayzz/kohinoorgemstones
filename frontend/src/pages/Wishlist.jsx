@@ -15,14 +15,14 @@ import {
   SortDesc
 } from 'lucide-react';
 import { useWishlist } from '../context/WishlistContext';
-import { useBusiness } from '../context/BusinessContext';
+import { useBusinessContext } from '../context/BusinessContext';
 import GemstoneCard from '../components/gemstone/GemstoneCard';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import SEOHead from '../components/common/SEOHead';
 
 const Wishlist = () => {
   const { wishlistItems, isLoading, clearWishlist, removeFromWishlist } = useWishlist();
-  const { generateWhatsAppURL } = useBusiness();
+  const { generateWhatsAppURL } = useBusinessContext();
   const [sortBy, setSortBy] = useState('newest');
   const [filterBy, setFilterBy] = useState('all');
   const [showClearConfirm, setShowClearConfirm] = useState(false);

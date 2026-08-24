@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { MessageCircle, Phone } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { useBusiness } from '../../context/BusinessContext';
+import { useBusinessContext } from '../../context/BusinessContext';
 
 const WhatsAppButton = ({ 
   gemstone = null, 
@@ -11,7 +11,7 @@ const WhatsAppButton = ({
   customMessage = null
 }) => {
   const [isHovered, setIsHovered] = useState(false);
-  const { generateWhatsAppURL, businessInfo } = useBusiness();
+  const { generateWhatsAppURL, businessInfo } = useBusinessContext();
 
   const handleWhatsAppClick = () => {
     const whatsappData = generateWhatsAppURL(gemstone, customMessage);
@@ -154,7 +154,7 @@ export const FloatingWhatsAppButton = ({
   className = "" 
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
-  const { generateWhatsAppURL } = useBusiness();
+  const { generateWhatsAppURL } = useBusinessContext();
 
   const handleClick = () => {
     if (!isExpanded) {

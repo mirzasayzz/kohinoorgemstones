@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Send, User, Phone, MessageSquare, AlertCircle } from 'lucide-react';
-import { useBusiness } from '../../context/BusinessContext';
+import { useBusinessContext } from '../../context/BusinessContext';
 
 const ContactForm = ({ className = "" }) => {
-  const { generateWhatsAppURL } = useBusiness();
+  const { generateWhatsAppURL } = useBusinessContext();
 
   // Form data - simplified (WhatsApp first)
   const [formData, setFormData] = useState({

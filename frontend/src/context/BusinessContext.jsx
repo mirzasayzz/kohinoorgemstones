@@ -1,34 +1,22 @@
-import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { businessService } from '../services/api';
 import { SITE_CONFIG } from '../config/config';
 
 const BusinessContext = createContext();
 
-export const useBusiness = () => {
+export const useBusinessContext = () => {
   const context = useContext(BusinessContext);
   if (!context) {
-    throw new Error('useBusiness must be used within a BusinessProvider');
+    throw new Error('useBusinessContext must be used within a BusinessProvider');
   }
   return context;
 };
 
-export const BusinessProvider = ({ children, onBusinessUpdate }) => {
+export const BusinessProvider = ({ children }) => {
   const [businessInfo, setBusinessInfo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [darkMode, setDarkMode] = useState(false);
-  const [lastUpdated, setLastUpdated] = useState(null);
-  
-  // Refs for managing intervals and preventing memory leaks
-  const refreshIntervalRef = useRef(null);
-  const lastUpdatedAtRef = useRef(null);
-  const isLoadingRef = useRef(false);
-  const hasInitiallyLoadedRef = useRef(false);
-  const onBusinessUpdateRef = useRef(onBusinessUpdate);
-
-  useEffect(() => {
-    onBusinessUpdateRef.current = onBusinessUpdate;
-  }, [onBusinessUpdate]);
 
   // Initialize dark mode from localStorage or system preference
   useEffect(() => {
@@ -56,90 +44,40 @@ export const BusinessProvider = ({ children, onBusinessUpdate }) => {
     setDarkMode(prev => !prev);
   };
 
-  // Smart cache check - only fetch if data has changed
-  const checkForUpdates = useCallback(async () => {
-    if (isLoadingRef.current) return false;
+  // Load business info from API - simplified, only called on mount or manual refresh
+  const loadBusinessInfo = useCallback(async (forceRefresh = false) => {
     try {
-      const response = await businessService.getBusinessInfo();
-      const serverUpdatedAt = response?.data?.businessInfo?.updatedAt;
-      if (!serverUpdatedAt) return false;
-      if (!lastUpdatedAtRef.current || new Date(serverUpdatedAt) > new Date(lastUpdatedAtRef.current)) {
-        if (import.meta.env.DEV) console.log('🔄 Business data updated, refreshing...');
-        return true;
-      }
-      return false;
-    } catch (err) {
-      if (import.meta.env.DEV) console.error('Failed to check for updates:', err);
-      return false;
-    }
-  }, []);
-
-  const loadBusinessInfo = useCallback(async (forceRefresh = false, showNotification = false) => {
-    if (isLoadingRef.current && !forceRefresh) return;
-    try {
-      isLoadingRef.current = true;
-      if (forceRefresh || !businessInfo) {
+      if (forceRefresh || loading) {
         setLoading(true);
       }
-      setError(null);
-      const [businessResponse, contactResponse] = await Promise.all([
-        businessService.getBusinessInfo(),
-        businessService.getCompleteContactInfo()
-      ]);
-      const serverUpdatedAt = businessResponse?.data?.businessInfo?.updatedAt;
-      const wasUpdated = serverUpdatedAt && lastUpdatedAtRef.current && new Date(serverUpdatedAt) > new Date(lastUpdatedAtRef.current);
-      if (serverUpdatedAt) {
-        lastUpdatedAtRef.current = serverUpdatedAt;
-        setLastUpdated(serverUpdatedAt);
+      
+      const response = await businessService.getBusinessInfo();
+      
+      if (response?.data) {
+        setBusinessInfo(response.data);
+        setError(null);
+      } else {
+        console.warn('No business data received from API');
+        setBusinessInfo(null);
       }
-      const backendBusiness = businessResponse?.data?.businessInfo || {};
-      const completeContact = contactResponse?.data?.contact || {};
-      const mergedBusinessInfo = {
-        ...backendBusiness,
-        contact: {
-          ...backendBusiness.contact,
-          whatsapp: completeContact.whatsapp ?? backendBusiness.contact?.whatsapp,
-          phone: completeContact.phone ?? backendBusiness.contact?.phone,
-          email: completeContact.email ?? backendBusiness.contact?.email
-        },
-        address: completeContact.address || backendBusiness.address || {},
-        googleMapsUrl: completeContact.googleMapsUrl ?? backendBusiness.googleMapsUrl
-      };
-      setBusinessInfo(mergedBusinessInfo);
-      if (import.meta.env.DEV) console.log('✅ Business info loaded successfully');
-      if (hasInitiallyLoadedRef.current && wasUpdated && showNotification && onBusinessUpdateRef.current) {
-        onBusinessUpdateRef.current(mergedBusinessInfo, {
-          type: 'auto-update',
-          message: 'Business information updated automatically! 🔄'
-        });
-      }
-      hasInitiallyLoadedRef.current = true;
     } catch (err) {
-      if (import.meta.env.DEV) console.error('Failed to load business info:', err);
+      console.error('Failed to load business info:', err);
       setError(err.message || 'Failed to load business information');
       setBusinessInfo(null);
     } finally {
       setLoading(false);
-      isLoadingRef.current = false;
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [loading]);
 
-  const smartRefresh = useCallback(async () => {
-    const hasUpdates = await checkForUpdates();
-    if (hasUpdates) {
-      await loadBusinessInfo(false, true);
-    }
-  }, [checkForUpdates, loadBusinessInfo]);
-
-  // Setup initial load only (no periodic or visibility/focus refresh)
-  useEffect(() => {
-    loadBusinessInfo(true, false);
-    // No timers or listeners to reduce resource usage
-    return () => {
-      if (refreshIntervalRef.current) clearInterval(refreshIntervalRef.current);
-    };
+  // Force refresh function for manual updates
+  const forceRefresh = useCallback(() => {
+    loadBusinessInfo(true);
   }, [loadBusinessInfo]);
+
+  // Load business info once on component mount only
+  useEffect(() => {
+    loadBusinessInfo();
+  }, []); // Empty dependency array - only runs once on mount
 
   const generateWhatsAppURL = (gemstone = null, customMessage = null) => {
     const whatsappNumber = businessInfo?.contact?.whatsapp?.replace(/[^\d]/g, '') || '911234567890';
@@ -297,8 +235,7 @@ Thanks!`;
     updateAllContactInfo,
     generateWhatsAppURL,
     shareGemstoneWithImage,
-    lastUpdated,
-    forceRefresh: () => loadBusinessInfo(true, false)
+    forceRefresh
   };
 
   return (

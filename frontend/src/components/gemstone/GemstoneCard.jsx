@@ -15,13 +15,13 @@ import {
   Zap,
   Info
 } from 'lucide-react';
-import { useBusiness } from '../../context/BusinessContext';
+import { useBusinessContext } from '../../context/BusinessContext';
 import { useWishlist } from '../../context/WishlistContext';
 import { GemstoneImage } from '../common/LazyImage';
 import { useToast } from '../common/Toast';
 
 const GemstoneCard = ({ gemstone, index = 0, variant = 'grid' }) => {
-  const { generateWhatsAppURL, shareGemstoneWithImage } = useBusiness();
+  const { generateWhatsAppURL, shareGemstoneWithImage } = useBusinessContext();
   const { toggleWishlist, isInWishlist } = useWishlist();
   const { showWishlistAdd, showWishlistRemove } = useToast();
   const [isHovered, setIsHovered] = useState(false);

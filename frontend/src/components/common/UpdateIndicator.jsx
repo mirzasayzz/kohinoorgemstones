@@ -1,11 +1,10 @@
 import { useState, useEffect } from 'react';
 import { RefreshCw, Wifi, WifiOff } from 'lucide-react';
-import { useBusiness } from '../../context/BusinessContext';
+import { useBusinessContext } from '../../context/BusinessContext';
 
 const UpdateIndicator = ({ showLastUpdate = true, className = "" }) => {
-  const { businessInfo, lastUpdated, loading, error, forceRefresh } = useBusiness();
+  const { businessInfo, loading, error, forceRefresh } = useBusinessContext();
   const [isOnline, setIsOnline] = useState(navigator.onLine);
-  const [timeAgo, setTimeAgo] = useState('');
 
   // Monitor online status
   useEffect(() => {
@@ -20,35 +19,6 @@ const UpdateIndicator = ({ showLastUpdate = true, className = "" }) => {
       window.removeEventListener('offline', handleOffline);
     };
   }, []);
-
-  // Update time ago display
-  useEffect(() => {
-    if (!lastUpdated) return;
-
-    const updateTimeAgo = () => {
-      const now = new Date();
-      const updated = new Date(lastUpdated);
-      const diffMs = now - updated;
-      const diffMins = Math.floor(diffMs / 60000);
-      const diffHours = Math.floor(diffMs / 3600000);
-      const diffDays = Math.floor(diffMs / 86400000);
-
-      if (diffMins < 1) {
-        setTimeAgo('just now');
-      } else if (diffMins < 60) {
-        setTimeAgo(`${diffMins}m ago`);
-      } else if (diffHours < 24) {
-        setTimeAgo(`${diffHours}h ago`);
-      } else {
-        setTimeAgo(`${diffDays}d ago`);
-      }
-    };
-
-    updateTimeAgo();
-    const interval = setInterval(updateTimeAgo, 30000); // Update every 30s
-
-    return () => clearInterval(interval);
-  }, [lastUpdated]);
 
   const handleManualRefresh = async () => {
     if (!loading) {
@@ -94,10 +64,6 @@ const UpdateIndicator = ({ showLastUpdate = true, className = "" }) => {
         ) : loading ? (
           <span className="text-blue-500">
             Updating...
-          </span>
-        ) : timeAgo ? (
-          <span title={`Last updated: ${new Date(lastUpdated).toLocaleString()}`}>
-            Updated {timeAgo}
           </span>
         ) : (
           <span>Ready</span>

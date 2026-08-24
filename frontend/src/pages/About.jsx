@@ -9,11 +9,11 @@ import {
   MessageCircle,
   Phone
 } from 'lucide-react';
-import { useBusiness } from '../context/BusinessContext';
+import { useBusinessContext } from '../context/BusinessContext';
 import SEOHead, { seoConfigs } from '../components/common/SEOHead';
 
 const About = () => {
-  const { businessInfo, generateWhatsAppURL } = useBusiness();
+  const { businessInfo, generateWhatsAppURL } = useBusinessContext();
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">

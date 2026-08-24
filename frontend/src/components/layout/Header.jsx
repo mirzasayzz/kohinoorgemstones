@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import { Menu, X, Moon, Sun, Home, Heart } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
-import { useBusiness } from '../../context/BusinessContext';
+import { useBusinessContext } from '../../context/BusinessContext';
 import { useWishlist } from '../../context/WishlistContext';
 
 const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
-  const { businessInfo, darkMode, toggleDarkMode } = useBusiness();
+  const { businessInfo, darkMode, toggleDarkMode } = useBusinessContext();
   const { getWishlistCount } = useWishlist();
 
   const navigation = [

@@ -8,11 +8,11 @@ import {
   MessageCircle,
   Clock
 } from 'lucide-react';
-import { useBusiness } from '../../context/BusinessContext';
+import { useBusinessContext } from '../../context/BusinessContext';
 import UpdateIndicator from '../common/UpdateIndicator';
 
 const Footer = () => {
-  const { businessInfo, generateWhatsAppURL } = useBusiness();
+  const { businessInfo, generateWhatsAppURL } = useBusinessContext();
   const [currentYear] = useState(new Date().getFullYear());
 
   // Format business hours for display

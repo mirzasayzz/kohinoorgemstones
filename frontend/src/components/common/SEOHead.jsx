@@ -1,6 +1,6 @@
 import { Helmet } from '@dr.pogodin/react-helmet';
 import { useLocation } from 'react-router-dom';
-import { useBusiness } from '../../context/BusinessContext';
+import { useBusinessContext } from '../../context/BusinessContext';
 
 const SEOHead = ({
   title = "",
@@ -11,7 +11,7 @@ const SEOHead = ({
   gemstone = null,
   customSchema = null
 }) => {
-  const { businessInfo } = useBusiness();
+  const { businessInfo } = useBusinessContext();
   const location = useLocation();
 
   // Base URL for the site

@@ -13,12 +13,12 @@ import {
 } from 'lucide-react';
 import GemstoneCard from '../components/gemstone/GemstoneCard';
 import { gemstoneService } from '../services/api';
-import { useBusiness } from '../context/BusinessContext';
+import { useBusinessContext } from '../context/BusinessContext';
 import SEOHead, { seoConfigs } from '../components/common/SEOHead';
 import LoadingSpinner, { GemstoneCardSkeleton } from '../components/common/LoadingSpinner';
 
 const Home = () => {
-  const { businessInfo } = useBusiness();
+  const { businessInfo } = useBusinessContext();
   const [trendingGemstones, setTrendingGemstones] = useState([]);
   const [newArrivals, setNewArrivals] = useState([]);
   const [loading, setLoading] = useState(true);

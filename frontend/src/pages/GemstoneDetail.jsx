@@ -22,12 +22,12 @@ import WhatsAppButton from '../components/common/WhatsAppButton';
 import GemstoneCard from '../components/gemstone/GemstoneCard';
 import SEOHead from '../components/common/SEOHead';
 import { gemstoneService } from '../services/api';
-import { useBusiness } from '../context/BusinessContext';
+import { useBusinessContext } from '../context/BusinessContext';
 
 const GemstoneDetail = () => {
   const { slug } = useParams();
   const navigate = useNavigate();
-  const { businessInfo } = useBusiness();
+  const { businessInfo } = useBusinessContext();
   
   const [gemstone, setGemstone] = useState(null);
   const [relatedGemstones, setRelatedGemstones] = useState([]);
