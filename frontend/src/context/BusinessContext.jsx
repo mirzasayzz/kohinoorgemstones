@@ -106,7 +106,7 @@ export const BusinessProvider = ({ children, onBusinessUpdate }) => {
           email: completeContact.email ?? backendBusiness.contact?.email
         },
         address: completeContact.address || backendBusiness.address || {},
-        googleMapsUrl: completeContact.googleMapsUrl ?? backendBusiness.googleMapsUrl || ''
+        googleMapsUrl: completeContact.googleMapsUrl ?? backendBusiness.googleMapsUrl
       };
       
       setBusinessInfo(mergedBusinessInfo);

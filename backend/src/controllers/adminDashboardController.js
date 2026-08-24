@@ -831,9 +831,9 @@ export const handleUpdateBusinessInfo = async (req, res) => {
     console.log('🔄 Received form data for update:', {
       shopName: formData.shopName,
       tagline: formData.tagline,
-      email: formData['contact[email]'],
-      phone: formData['contact[phone]'],
-      street: formData['address[street]'],
+      email: formData['contact[email]'] || formData.contact?.email,
+      phone: formData['contact[phone]'] || formData.contact?.phone,
+      street: formData['address[street]'] || formData.address?.street,
       timestamp: new Date().toISOString()
     });
 
@@ -850,6 +850,11 @@ export const handleUpdateBusinessInfo = async (req, res) => {
       }
     };
 
+    // Prefer nested objects when present
+    const nestedContact = formData.contact || {};
+    const nestedAddress = formData.address || {};
+    const nestedHours = formData.hours || null;
+
     // Basic info
     setIfProvided(businessInfo, 'shopName', formData.shopName);
     setIfProvided(businessInfo, 'tagline', formData.tagline);
@@ -858,46 +863,92 @@ export const handleUpdateBusinessInfo = async (req, res) => {
 
     // Contact
     businessInfo.contact = businessInfo.contact || {};
-    setIfProvided(businessInfo.contact, 'phone', formData['contact[phone]'] ?? formData.phone);
-    setIfProvided(businessInfo.contact, 'whatsapp', formData['contact[whatsapp]'] ?? formData.whatsapp);
-    setIfProvided(businessInfo.contact, 'email', formData['contact[email]'] ?? formData.email);
+    setIfProvided(
+      businessInfo.contact,
+      'phone',
+      nestedContact.phone ?? formData['contact[phone]'] ?? formData.phone
+    );
+    setIfProvided(
+      businessInfo.contact,
+      'whatsapp',
+      nestedContact.whatsapp ?? formData['contact[whatsapp]'] ?? formData.whatsapp
+    );
+    setIfProvided(
+      businessInfo.contact,
+      'email',
+      nestedContact.email ?? formData['contact[email]'] ?? formData.email
+    );
 
     // Address
     businessInfo.address = businessInfo.address || {};
-    setIfProvided(businessInfo.address, 'street', formData['address[street]'] ?? formData.street);
-    setIfProvided(businessInfo.address, 'area', formData['address[area]'] ?? formData.area);
-    setIfProvided(businessInfo.address, 'city', formData['address[city]'] ?? formData.city);
-    setIfProvided(businessInfo.address, 'state', formData['address[state]'] ?? formData.state);
-    setIfProvided(businessInfo.address, 'pincode', formData['address[pincode]'] ?? formData.pincode);
-    setIfProvided(businessInfo.address, 'country', formData['address[country]'] ?? formData.country);
+    setIfProvided(
+      businessInfo.address,
+      'street',
+      nestedAddress.street ?? formData['address[street]'] ?? formData.street
+    );
+    setIfProvided(
+      businessInfo.address,
+      'area',
+      nestedAddress.area ?? formData['address[area]'] ?? formData.area
+    );
+    setIfProvided(
+      businessInfo.address,
+      'city',
+      nestedAddress.city ?? formData['address[city]'] ?? formData.city
+    );
+    setIfProvided(
+      businessInfo.address,
+      'state',
+      nestedAddress.state ?? formData['address[state]'] ?? formData.state
+    );
+    setIfProvided(
+      businessInfo.address,
+      'pincode',
+      nestedAddress.pincode ?? formData['address[pincode]'] ?? formData.pincode
+    );
+    setIfProvided(
+      businessInfo.address,
+      'country',
+      nestedAddress.country ?? formData['address[country]'] ?? formData.country
+    );
 
     // Google Maps URL
     setIfProvided(businessInfo, 'googleMapsUrl', formData.googleMapsUrl);
 
     // Social media
     businessInfo.socialMedia = businessInfo.socialMedia || {};
-    setIfProvided(businessInfo.socialMedia, 'facebook', formData['socialMedia[facebook]']);
-    setIfProvided(businessInfo.socialMedia, 'instagram', formData['socialMedia[instagram]']);
-    setIfProvided(businessInfo.socialMedia, 'twitter', formData['socialMedia[twitter]']);
-    setIfProvided(businessInfo.socialMedia, 'youtube', formData['socialMedia[youtube]']);
-    setIfProvided(businessInfo.socialMedia, 'linkedin', formData['socialMedia[linkedin]']);
+    setIfProvided(businessInfo.socialMedia, 'facebook', formData['socialMedia[facebook]'] ?? formData.facebook);
+    setIfProvided(businessInfo.socialMedia, 'instagram', formData['socialMedia[instagram]'] ?? formData.instagram);
+    setIfProvided(businessInfo.socialMedia, 'twitter', formData['socialMedia[twitter]'] ?? formData.twitter);
+    setIfProvided(businessInfo.socialMedia, 'youtube', formData['socialMedia[youtube]'] ?? formData.youtube);
+    setIfProvided(businessInfo.socialMedia, 'linkedin', formData['socialMedia[linkedin]'] ?? formData.linkedin);
 
-    // Business hours from hours[day][open/close]
+    // Business hours from either nested hours object or bracketed inputs
     const days = ['monday','tuesday','wednesday','thursday','friday','saturday','sunday'];
-    const hasAnyHourField = Object.keys(formData).some(k => k.startsWith('hours['));
-    if (hasAnyHourField) {
+    const hasNestedHours = nestedHours && typeof nestedHours === 'object';
+    const hasBracketHours = Object.keys(formData).some(k => k.startsWith('hours['));
+    if (hasNestedHours || hasBracketHours) {
       businessInfo.businessHours = businessInfo.businessHours || {};
+
       days.forEach(day => {
-        const openKey = `hours[${day}][open]`;
-        const closeKey = `hours[${day}][close]`;
-        const open = formData[openKey];
-        const close = formData[closeKey];
-        const closed = !open || !close || day === 'sunday';
-        businessInfo.businessHours[day] = {
-          open: open || businessInfo.businessHours[day]?.open || '10:00',
-          close: close || businessInfo.businessHours[day]?.close || '20:00',
-          closed
-        };
+        let open;
+        let close;
+        if (hasNestedHours) {
+          open = nestedHours?.[day]?.open;
+          close = nestedHours?.[day]?.close;
+        } else {
+          open = formData[`hours[${day}][open]`];
+          close = formData[`hours[${day}][close]`];
+        }
+
+        const isClosed = !(open && close);
+        if (open || close || businessInfo.businessHours[day]) {
+          businessInfo.businessHours[day] = {
+            open: open || businessInfo.businessHours[day]?.open || undefined,
+            close: close || businessInfo.businessHours[day]?.close || undefined,
+            closed: isClosed
+          };
+        }
       });
     }
 
@@ -934,6 +985,19 @@ export const handleUpdateBusinessInfo = async (req, res) => {
       updatedAt: businessInfo?.updatedAt
     });
 
+    // If API/AJAX request, respond with JSON
+    const wantsJson = req.originalUrl.startsWith('/admin/api') ||
+      (req.headers['content-type'] && req.headers['content-type'].includes('application/json')) ||
+      (req.headers.accept && req.headers.accept.includes('application/json'));
+
+    if (wantsJson) {
+      return res.status(200).json({
+        success: true,
+        message: 'Business information updated successfully',
+        data: { businessInfo: businessInfo.toObject() }
+      });
+    }
+
     // Render with the updated document
     res.render('admin/business-info', {
       title: 'Business Information - Kohinoor Gemstone',
@@ -945,6 +1009,14 @@ export const handleUpdateBusinessInfo = async (req, res) => {
   } catch (error) {
     console.error('❌ Update business info error:', error);
     console.error('❌ Error details:', error.message);
+
+    const wantsJson = req.originalUrl.startsWith('/admin/api') ||
+      (req.headers['content-type'] && req.headers['content-type'].includes('application/json')) ||
+      (req.headers.accept && req.headers.accept.includes('application/json'));
+
+    if (wantsJson) {
+      return res.status(400).json({ success: false, message: error.message });
+    }
 
     try {
       const businessInfo = await BusinessInfo.findOne().lean();

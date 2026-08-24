@@ -76,6 +76,9 @@ router.post('/admin/gemstones/toggle-trending/:id', requireAuth, handleToggleTre
 router.get('/admin/business', requireAuth, noCacheMiddleware, showBusinessInfo);
 router.post('/admin/business', requireAuth, noCacheMiddleware, handleUpdateBusinessInfo);
 
+// Unified Admin API for Business (session-based auth)
+router.put('/admin/api/business', requireAuth, handleUpdateBusinessInfo);
+
 // Bulk operations
 router.post('/admin/gemstones/bulk', requireAuth, handleBulkOperations);
 
