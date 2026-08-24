@@ -16,17 +16,17 @@ export const BusinessProvider = ({ children }) => {
   const [businessInfo, setBusinessInfo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [darkMode, setDarkMode] = useState(false);
+  const [darkMode, setDarkMode] = useState(true);
 
-  // Initialize dark mode from localStorage or system preference
+  // Initialize dark mode from localStorage or default to dark mode
   useEffect(() => {
     const savedDarkMode = localStorage.getItem('darkMode');
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
     
     if (savedDarkMode !== null) {
       setDarkMode(JSON.parse(savedDarkMode));
     } else {
-      setDarkMode(prefersDark);
+      // Default to dark mode for new users
+      setDarkMode(true);
     }
   }, []);
 

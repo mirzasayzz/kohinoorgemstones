@@ -2,6 +2,7 @@ import { Outlet } from 'react-router-dom';
 import Header from './Header';
 import Footer from './Footer';
 import { useToast } from '../common/Toast';
+import GemstoneAI from '../common/GemstoneAI';
 
 const Layout = () => {
   const { ToastContainer } = useToast();
@@ -16,6 +17,9 @@ const Layout = () => {
       </main>
       
       <Footer />
+      
+      {/* Floating AI Assistant */}
+      <GemstoneAI />
       
       {/* Toast Notifications */}
       <ToastContainer />

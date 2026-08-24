@@ -388,7 +388,7 @@ const GemstoneCard = ({ gemstone, index = 0, variant = 'grid' }) => {
 
           {/* Category/Color */}
           <div className="flex items-center justify-between mb-1.5 sm:mb-2">
-            <span className="bg-emerald/10 text-emerald-700 dark:text-emerald-400 px-2 py-0.5 rounded-full text-[11px] sm:text-xs font-medium">
+            <span className="bg-emerald/10 text-emerald-700 dark:text-emerald-400 px-2 py-0.5 rounded-full text-[11px] sm:text-xs font-medium max-w-full truncate">
               {gemstone?.category}
             </span>
             <span className="text-[11px] sm:text-xs text-gray-500 dark:text-gray-400">
@@ -411,6 +411,31 @@ const GemstoneCard = ({ gemstone, index = 0, variant = 'grid' }) => {
                 <span className="text-[11px] sm:text-xs text-gray-500 dark:text-gray-400">
                   +{gemstone.purpose.length - 2} more
                 </span>
+              )}
+            </div>
+          )}
+
+          {/* Price Range */}
+          {gemstone?.priceRange && (gemstone.priceRange.min || gemstone.priceRange.max) && (
+            <div className="mb-2.5">
+              <div className={`
+                font-bold text-emerald-600 dark:text-emerald-400 flex items-center space-x-1
+                ${variant === 'featured' ? 'text-base sm:text-lg' : 'text-sm md:text-base'}
+              `}>
+                <span className="text-emerald-500">₹</span>
+                <span>
+                  {gemstone.priceRange.min && gemstone.priceRange.max ? 
+                    `${gemstone.priceRange.min.toLocaleString('en-IN')} - ₹${gemstone.priceRange.max.toLocaleString('en-IN')}` :
+                    gemstone.priceRange.min ? 
+                      `${gemstone.priceRange.min.toLocaleString('en-IN')}+` :
+                      `Up to ₹${gemstone.priceRange.max.toLocaleString('en-IN')}`
+                  }
+                </span>
+              </div>
+              {gemstone.priceRange.currency && gemstone.priceRange.currency !== 'INR' && (
+                <div className="text-[11px] sm:text-xs text-gray-500 dark:text-gray-400">
+                  Currency: {gemstone.priceRange.currency}
+                </div>
               )}
             </div>
           )}

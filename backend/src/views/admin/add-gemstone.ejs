@@ -305,22 +305,9 @@
                                     <select id="category" name="category" required
                                             class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition duration-200">
                                         <option value="">Select Category</option>
-                                        <option value="Diamond">💎 Diamond</option>
-                                        <option value="Emerald">💚 Emerald (Zumurd)</option>
-                                        <option value="Ruby">❤️ Ruby (Yaqoot)</option>
-                                        <option value="Sapphire">💙 Sapphire (Neelam)</option>
-                                        <option value="Topaz">💛 Topaz (Pukhraj)</option>
-                                        <option value="Coral">🧡 Coral (Moonga)</option>
-                                        <option value="Pearl">⚪ Pearl (Moti)</option>
-                                        <option value="Turquoise">🔷 Turquoise (Feroza)</option>
-                                        <option value="Onyx">⚫ Onyx (Sulemani)</option>
-                                        <option value="Aqeeq">🔴 Aqeeq</option>
-                                        <option value="Moonstone">🌙 Moonstone (Chandrakanta)</option>
-                                        <option value="Zircon">✨ Zircon</option>
-                                        <option value="Opal">🌈 Opal</option>
-                                        <option value="Tourmaline">🟢 Tourmaline</option>
-                                        <option value="Garnet">🍎 Garnet</option>
-                                        <option value="Other">🔮 Other</option>
+                                        <% predefinedGemstones.forEach(cat => { %>
+                                            <option value="<%= cat.value %>"><%= cat.label %></option>
+                                        <% }); %>
                                     </select>
                                 </div>
                                 

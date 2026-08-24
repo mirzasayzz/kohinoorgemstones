@@ -255,6 +255,33 @@
     display: none;
   }
   
+  /* Mobile horizontal scroll improvements */
+  .mobile-scroll {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
+
+  @media (max-width: 768px) {
+    .mobile-scroll::-webkit-scrollbar {
+      height: 3px;
+      display: block;
+    }
+    
+    .mobile-scroll::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.1);
+      border-radius: 2px;
+    }
+    
+    .mobile-scroll::-webkit-scrollbar-thumb {
+      background: rgba(250, 204, 21, 0.6);
+      border-radius: 2px;
+    }
+    
+    .mobile-scroll::-webkit-scrollbar-thumb:hover {
+      background: rgba(250, 204, 21, 0.8);
+    }
+  }
+  
   /* Line Clamp Utilities */
   .line-clamp-1 {
     display: -webkit-box;

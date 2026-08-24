@@ -384,5 +384,21 @@ export const apiUtils = {
   }
 };
 
+// AI Services
+export const aiService = {
+  // Chat with AI for gemstone recommendations
+  async chatWithAI(message, context = 'gemstone_recommendation') {
+    return await api.post(API_CONFIG.ENDPOINTS.AI.GEMSTONE_CHAT, {
+      message,
+      context
+    });
+  },
+
+  // Get AI service status
+  async getStatus() {
+    return await api.get(API_CONFIG.ENDPOINTS.AI.STATUS);
+  }
+};
+
 // Export default api instance
 export default api; 

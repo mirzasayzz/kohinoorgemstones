@@ -274,7 +274,7 @@ const AllGemstones = () => {
             
             {/* Active Filters Display */}
             {getActiveFilterCount() > 0 && (
-              <div className="mb-5 sm:mb-6 flex flex-wrap gap-2">
+              <div className="mb-5 sm:mb-6 flex flex-wrap gap-2 overflow-x-auto pb-2 mobile-scroll">
                 {filters.category.map(filter => (
                   <span key={`cat-${filter}`} className="inline-flex items-center px-3 py-1 bg-emerald/10 text-emerald-700 dark:text-emerald-400 rounded-full text-xs">
                     {filter}

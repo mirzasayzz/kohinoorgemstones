@@ -15,6 +15,10 @@ import {
   handleUpdateBusinessInfo,
   handleBulkOperations,
   getDashboardAnalytics,
+  showCategories,
+  addCategory,
+  deleteCategory,
+  toggleCategoryStatus,
   requireAuth
 } from '../controllers/adminDashboardController.js';
 import multer from 'multer';
@@ -84,5 +88,11 @@ router.post('/admin/gemstones/bulk', requireAuth, handleBulkOperations);
 
 // Analytics
 router.get('/admin/api/analytics', requireAuth, getDashboardAnalytics);
+
+// Category Management Routes
+router.get('/admin/categories', requireAuth, noCacheMiddleware, showCategories);
+router.post('/admin/categories/add', requireAuth, addCategory);
+router.delete('/admin/categories/delete/:id', requireAuth, deleteCategory);
+router.put('/admin/categories/toggle/:id', requireAuth, toggleCategoryStatus);
 
 export default router; 

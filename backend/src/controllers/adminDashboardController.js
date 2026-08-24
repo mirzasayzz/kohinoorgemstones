@@ -1,6 +1,7 @@
 import User from '../models/User.js';
 import Gemstone from '../models/Gemstone.js';
 import BusinessInfo from '../models/BusinessInfo.js';
+import Category from '../models/Category.js';
 import bcrypt from 'bcryptjs';
 import { v2 as cloudinary } from 'cloudinary';
 import fs from 'fs';
@@ -12,24 +13,15 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
-// Predefined gemstones
-const PREDEFINED_GEMSTONES = [
-  { name: 'Diamond', urdu: 'Heera', category: 'Diamond' },
-  { name: 'Emerald', urdu: 'Zamurrad', category: 'Emerald' },
-  { name: 'Ruby', urdu: 'Yaqoot', category: 'Ruby' },
-  { name: 'Sapphire', urdu: 'Neelam', category: 'Sapphire' },
-  { name: 'Topaz', urdu: 'Pukhraj', category: 'Topaz' },
-  { name: 'Coral', urdu: 'Marjan', category: 'Coral' },
-  { name: 'Pearl', urdu: 'Moti', category: 'Pearl' },
-  { name: 'Turquoise', urdu: 'Feroza', category: 'Turquoise' },
-  { name: 'Onyx', urdu: 'Sulemani Pathar', category: 'Onyx' },
-  { name: 'Aqeeq (Agate)', urdu: 'Aqeeq', category: 'Aqeeq' },
-  { name: 'Moonstone', urdu: 'Dur-e-Najaf', category: 'Moonstone' },
-  { name: 'Zircon', urdu: 'Zarqun', category: 'Zircon' },
-  { name: 'Opal', urdu: 'Opal', category: 'Opal' },
-  { name: 'Tourmaline', urdu: 'Turmari', category: 'Tourmaline' },
-  { name: 'Garnet', urdu: 'Yaman', category: 'Garnet' }
-];
+// Helper function to get categories from database
+const getCategories = async () => {
+  try {
+    return await Category.getActiveCategories();
+  } catch (error) {
+    console.error('Error fetching categories:', error);
+    return [];
+  }
+};
 
 // Utility function to get frontend URL based on environment
 const getFrontendUrl = () => {
@@ -265,14 +257,26 @@ export const showGemstones = async (req, res) => {
 };
 
 // Show add gemstone page
-export const showAddGemstone = (req, res) => {
-  res.render('admin/add-gemstone', {
-    title: 'Add Gemstone - Kohinoor Gemstone',
-    user: req.session.user,
-    predefinedGemstones: PREDEFINED_GEMSTONES,
-    error: null,
-    success: null
-  });
+export const showAddGemstone = async (req, res) => {
+  try {
+    const categories = await getCategories();
+    res.render('admin/add-gemstone', {
+      title: 'Add Gemstone - Kohinoor Gemstone',
+      user: req.session.user,
+      predefinedGemstones: categories,
+      error: null,
+      success: null
+    });
+  } catch (error) {
+    console.error('Error loading add gemstone page:', error);
+    res.render('admin/add-gemstone', {
+      title: 'Add Gemstone - Kohinoor Gemstone',
+      user: req.session.user,
+      predefinedGemstones: [],
+      error: 'Failed to load categories',
+      success: null
+    });
+  }
 };
 
 // Handle add gemstone form submission
@@ -318,10 +322,11 @@ export const handleAddGemstone = async (req, res) => {
     
     await gemstone.save();
     
+    const categories = await getCategories();
     res.render('admin/add-gemstone', {
       title: 'Add Gemstone - Kohinoor Gemstone',
       user: req.session.user,
-      predefinedGemstones: PREDEFINED_GEMSTONES,
+      predefinedGemstones: categories,
       error: null,
       success: 'Gemstone added successfully!'
     });
@@ -337,10 +342,11 @@ export const handleAddGemstone = async (req, res) => {
       });
     }
     
+    const categories = await getCategories();
     res.render('admin/add-gemstone', {
       title: 'Add Gemstone - Kohinoor Gemstone',
       user: req.session.user,
-      predefinedGemstones: PREDEFINED_GEMSTONES,
+      predefinedGemstones: categories,
       error: 'Failed to add gemstone: ' + error.message,
       success: null
     });
@@ -350,7 +356,11 @@ export const handleAddGemstone = async (req, res) => {
 // Show edit gemstone page
 export const showEditGemstone = async (req, res) => {
   try {
-    const gemstone = await Gemstone.findById(req.params.id);
+    const [gemstone, categories] = await Promise.all([
+      Gemstone.findById(req.params.id),
+      getCategories()
+    ]);
+    
     if (!gemstone) {
       return res.status(404).render('admin/error', {
         title: 'Error - Kohinoor Gemstone',
@@ -362,7 +372,7 @@ export const showEditGemstone = async (req, res) => {
       title: 'Edit Gemstone - Kohinoor Gemstone',
       user: req.session.user,
       gemstone,
-      predefinedGemstones: PREDEFINED_GEMSTONES,
+      predefinedGemstones: categories,
       error: null,
       success: null
     });
@@ -523,11 +533,12 @@ export const handleEditGemstone = async (req, res) => {
 
     console.log('Gemstone updated successfully:', gemstone._id);
 
+    const categories = await getCategories();
     res.render('admin/edit-gemstone', {
       title: 'Edit Gemstone - Kohinoor Gemstone',
       user: req.session.user,
       gemstone,
-      predefinedGemstones: PREDEFINED_GEMSTONES,
+      predefinedGemstones: categories,
       error: null,
       success: 'Gemstone updated successfully!'
     });
@@ -536,12 +547,15 @@ export const handleEditGemstone = async (req, res) => {
     console.error('Update gemstone error:', error);
     
     try {
-      const gemstone = await Gemstone.findById(req.params.id);
+      const [gemstone, categories] = await Promise.all([
+        Gemstone.findById(req.params.id),
+        getCategories()
+      ]);
       res.render('admin/edit-gemstone', {
         title: 'Edit Gemstone - Kohinoor Gemstone',
         user: req.session.user,
         gemstone,
-        predefinedGemstones: PREDEFINED_GEMSTONES,
+        predefinedGemstones: categories,
         error: 'Failed to update gemstone: ' + error.message,
         success: null
       });
@@ -1034,5 +1048,108 @@ export const handleUpdateBusinessInfo = async (req, res) => {
         error: 'Failed to update and load business information'
       });
     }
+  }
+};
+
+// ===== CATEGORY MANAGEMENT =====
+
+// Show categories page
+export const showCategories = async (req, res) => {
+  try {
+    const categories = await Category.find().populate('addedBy', 'name email').sort({ order: 1, name: 1 });
+    res.render('admin/categories', {
+      title: 'Manage Categories - Kohinoor Admin',
+      user: req.session.user,
+      categories,
+      success: req.query.success,
+      error: req.query.error,
+      currentPage: 'categories'
+    });
+  } catch (error) {
+    console.error('Error loading categories:', error);
+    res.render('admin/categories', {
+      title: 'Manage Categories - Kohinoor Admin',
+      user: req.session.user,
+      categories: [],
+      success: null,
+      error: 'Failed to load categories',
+      currentPage: 'categories'
+    });
+  }
+};
+
+// Add new category
+export const addCategory = async (req, res) => {
+  try {
+    const { name, urdu, description, order, emoji } = req.body;
+    
+    // Create value from name (for database storage)
+    const value = name.trim().replace(/\s+/g, ' ');
+    
+    // Create label with emoji if provided
+    const label = `${emoji || '💎'} ${name}${urdu ? ` (${urdu})` : ''}`;
+    
+    const category = new Category({
+      name: name.trim(),
+      urdu: urdu?.trim(),
+      value,
+      label,
+      description: description?.trim(),
+      order: parseInt(order) || 0,
+      addedBy: req.session.user.id
+    });
+    
+    await category.save();
+    res.redirect('/admin/categories?success=' + encodeURIComponent('Category added successfully!'));
+  } catch (error) {
+    console.error('Error adding category:', error);
+    const errorMessage = error.code === 11000 ? 'Category name already exists!' : 'Failed to add category: ' + error.message;
+    res.redirect('/admin/categories?error=' + encodeURIComponent(errorMessage));
+  }
+};
+
+// Delete category
+export const deleteCategory = async (req, res) => {
+  try {
+    const category = await Category.findById(req.params.id);
+    if (!category) {
+      return res.status(404).json({ error: 'Category not found' });
+    }
+    
+    // Check if any gemstones are using this category
+    const gemstonesUsingCategory = await Gemstone.countDocuments({ category: category.value });
+    if (gemstonesUsingCategory > 0) {
+      return res.status(400).json({ 
+        error: `Cannot delete category. ${gemstonesUsingCategory} gemstone(s) are using this category.` 
+      });
+    }
+    
+    await Category.findByIdAndDelete(req.params.id);
+    res.json({ success: true, message: 'Category deleted successfully!' });
+  } catch (error) {
+    console.error('Error deleting category:', error);
+    res.status(500).json({ error: 'Failed to delete category' });
+  }
+};
+
+// Toggle category status
+export const toggleCategoryStatus = async (req, res) => {
+  try {
+    const category = await Category.findById(req.params.id);
+    if (!category) {
+      return res.status(404).json({ error: 'Category not found' });
+    }
+    
+    category.isActive = !category.isActive;
+    await category.save();
+    
+    res.json({ 
+      success: true, 
+      message: `Category ${category.isActive ? 'activated' : 'deactivated'} successfully!`,
+      isActive: category.isActive
+    });
+  } catch (error) {
+    console.error('Error toggling category status:', error);
+    res.status(500).json({ error: 'Failed to update category status' });
   }
 }; 

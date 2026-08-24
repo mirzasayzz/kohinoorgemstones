@@ -96,7 +96,7 @@ const FilterPanel = ({
             className="overflow-hidden"
           >
             <div className="p-4 space-y-2 bg-gray-50 dark:bg-gray-700/50">
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-2 lg:grid-cols-3 gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-2">
                 {options.map((option) => {
                   const isSelected = filters[filterType]?.includes(option);
                   return (
@@ -116,7 +116,7 @@ const FilterPanel = ({
                         onChange={() => handleFilterChange(filterType, option)}
                         className="hidden"
                       />
-                      <span className="text-sm font-medium truncate">{option}</span>
+                      <span className="text-sm font-medium break-words">{option}</span>
                     </label>
                   );
                 })}

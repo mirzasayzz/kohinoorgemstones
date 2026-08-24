@@ -103,7 +103,8 @@ const Home = () => {
           </div>
           
           {/* Categories - compact pills */}
-          <div className="flex items-center justify-center space-x-2 overflow-x-auto scrollbar-hide">
+          <div className="flex items-center justify-start md:justify-center space-x-2 overflow-x-auto pb-2 px-4 md:px-0 -mx-4 md:mx-0 mobile-scroll">
+            <div className="flex items-center space-x-2 min-w-max pl-4 pr-4 md:pl-0 md:pr-0">
             {shopCategories.map((category) => (
               <Link
                 key={category.slug}
@@ -122,6 +123,7 @@ const Home = () => {
                 )}
               </Link>
             ))}
+            </div>
           </div>
         </div>
       </section>

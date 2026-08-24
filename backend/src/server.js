@@ -16,6 +16,7 @@ import gemstoneRoutes from './routes/gemstoneRoutes.js';
 import businessRoutes from './routes/businessRoutes.js';
 import uploadRoutes from './routes/uploadRoutes.js';
 import adminRoutes from './routes/adminDashboardRoutes.js';
+import gemstoneAIRoutes from './routes/gemstoneAIRoutes.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { setupDefaultAdmin, displayStartupInfo } from './utils/setupAdmin.js';
 
@@ -109,6 +110,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/gemstones', gemstoneRoutes);
 app.use('/api/business', businessRoutes);
 app.use('/api/upload', uploadRoutes);
+app.use('/api', gemstoneAIRoutes);
 
 // Health check route
 app.get('/api/health', (req, res) => {

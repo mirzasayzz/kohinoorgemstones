@@ -1,6 +1,6 @@
 // API Configuration
 export const API_CONFIG = {
-  BASE_URL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api',
+  BASE_URL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api',
   ENDPOINTS: {
     // Auth endpoints
     AUTH: {
@@ -49,6 +49,12 @@ export const API_CONFIG = {
       BASE64: '/upload/base64',
       DELETE: '/upload/image',
       TRANSFORMATIONS: '/upload/transformations'
+    },
+    
+    // AI endpoints
+    AI: {
+      GEMSTONE_CHAT: '/gemstone-ai',
+      STATUS: '/gemstone-ai/status'
     }
   }
 };

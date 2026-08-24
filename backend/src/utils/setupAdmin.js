@@ -1,5 +1,6 @@
 import User from '../models/User.js';
 import BusinessInfo from '../models/BusinessInfo.js';
+import Category from '../models/Category.js';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -48,6 +49,16 @@ export const setupDefaultAdmin = async () => {
     }
 
     // Removed auto-initialization of BusinessInfo to avoid defaults
+
+    // Seed default categories
+    try {
+      const adminUser = await User.findOne({ role: { $in: ['admin', 'super_admin'] } });
+      if (adminUser) {
+        await Category.seedDefaultCategories(adminUser._id);
+      }
+    } catch (categoryError) {
+      console.error('❌ Error seeding categories:', categoryError.message);
+    }
 
   } catch (error) {
     console.error('❌ Error setting up default admin:', error.message);
