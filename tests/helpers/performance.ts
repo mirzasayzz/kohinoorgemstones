@@ -21,7 +21,7 @@ export async function measurePagePerformance(page: Page): Promise<PerformanceMet
     const fcp = paint.find((entry) => entry.name === 'first-contentful-paint');
     const lcp = paint.find((entry) => entry.name === 'largest-contentful-paint');
 
-    const totalTransferSize = resources.reduce((acc, r) => acc + (r.transferSize || 0), 0);
+    const totalTransferSize = resources.reduce((acc, r) => acc + ((r as PerformanceResourceTiming).transferSize || 0), 0);
 
     return {
       loadTime: navigation.loadEventEnd - navigation.startTime,
@@ -71,7 +71,7 @@ export async function checkCoreWebVitals(page: Page) {
   return { lcp, cls };
 }
 
-export async function checkResourceLoad Times(page: Page) {
+export async function checkResourceLoadTimes(page: Page) {
   return await page.evaluate(() => {
     const resources = performance.getEntriesByType('resource') as PerformanceResourceTiming[];
     return resources.map((r) => ({
