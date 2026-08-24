@@ -17,7 +17,7 @@ import SEOHead from '../components/common/SEOHead';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 
 const Contact = () => {
-  const { businessInfo, loading } = useBusiness();
+  const { businessInfo, loading, error, forceRefresh } = useBusiness();
   const [currentTime, setCurrentTime] = useState(new Date());
 
   useEffect(() => {
@@ -115,6 +115,19 @@ const Contact = () => {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
         <LoadingSpinner size="large" />
+      </div>
+    );
+  }
+
+  // Fail-safe: if API failed or no businessInfo, show a minimal page instead of spinning
+  if (error || !businessInfo) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+        <div className="max-w-4xl mx-auto px-4 py-16 text-center">
+          <h1 className="font-heading text-3xl font-bold text-gray-900 dark:text-white mb-3">Contact Us</h1>
+          <p className="text-gray-600 dark:text-gray-400 mb-6">We're updating our contact information. Please try again shortly.</p>
+          <button onClick={() => forceRefresh()} className="btn-primary px-6 py-2">Retry</button>
+        </div>
       </div>
     );
   }
