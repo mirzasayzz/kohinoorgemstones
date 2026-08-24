@@ -1119,8 +1119,7 @@
                     // Build a JSON body to get nested objects cleanly
                     const body = {};
                     formData.forEach((value, key) => {
-                        // Convert bracketed keys like contact[email] to nested objects
-                        const match = key.match(/([^[\]]+)(\[[^\]]+\])+/);
+                        const match = key.match(/([^\[\]]+)(\[[^\]]+\])+/);
                         if (match) {
                             const root = key.split('[')[0];
                             const parts = key.match(/\[([^\]]+)\]/g).map(s => s.replace(/\[|\]/g, ''));
@@ -1134,6 +1133,24 @@
                             ref[parts[parts.length - 1]] = value;
                         } else {
                             body[key] = value;
+                        }
+                    });
+
+                    // Explicitly build full hours payload from DOM to ensure persistence
+                    const days = ['monday','tuesday','wednesday','thursday','friday','saturday','sunday'];
+                    body.hours = body.hours || {};
+                    days.forEach(day => {
+                        const toggle = document.querySelector(`.day-toggle[data-day="${day}"]`);
+                        const openInput = document.querySelector(`input[name="hours[${day}][open]"]`);
+                        const closeInput = document.querySelector(`input[name="hours[${day}][close]"]`);
+                        const isOpen = toggle ? toggle.checked : !!(openInput?.value && closeInput?.value);
+                        if (!body.hours[day]) body.hours[day] = {};
+                        if (isOpen) {
+                            body.hours[day].open = openInput?.value || '';
+                            body.hours[day].close = closeInput?.value || '';
+                        } else {
+                            // Mark as closed by omitting open/close
+                            body.hours[day] = {}; 
                         }
                     });
 
