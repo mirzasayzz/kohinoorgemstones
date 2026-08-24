@@ -21,6 +21,17 @@ import multer from 'multer';
 
 const router = express.Router();
 
+// Middleware to prevent caching for admin pages
+const noCacheMiddleware = (req, res, next) => {
+  res.set({
+    'Cache-Control': 'no-cache, no-store, must-revalidate',
+    'Pragma': 'no-cache',
+    'Expires': '0',
+    'Last-Modified': new Date().toUTCString()
+  });
+  next();
+};
+
 // Configure multer for file uploads
 const upload = multer({
   dest: 'uploads/',
@@ -40,17 +51,17 @@ const upload = multer({
 router.get('/admin/login', showLogin);
 router.post('/admin/login', handleLogin);
 
-// Protected routes (require authentication)
+// Protected routes (require authentication) - with no-cache middleware
 router.get('/admin/logout', requireAuth, handleLogout);
-router.get('/', requireAuth, showDashboard);
-router.get('/admin', requireAuth, showDashboard);
-router.get('/admin/dashboard', requireAuth, showDashboard);
+router.get('/', requireAuth, noCacheMiddleware, showDashboard);
+router.get('/admin', requireAuth, noCacheMiddleware, showDashboard);
+router.get('/admin/dashboard', requireAuth, noCacheMiddleware, showDashboard);
 
-// Gemstone management routes
-router.get('/admin/gemstones', requireAuth, showGemstones);
-router.get('/admin/gemstones/add', requireAuth, showAddGemstone);
+// Gemstone management routes - with no-cache middleware
+router.get('/admin/gemstones', requireAuth, noCacheMiddleware, showGemstones);
+router.get('/admin/gemstones/add', requireAuth, noCacheMiddleware, showAddGemstone);
 router.post('/admin/gemstones/add', requireAuth, upload.array('images', 10), handleAddGemstone);
-router.get('/admin/gemstones/edit/:id', requireAuth, showEditGemstone);
+router.get('/admin/gemstones/edit/:id', requireAuth, noCacheMiddleware, showEditGemstone);
 router.post('/admin/gemstones/edit/:id', requireAuth, upload.array('images', 10), handleEditGemstone);
 
 // REST API endpoints for AJAX calls
@@ -61,9 +72,9 @@ router.put('/admin/gemstones/:id/toggle-trending', requireAuth, handleToggleTren
 router.post('/admin/gemstones/delete/:id', requireAuth, handleDeleteGemstone);
 router.post('/admin/gemstones/toggle-trending/:id', requireAuth, handleToggleTrending);
 
-// Business info management routes
-router.get('/admin/business', requireAuth, showBusinessInfo);
-router.post('/admin/business', requireAuth, handleUpdateBusinessInfo);
+// Business info management routes - with no-cache middleware for critical data
+router.get('/admin/business', requireAuth, noCacheMiddleware, showBusinessInfo);
+router.post('/admin/business', requireAuth, noCacheMiddleware, handleUpdateBusinessInfo);
 
 // Bulk operations
 router.post('/admin/gemstones/bulk', requireAuth, handleBulkOperations);

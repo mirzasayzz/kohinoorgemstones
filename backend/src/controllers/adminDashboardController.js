@@ -800,7 +800,13 @@ export const getDashboardAnalytics = async (req, res) => {
 // Show business info page
 export const showBusinessInfo = async (req, res) => {
   try {
-    const businessInfo = await BusinessInfo.findOne();
+    // Force fresh data fetch with no caching
+    const businessInfo = await BusinessInfo.findOne().lean();
+    console.log('📊 Admin Dashboard - Fresh business info loaded:', {
+      shopName: businessInfo?.shopName,
+      tagline: businessInfo?.tagline,
+      updatedAt: businessInfo?.updatedAt
+    });
     
     res.render('admin/business-info', {
       title: 'Business Information - Kohinoor Gemstone',
@@ -822,7 +828,11 @@ export const showBusinessInfo = async (req, res) => {
 export const handleUpdateBusinessInfo = async (req, res) => {
   try {
     const formData = req.body;
-    console.log('Received form data:', formData);
+    console.log('🔄 Received form data for update:', {
+      shopName: formData.shopName,
+      tagline: formData.tagline,
+      timestamp: new Date().toISOString()
+    });
     
     // Parse nested form data
     const updateData = {
@@ -849,7 +859,9 @@ export const handleUpdateBusinessInfo = async (req, res) => {
         twitter: formData['socialMedia[twitter]'] || '',
         youtube: formData['socialMedia[youtube]'] || '',
         linkedin: formData['socialMedia[linkedin]'] || ''
-      }
+      },
+      // Ensure updatedAt is set to current timestamp
+      updatedAt: new Date()
     };
 
     // Handle business hours if provided
@@ -877,14 +889,31 @@ export const handleUpdateBusinessInfo = async (req, res) => {
       };
     }
 
-    console.log('Parsed update data:', updateData);
+    console.log('💾 Saving update data:', {
+      shopName: updateData.shopName,
+      tagline: updateData.tagline,
+      updatedAt: updateData.updatedAt
+    });
     
+    // Use findOneAndUpdate with explicit options to ensure fresh data
     const businessInfo = await BusinessInfo.findOneAndUpdate(
       {},
       updateData,
-      { new: true, upsert: true }
+      { 
+        new: true,          // Return updated document
+        upsert: true,       // Create if doesn't exist
+        runValidators: true, // Run schema validation
+        setDefaultsOnInsert: true
+      }
     );
+
+    console.log('✅ Update completed, rendering with fresh data:', {
+      shopName: businessInfo?.shopName,
+      tagline: businessInfo?.tagline,
+      updatedAt: businessInfo?.updatedAt
+    });
     
+    // Render the page with the updated data
     res.render('admin/business-info', {
       title: 'Business Information - Kohinoor Gemstone',
       user: req.session.user,
@@ -893,15 +922,24 @@ export const handleUpdateBusinessInfo = async (req, res) => {
       success: 'Business information updated successfully!'
     });
   } catch (error) {
-    console.error('Update business info error:', error);
+    console.error('❌ Update business info error:', error);
     
-    const businessInfo = await BusinessInfo.findOne();
-    res.render('admin/business-info', {
-      title: 'Business Information - Kohinoor Gemstone',
-      user: req.session.user,
-      businessInfo,
-      error: 'Failed to update business information: ' + error.message,
-      success: null
-    });
+    // Fetch fresh data for error case too
+    try {
+      const businessInfo = await BusinessInfo.findOne().lean();
+      res.render('admin/business-info', {
+        title: 'Business Information - Kohinoor Gemstone',
+        user: req.session.user,
+        businessInfo,
+        error: 'Failed to update business information: ' + error.message,
+        success: null
+      });
+    } catch (fetchError) {
+      console.error('❌ Failed to fetch business info for error render:', fetchError);
+      res.status(500).render('admin/error', {
+        title: 'Error - Kohinoor Gemstone',
+        error: 'Failed to update and load business information'
+      });
+    }
   }
 }; 
