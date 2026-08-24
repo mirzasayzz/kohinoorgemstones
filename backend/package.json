@@ -7,7 +7,10 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node test-api.js",
+    "test-deployment": "node test-deployment.js",
+    "test-frontend-config": "node test-frontend-config.js",
+    "check-env": "node -e \"console.log('🌍 Environment Configuration Check:'); console.log('================================'); console.log('NODE_ENV:', process.env.NODE_ENV || 'Not Set'); console.log('PORT:', process.env.PORT || 'Not Set'); console.log(''); console.log('📧 Admin Configuration:'); console.log('ADMIN_EMAIL:', process.env.ADMIN_EMAIL || 'Not Set'); console.log('ADMIN_NAME:', process.env.ADMIN_NAME || 'Not Set'); console.log(''); console.log('🗄️ Database:'); console.log('MONGODB_URI:', process.env.MONGODB_URI ? 'Set ✅' : 'Not Set ❌'); console.log(''); console.log('🌐 Frontend URLs:'); console.log('FRONTEND_URL:', process.env.FRONTEND_URL || 'Not Set (using default)'); console.log('CORS_ORIGIN:', process.env.CORS_ORIGIN || 'Not Set'); console.log(''); console.log('☁️ Cloudinary:'); console.log('CLOUDINARY_CLOUD_NAME:', process.env.CLOUDINARY_CLOUD_NAME ? 'Set ✅' : 'Not Set ❌');\""
   },
   "keywords": [
     "gemstone",

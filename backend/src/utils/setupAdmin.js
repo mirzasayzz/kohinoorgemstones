@@ -9,23 +9,42 @@ export const setupDefaultAdmin = async () => {
     // Check if any admin user exists
     const existingAdmin = await User.findOne({ role: { $in: ['admin', 'super_admin'] } });
     
+    const adminEmail = process.env.ADMIN_EMAIL || 'admin@gmail.com';
+    const adminPassword = process.env.ADMIN_PASSWORD || 'admin123';
+    const adminName = process.env.ADMIN_NAME || 'Admin User';
+    
     if (!existingAdmin) {
       console.log('🔄 Creating default admin user...');
       
       // Create default admin user
       const adminUser = await User.create({
-        name: process.env.ADMIN_NAME || 'Admin User',
-        email: process.env.ADMIN_EMAIL || 'admin@gmail.com',
-        password: process.env.ADMIN_PASSWORD || 'admin123',
+        name: adminName,
+        email: adminEmail,
+        password: adminPassword,
         role: 'super_admin'
       });
 
       console.log('✅ Default admin user created:');
       console.log(`   Email: ${adminUser.email}`);
-      console.log(`   Password: ${process.env.ADMIN_PASSWORD || 'admin123'}`);
+      console.log(`   Password: ${adminPassword}`);
       console.log(`   Role: ${adminUser.role}`);
     } else {
-      console.log('✅ Admin user already exists');
+      // Check if we need to update credentials to match environment variables
+      if (existingAdmin.email !== adminEmail) {
+        console.log('🔄 Updating admin credentials to match environment...');
+        
+        existingAdmin.name = adminName;
+        existingAdmin.email = adminEmail;
+        existingAdmin.password = adminPassword; // This will be hashed by the pre-save middleware
+        await existingAdmin.save();
+        
+        console.log('✅ Admin credentials updated:');
+        console.log(`   Email: ${existingAdmin.email}`);
+        console.log(`   Password: ${adminPassword}`);
+        console.log(`   Role: ${existingAdmin.role}`);
+      } else {
+        console.log('✅ Admin user already exists with correct credentials');
+      }
     }
 
     // Ensure default business info exists
@@ -39,7 +58,7 @@ export const setupDefaultAdmin = async () => {
 
 export const displayStartupInfo = () => {
   console.log('\n🎉 KOHINOOR GEMSTONE API STARTED SUCCESSFULLY!');
-  console.log('='*60);
+  console.log('='.repeat(60));
   console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`🚀 Server running on: http://localhost:${process.env.PORT || 5000}`);
   console.log(`💎 API Base URL: http://localhost:${process.env.PORT || 5000}/api`);
@@ -55,5 +74,5 @@ export const displayStartupInfo = () => {
   console.log('\n📱 TESTING COMMANDS:');
   console.log('   curl http://localhost:5000/api/health');
   console.log('   curl http://localhost:5000/api/business/info');
-  console.log('='*60);
+  console.log('='.repeat(60));
 }; 

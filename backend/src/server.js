@@ -32,6 +32,11 @@ connectDB();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// Trust proxy for accurate IP detection in production (required for Render, Heroku, etc.)
+if (process.env.NODE_ENV === 'production') {
+  app.set('trust proxy', 1);
+}
+
 // Set up view engine
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
@@ -50,11 +55,12 @@ app.use(session({
   }
 }));
 
-// Rate limiting
+// Rate limiting with trust proxy support
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 100, // limit each IP to 100 requests per windowMs
   message: 'Too many requests from this IP, please try again later.',
+  trustProxy: process.env.NODE_ENV === 'production'
 });
 
 // Middleware
@@ -63,10 +69,25 @@ app.use(helmet({
   crossOriginResourcePolicy: { policy: "cross-origin" },
   contentSecurityPolicy: false // Disable CSP for admin dashboard
 }));
+
+// CORS configuration with environment-based frontend URLs
+const getFrontendUrls = () => {
+  if (process.env.NODE_ENV === 'production') {
+    return [
+      process.env.FRONTEND_URL || 'https://kohinoorgemstone.vercel.app',
+      process.env.BACKEND_URL || 'https://kohinoor-w94f.onrender.com',
+      process.env.CORS_ORIGIN
+    ].filter(Boolean);
+  } else {
+    return [
+      process.env.FRONTEND_DEV_URL || 'http://localhost:3000',
+      process.env.FRONTEND_DEV_URL_VITE || 'http://localhost:5173'
+    ].filter(Boolean);
+  }
+};
+
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
-    ? ['https://kohinoorgemstone.vercel.app', 'https://kohinoorgemstone.netlify.app']
-    : ['http://localhost:3000', 'http://localhost:5173'],
+  origin: getFrontendUrls(),
   credentials: true
 }));
 app.use(compression());

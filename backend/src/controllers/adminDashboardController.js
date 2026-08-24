@@ -31,6 +31,15 @@ const PREDEFINED_GEMSTONES = [
   { name: 'Garnet', urdu: 'Yaman', category: 'Garnet' }
 ];
 
+// Utility function to get frontend URL based on environment
+const getFrontendUrl = () => {
+  if (process.env.NODE_ENV === 'production') {
+    return process.env.FRONTEND_URL || 'https://kohinoorgemstone.vercel.app';
+  } else {
+    return process.env.FRONTEND_DEV_URL_VITE || 'http://localhost:5173';
+  }
+};
+
 // Authentication middleware
 export const requireAuth = (req, res, next) => {
   if (req.session && req.session.user) {
@@ -217,7 +226,8 @@ export const showDashboard = async (req, res) => {
       topViewedGemstones,
       monthlyTrends,
       availabilityStats,
-      priceRangeStats
+      priceRangeStats,
+      frontendUrl: getFrontendUrl()
     });
   } catch (error) {
     console.error('Dashboard error:', error);
