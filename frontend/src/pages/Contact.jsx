@@ -18,60 +18,41 @@ import LoadingSpinner from '../components/common/LoadingSpinner';
 
 const Contact = () => {
   const { businessInfo, loading, error, forceRefresh } = useBusiness();
-  const [currentTime, setCurrentTime] = useState(new Date());
 
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentTime(new Date());
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, []);
-
-  // Check if business is currently open
+  // Check if business is currently open (computed once per render)
   const isOpen = () => {
     if (!businessInfo?.businessHours) return false;
-    
     const now = new Date();
     const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
     const currentDay = days[now.getDay()];
     const currentHour = now.getHours();
     const currentMinute = now.getMinutes();
     const currentTimeMinutes = currentHour * 60 + currentMinute;
-    
     const todayHours = businessInfo.businessHours[currentDay];
     if (!todayHours || todayHours.closed) return false;
-    
     if (!todayHours.open || !todayHours.close) return false;
-    
     const [openHour, openMin] = todayHours.open.split(':').map(Number);
     const [closeHour, closeMin] = todayHours.close.split(':').map(Number);
     const openTimeMinutes = openHour * 60 + openMin;
     const closeTimeMinutes = closeHour * 60 + closeMin;
-    
     return currentTimeMinutes >= openTimeMinutes && currentTimeMinutes <= closeTimeMinutes;
   };
 
-  // Get next opening time
+  // Get next opening time (computed once per render)
   const getNextOpeningTime = () => {
     if (!businessInfo?.businessHours) return null;
-    
     const now = new Date();
     const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-    
     for (let i = 0; i < 7; i++) {
       const checkDate = new Date(now);
       checkDate.setDate(now.getDate() + i);
       const dayName = days[checkDate.getDay()];
       const dayHours = businessInfo.businessHours[dayName];
-      
       if (dayHours && !dayHours.closed && dayHours.open) {
         if (i === 0 && !isOpen()) {
-          // Today but after closing time
           const [openHour, openMin] = dayHours.open.split(':').map(Number);
           const currentTimeMinutes = now.getHours() * 60 + now.getMinutes();
           const openTimeMinutes = openHour * 60 + openMin;
-          
           if (currentTimeMinutes < openTimeMinutes) {
             return { day: 'Today', time: dayHours.open };
           }
