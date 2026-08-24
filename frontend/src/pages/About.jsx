@@ -30,12 +30,14 @@ const About = () => {
             <div className="flex items-center justify-center space-x-3 mb-6">
               <Crown className="w-10 h-10 text-white" />
               <h1 className="font-heading text-4xl sm:text-6xl font-bold text-white">
-                About {businessInfo?.shopName || 'Kohinoor'}
+                About {businessInfo?.shopName || ''}
               </h1>
             </div>
-            <p className="text-xl text-white/90 max-w-3xl mx-auto leading-relaxed">
-              {businessInfo?.tagline || 'Premium Gemstones for Life\'s Precious Moments'}
-            </p>
+            {businessInfo?.tagline && (
+              <p className="text-xl text-white/90 max-w-3xl mx-auto leading-relaxed">
+                {businessInfo.tagline}
+              </p>
+            )}
           </motion.div>
         </div>
       </section>

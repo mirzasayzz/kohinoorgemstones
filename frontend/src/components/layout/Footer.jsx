@@ -114,7 +114,7 @@ const Footer = () => {
                 <Gem className="w-4 h-4 text-white" />
               </div>
               <span className="text-xl font-bold text-amber-400">
-                {businessInfo?.shopName || 'Gemstone Store'}
+                {businessInfo?.shopName || ''}
               </span>
             </Link>
             
@@ -256,7 +256,7 @@ const Footer = () => {
         {/* Bottom Copyright */}
         <div className="border-t border-gray-800 mt-8 pt-6">
           <div className="text-center text-gray-500 text-sm">
-            © {currentYear} {businessInfo?.shopName || 'Gemstone Store'}. All rights reserved.
+            © {currentYear} {businessInfo?.shopName || ''}. All rights reserved.
           </div>
         </div>
       </div>

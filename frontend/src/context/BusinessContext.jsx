@@ -53,8 +53,8 @@ export const BusinessProvider = ({ children }) => {
       
       const response = await businessService.getBusinessInfo();
       
-      if (response?.data) {
-        setBusinessInfo(response.data);
+      if (response?.data?.businessInfo) {
+        setBusinessInfo(response.data.businessInfo);
         setError(null);
       } else {
         console.warn('No business data received from API');
@@ -80,7 +80,8 @@ export const BusinessProvider = ({ children }) => {
   }, []); // Empty dependency array - only runs once on mount
 
   const generateWhatsAppURL = (gemstone = null, customMessage = null) => {
-    const whatsappNumber = businessInfo?.contact?.whatsapp?.replace(/[^\d]/g, '') || '911234567890';
+    const whatsappNumber = businessInfo?.contact?.whatsapp?.replace(/[^\d]/g, '');
+    if (!whatsappNumber) return null;
     let message;
     if (customMessage) {
       message = customMessage;
