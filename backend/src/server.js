@@ -55,16 +55,15 @@ app.use(session({
   }
 }));
 
-// Rate limiting with trust proxy support
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
+// Rate limiting (apply to API only, not admin pages or static assets)
+const apiLimiter = rateLimit({
+  windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS || '', 10) || 15 * 60 * 1000,
+  max: parseInt(process.env.RATE_LIMIT_MAX || '', 10) || 300,
   message: 'Too many requests from this IP, please try again later.',
   trustProxy: process.env.NODE_ENV === 'production'
 });
 
 // Middleware
-app.use(limiter);
 app.use(helmet({
   crossOriginResourcePolicy: { policy: "cross-origin" },
   contentSecurityPolicy: false // Disable CSP for admin dashboard
@@ -101,6 +100,9 @@ app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // Admin Dashboard Routes (before API routes)
 app.use('/', adminRoutes);
+
+// API Rate Limiter
+app.use('/api', apiLimiter);
 
 // API Routes
 app.use('/api/auth', authRoutes);
