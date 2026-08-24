@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#f8fafc',
+                            500: '#0f172a',
+                            600: '#0f172a',
+                            700: '#020617'
+                        },
+                        ruby: '#b91c1c',
+                        emerald: '#047857',
+                        golden: '#facc15',
+                        sapphire: '#1e40af'
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/admin/assets/css/admin.css">
+    
+    <style>
+        .gemstone-card {
+            transition: all 0.3s ease;
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+        }
+        .gemstone-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+        .ruby-glow { box-shadow: 0 0 20px rgba(185, 28, 28, 0.3); }
+        .emerald-glow { box-shadow: 0 0 20px rgba(4, 120, 87, 0.3); }
+        .sapphire-glow { box-shadow: 0 0 20px rgba(30, 64, 175, 0.3); }
+        .diamond-glow { box-shadow: 0 0 20px rgba(156, 163, 175, 0.3); }
+        .trending-pulse {
+            animation: trending-pulse 2s infinite;
+        }
+        @keyframes trending-pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        .gradient-text {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .stats-gradient {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+        }
+        /* Text truncation utilities */
+        .line-clamp-2 {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .line-clamp-3 {
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-gray-50 to-blue-50 min-h-screen">
+    <!-- Mobile menu overlay -->
+    <div id="mobile-menu-overlay" class="fixed inset-0 bg-gray-600 bg-opacity-75 z-20 lg:hidden hidden"></div>
+    
+    <!-- Sidebar -->
+    <div id="sidebar" class="fixed inset-y-0 left-0 z-30 w-64 bg-primary-500 text-white transform -translate-x-full lg:translate-x-0 transition duration-300 ease-in-out">
+        <div class="flex items-center justify-center h-16 bg-primary-700">
+            <div class="flex items-center space-x-2">
+                <img src="/admin/assets/img/kohinoor-logo.png" alt="Kohinoor Logo" class="w-8 h-8 object-contain">
+                <h1 class="text-xl font-bold">Kohinoor Admin</h1>
+            </div>
+            <button id="close-sidebar" class="absolute top-4 right-4 lg:hidden">
+                <i data-lucide="x" class="w-6 h-6"></i>
+            </button>
+        </div>
+        
+        <nav class="mt-5 px-2">
+            <a href="/admin/dashboard" class="group flex items-center px-2 py-2 text-base font-medium rounded-md hover:bg-primary-600 transition duration-200">
+                <i data-lucide="layout-dashboard" class="mr-4 h-6 w-6"></i>
+                Dashboard
+            </a>
+            
+            <a href="/admin/gemstones" class="group flex items-center px-2 py-2 mt-1 text-base font-medium rounded-md hover:bg-primary-600 bg-primary-600 transition duration-200">
+                <i data-lucide="gem" class="mr-4 h-6 w-6"></i>
+                Gemstones
+            </a>
+            
+            <a href="/admin/business" class="group flex items-center px-2 py-2 mt-1 text-base font-medium rounded-md hover:bg-primary-600 transition duration-200">
+                <i data-lucide="building" class="mr-4 h-6 w-6"></i>
+                Business Info
+            </a>
+            
+            <div class="mt-8 pt-4 border-t border-primary-600">
+                <a href="/admin/logout" class="group flex items-center px-2 py-2 text-base font-medium rounded-md hover:bg-red-600 transition duration-200">
+                    <i data-lucide="log-out" class="mr-4 h-6 w-6"></i>
+                    Logout
+                </a>
+            </div>
+        </nav>
+    </div>
+
+    <!-- Main content -->
+    <div class="lg:pl-64 flex flex-col flex-1">
+        <!-- Top bar -->
+        <div class="sticky top-0 z-10 lg:hidden bg-white shadow-sm border-b border-gray-200">
+            <div class="flex items-center justify-between h-16 px-4">
+                <button id="mobile-menu-button" class="text-gray-500 hover:text-gray-900">
+                    <i data-lucide="menu" class="w-6 h-6"></i>
+                </button>
+                <h1 class="text-lg font-semibold text-gray-900">💎 Gemstone Collection</h1>
+                <div class="flex items-center">
+                    <span class="text-sm text-gray-500"><%= user.name %></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page content -->
+        <div class="flex-1 flex flex-col">
+            <!-- Enhanced Header -->
+            <header class="stats-gradient shadow-xl hidden lg:block">
+                <div class="px-6 py-8">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h1 class="text-4xl font-bold text-white mb-3">💎 Gemstone Collection</h1>
+                            <p class="text-blue-100 text-lg">Manage your precious gemstone inventory with style</p>
+                        </div>
+                        <div class="flex items-center space-x-6">
+                            <div class="bg-white bg-opacity-20 rounded-xl p-6 text-center">
+                                <div class="text-3xl font-bold text-white"><%= gemstones.length %></div>
+                                <div class="text-blue-100 text-sm">Total Gems</div>
+                            </div>
+                            <div class="bg-white bg-opacity-20 rounded-xl p-6 text-center">
+                                <div class="text-3xl font-bold text-white"><%= gemstones.filter(g => g.isTrending).length %></div>
+                                <div class="text-blue-100 text-sm">Trending</div>
+                            </div>
+                            <a href="/admin/gemstones/add" class="bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-8 py-4 rounded-xl font-bold text-lg transition duration-200 flex items-center shadow-lg hover:shadow-xl transform hover:scale-105">
+                                <i data-lucide="plus" class="w-6 h-6 mr-3"></i>
+                                Add New Gemstone
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Main content area -->
+            <main class="flex-1 p-4 sm:p-6 lg:p-8 w-full max-w-none">
+                <% if (typeof error !== 'undefined' && error) { %>
+                    <div class="mb-6 p-4 bg-red-50 border-l-4 border-red-400 rounded-r-lg shadow-sm">
+                        <div class="flex items-center">
+                            <i data-lucide="alert-circle" class="w-5 h-5 mr-3 text-red-500"></i>
+                            <p class="text-red-800 font-medium"><%= error %></p>
+                        </div>
+                    </div>
+                <% } %>
+                
+                <% if (typeof success !== 'undefined' && success) { %>
+                    <div class="mb-6 p-4 bg-green-50 border-l-4 border-green-400 rounded-r-lg shadow-sm">
+                        <div class="flex items-center">
+                            <i data-lucide="check-circle" class="w-5 h-5 mr-3 text-green-500"></i>
+                            <p class="text-green-800 font-medium"><%= success %></p>
+                        </div>
+                    </div>
+                <% } %>
+
+                <!-- Header with Search and Filters -->
+                <div class="bg-white rounded-2xl shadow-xl p-6 mb-8 border border-gray-200">
+                    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                        <div>
+                            <h1 class="text-3xl font-bold gradient-text mb-2">💎 Gemstone Collection</h1>
+                            <p class="text-gray-600">Manage your precious gemstone inventory</p>
+                        </div>
+                        <div class="flex flex-col sm:flex-row gap-3">
+                            <a href="/admin/gemstones/add" class="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-6 py-3 rounded-lg font-semibold shadow-lg transition-all transform hover:scale-105 flex items-center">
+                                <i data-lucide="plus" class="w-5 h-5 mr-2"></i>
+                                Add New Gemstone
+                            </a>
+                            <button onclick="toggleBulkMode()" id="bulk-toggle" class="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white px-6 py-3 rounded-lg font-semibold shadow-lg transition-all transform hover:scale-105 flex items-center">
+                                <i data-lucide="check-square" class="w-5 h-5 mr-2"></i>
+                                Bulk Operations
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Advanced Filters -->
+                    <div class="mt-6 pt-6 border-t border-gray-200">
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                            <!-- Search -->
+                            <div class="relative">
+                                <input type="text" id="search-input" placeholder="Search gemstones..." 
+                                       class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                <i data-lucide="search" class="absolute left-3 top-2.5 w-5 h-5 text-gray-400"></i>
+                            </div>
+
+                            <!-- Category Filter -->
+                            <select id="category-filter" class="w-full py-2 px-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                <option value="">All Categories</option>
+                                <option value="Ruby">Ruby</option>
+                                <option value="Emerald">Emerald</option>
+                                <option value="Sapphire">Sapphire</option>
+                                <option value="Diamond">Diamond</option>
+                                <option value="Pearl">Pearl</option>
+                                <option value="Topaz">Topaz</option>
+                                <option value="Other">Other</option>
+                            </select>
+
+                            <!-- Status Filter -->
+                            <select id="status-filter" class="w-full py-2 px-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                <option value="">All Status</option>
+                                <option value="trending">Trending</option>
+                                <option value="featured">Featured</option>
+                                <option value="regular">Regular</option>
+                            </select>
+
+                            <!-- Availability Filter -->
+                            <select id="availability-filter" class="w-full py-2 px-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                <option value="">All Availability</option>
+                                <option value="In Stock">In Stock</option>
+                                <option value="Out of Stock">Out of Stock</option>
+                                <option value="Made to Order">Made to Order</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Bulk Operations Panel -->
+                    <div id="bulk-operations-panel" class="hidden mt-6 pt-6 border-t border-gray-200">
+                        <div class="bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg p-4">
+                            <div class="flex flex-col lg:flex-row lg:items-center gap-4">
+                                <div class="flex items-center">
+                                    <span class="text-sm font-medium text-gray-700 mr-4">Selected: <span id="selected-count">0</span> items</span>
+                                    <button onclick="selectAll()" class="text-blue-600 hover:text-blue-800 text-sm font-medium">Select All</button>
+                                    <span class="mx-2 text-gray-300">|</span>
+                                    <button onclick="clearSelection()" class="text-red-600 hover:text-red-800 text-sm font-medium">Clear</button>
+                                </div>
+                                <div class="flex flex-wrap gap-2">
+                                    <button onclick="bulkSetTrending(true)" class="bg-orange-500 hover:bg-orange-600 text-white px-3 py-1 rounded text-sm">Set Trending</button>
+                                    <button onclick="bulkSetTrending(false)" class="bg-gray-500 hover:bg-gray-600 text-white px-3 py-1 rounded text-sm">Remove Trending</button>
+                                    <button onclick="bulkSetFeatured(true)" class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-sm">Set Featured</button>
+                                    <button onclick="bulkSetFeatured(false)" class="bg-gray-500 hover:bg-gray-600 text-white px-3 py-1 rounded text-sm">Remove Featured</button>
+                                    <button onclick="bulkArchive()" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm">Archive Selected</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mobile Add Button -->
+                <div class="mb-6 lg:hidden">
+                    <a href="/admin/gemstones/add" class="flex items-center justify-center w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-6 py-4 rounded-xl font-bold text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition duration-200">
+                        <i data-lucide="plus" class="w-6 h-6 mr-3"></i>
+                        Add New Gemstone
+                    </a>
+                </div>
+
+                <% if (gemstones.length > 0) { %>
+                    <!-- Beautiful Gemstone Cards Grid -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 sm:gap-8">
+                        <% gemstones.forEach(gemstone => { %>
+                            <div class="gemstone-card rounded-2xl shadow-lg overflow-hidden border border-gray-200 <%= gemstone.category.toLowerCase() %>-glow">
+                                <!-- Card Header with Image -->
+                                <div class="relative h-48 bg-gradient-to-br from-gray-100 to-gray-200">
+                                    <% if (gemstone.images && gemstone.images.length > 0) { %>
+                                        <img src="<%= gemstone.images[0].url %>" alt="<%= gemstone.name.english %>" class="w-full h-full object-cover">
+                                    <% } else { %>
+                                        <div class="w-full h-full flex items-center justify-center">
+                                            <div class="text-center">
+                                                <i data-lucide="gem" class="w-16 h-16 text-gray-400 mx-auto mb-2"></i>
+                                                <p class="text-gray-500 text-sm">No Image</p>
+                                            </div>
+                                        </div>
+                                    <% } %>
+                                    
+                                    <!-- Trending Badge -->
+                                    <% if (gemstone.isTrending) { %>
+                                        <div class="absolute top-4 left-4">
+                                            <span class="bg-gradient-to-r from-orange-500 to-red-600 text-white px-3 py-1 rounded-full text-xs font-bold flex items-center shadow-lg trending-pulse">
+                                                <i data-lucide="trending-up" class="w-3 h-3 mr-1"></i>
+                                                🔥 TRENDING
+                                            </span>
+                                        </div>
+                                    <% } %>
+                                    
+                                    <!-- Category Badge -->
+                                    <div class="absolute top-4 right-4">
+                                        <span class="bg-white bg-opacity-90 text-gray-800 px-3 py-1 rounded-full text-xs font-semibold shadow-lg">
+                                            💎 <%= gemstone.category %>
+                                        </span>
+                                    </div>
+                                </div>
+                                
+                                <!-- Card Content -->
+                                <div class="p-6 flex flex-col flex-1">
+                                    <!-- Top Content -->
+                                    <div class="flex-1">
+                                        <!-- Gemstone Names -->
+                                        <div class="mb-4">
+                                            <h3 class="text-xl font-bold text-gray-900 mb-1 line-clamp-2"><%= gemstone.name.english %></h3>
+                                            <% if (gemstone.name.urdu) { %>
+                                                <p class="text-purple-600 font-medium text-sm truncate"><%= gemstone.name.urdu %></p>
+                                            <% } %>
+                                        </div>
+                                        
+                                        <!-- Color and Summary -->
+                                        <div class="mb-4">
+                                            <div class="flex items-center mb-2">
+                                                <i data-lucide="palette" class="w-4 h-4 text-gray-500 mr-2 flex-shrink-0"></i>
+                                                <span class="text-sm text-gray-600 font-medium truncate"><%= gemstone.color %></span>
+                                            </div>
+                                            <p class="text-gray-700 text-sm line-clamp-3 leading-relaxed"><%= gemstone.summary %></p>
+                                        </div>
+                                        
+                                        <!-- Purpose Tags -->
+                                        <% if (gemstone.purpose && gemstone.purpose.length > 0) { %>
+                                            <div class="mb-4">
+                                                <div class="flex flex-wrap gap-1">
+                                                    <% gemstone.purpose.slice(0, 3).forEach(purpose => { %>
+                                                        <span class="bg-gradient-to-r from-blue-100 to-purple-100 text-purple-800 px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap">
+                                                            <%= purpose %>
+                                                        </span>
+                                                    <% }) %>
+                                                    <% if (gemstone.purpose.length > 3) { %>
+                                                        <span class="bg-gray-100 text-gray-600 px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap">
+                                                            +<%= gemstone.purpose.length - 3 %> more
+                                                        </span>
+                                                    <% } %>
+                                                </div>
+                                            </div>
+                                        <% } %>
+                                    </div>
+                                    
+                                    <!-- Bottom Metadata -->
+                                    <div class="flex items-center justify-between text-xs text-gray-500 mt-auto">
+                                        <span class="flex items-center">
+                                            <i data-lucide="calendar" class="w-3 h-3 mr-1"></i>
+                                            <span class="hidden sm:inline"><%= new Date(gemstone.createdAt).toLocaleDateString() %></span>
+                                            <span class="sm:hidden"><%= new Date(gemstone.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) %></span>
+                                        </span>
+                                        <span class="flex items-center">
+                                            <i data-lucide="eye" class="w-3 h-3 mr-1"></i>
+                                            ID: <%= gemstone._id.toString().substr(-6) %>
+                                        </span>
+                                    </div>
+                                </div>
+                                
+                                <!-- Action Buttons -->
+                                <div class="bg-gray-50 px-6 py-4 border-t border-gray-200">
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex items-center space-x-3">
+                                            <!-- Edit Button -->
+                                            <button onclick="editGemstone('<%= gemstone._id %>')" 
+                                                    class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition duration-200 flex items-center shadow-md hover:shadow-lg">
+                                                <i data-lucide="edit-2" class="w-4 h-4 mr-2"></i>
+                                                Edit
+                                            </button>
+                                            
+                                            <!-- Toggle Trending -->
+                                            <button onclick="toggleTrending('<%= gemstone._id %>')"
+                                                    class="<%= gemstone.isTrending ? 'bg-orange-600 hover:bg-orange-700' : 'bg-gray-600 hover:bg-gray-700' %> text-white px-4 py-2 rounded-lg text-sm font-medium transition duration-200 flex items-center shadow-md hover:shadow-lg">
+                                                <i data-lucide="trending-up" class="w-4 h-4 mr-2"></i>
+                                                <%= gemstone.isTrending ? 'Untrend' : 'Trend' %>
+                                            </button>
+                                        </div>
+                                        
+                                        <!-- Delete Button -->
+                                        <button onclick="deleteGemstone('<%= gemstone._id %>', '<%= gemstone.name.english %>')"
+                                                class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition duration-200 flex items-center shadow-md hover:shadow-lg">
+                                            <i data-lucide="trash-2" class="w-4 h-4 mr-2"></i>
+                                            Delete
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        <% }) %>
+                    </div>
+                <% } else { %>
+                    <!-- Empty State -->
+                    <div class="text-center py-16">
+                        <div class="max-w-md mx-auto">
+                            <div class="w-32 h-32 mx-auto mb-6 bg-gradient-to-br from-purple-400 to-pink-500 rounded-full flex items-center justify-center">
+                                <i data-lucide="gem" class="w-16 h-16 text-white"></i>
+                            </div>
+                            <h3 class="text-2xl font-bold text-gray-900 mb-3">No Gemstones Found</h3>
+                            <p class="text-gray-600 mb-6">Start building your collection by adding your first precious gemstone.</p>
+                            <a href="/admin/gemstones/add" class="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-8 py-3 rounded-xl font-bold text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition duration-200 inline-flex items-center">
+                                <i data-lucide="plus" class="w-5 h-5 mr-2"></i>
+                                Add Your First Gemstone
+                            </a>
+                        </div>
+                    </div>
+                <% } %>
+            </main>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+        
+        // Bulk operations state
+        let bulkMode = false;
+        let selectedGemstones = new Set();
+
+        // Toggle bulk operations mode
+        function toggleBulkMode() {
+            bulkMode = !bulkMode;
+            const panel = document.getElementById('bulk-operations-panel');
+            const button = document.getElementById('bulk-toggle');
+            const checkboxes = document.querySelectorAll('.bulk-checkbox');
+            
+            if (bulkMode) {
+                panel.classList.remove('hidden');
+                button.innerHTML = '<i data-lucide="x" class="w-5 h-5 mr-2"></i>Exit Bulk Mode';
+                button.className = button.className.replace('from-purple-500 to-purple-600', 'from-red-500 to-red-600');
+                checkboxes.forEach(cb => cb.classList.remove('hidden'));
+            } else {
+                panel.classList.add('hidden');
+                button.innerHTML = '<i data-lucide="check-square" class="w-5 h-5 mr-2"></i>Bulk Operations';
+                button.className = button.className.replace('from-red-500 to-red-600', 'from-purple-500 to-purple-600');
+                checkboxes.forEach(cb => cb.classList.add('hidden'));
+                clearSelection();
+            }
+            lucide.createIcons();
+        }
+
+        // Handle checkbox selection
+        function toggleSelection(gemstoneId, checkbox) {
+            if (checkbox.checked) {
+                selectedGemstones.add(gemstoneId);
+            } else {
+                selectedGemstones.delete(gemstoneId);
+            }
+            updateSelectionCount();
+        }
+
+        // Update selection count display
+        function updateSelectionCount() {
+            document.getElementById('selected-count').textContent = selectedGemstones.size;
+        }
+
+        // Select all visible gemstones
+        function selectAll() {
+            const checkboxes = document.querySelectorAll('.bulk-checkbox input[type="checkbox"]');
+            checkboxes.forEach(cb => {
+                if (!cb.checked) {
+                    cb.click();
+                }
+            });
+        }
+
+        // Clear all selections
+        function clearSelection() {
+            selectedGemstones.clear();
+            const checkboxes = document.querySelectorAll('.bulk-checkbox input[type="checkbox"]');
+            checkboxes.forEach(cb => cb.checked = false);
+            updateSelectionCount();
+        }
+
+        // Bulk operations
+        async function bulkSetTrending(trending) {
+            await performBulkOperation('trending', { trending: trending.toString() });
+        }
+
+        async function bulkSetFeatured(featured) {
+            await performBulkOperation('featured', { featured: featured.toString() });
+        }
+
+        async function bulkArchive() {
+            if (confirm(`Are you sure you want to archive ${selectedGemstones.size} gemstones?`)) {
+                await performBulkOperation('delete', {});
+            }
+        }
+
+        // Perform bulk operation
+        async function performBulkOperation(action, updateData) {
+            if (selectedGemstones.size === 0) {
+                showNotification('Please select at least one gemstone', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch('/admin/gemstones/bulk', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        action,
+                        gemstoneIds: Array.from(selectedGemstones),
+                        updateData
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    showNotification(result.message, 'success');
+                    setTimeout(() => window.location.reload(), 1500);
+                } else {
+                    showNotification(result.message || 'Operation failed', 'error');
+                }
+            } catch (error) {
+                console.error('Bulk operation error:', error);
+                showNotification('Failed to perform bulk operation', 'error');
+            }
+        }
+
+        // Filtering functions
+        function initializeFilters() {
+            const searchInput = document.getElementById('search-input');
+            const categoryFilter = document.getElementById('category-filter');
+            const statusFilter = document.getElementById('status-filter');
+            const availabilityFilter = document.getElementById('availability-filter');
+
+            [searchInput, categoryFilter, statusFilter, availabilityFilter].forEach(filter => {
+                filter.addEventListener('input', applyFilters);
+                filter.addEventListener('change', applyFilters);
+            });
+        }
+
+        function applyFilters() {
+            const searchTerm = document.getElementById('search-input').value.toLowerCase();
+            const category = document.getElementById('category-filter').value;
+            const status = document.getElementById('status-filter').value;
+            const availability = document.getElementById('availability-filter').value;
+
+            const gemstoneCards = document.querySelectorAll('.gemstone-card-container');
+
+            gemstoneCards.forEach(card => {
+                const gemstoneData = {
+                    name: card.querySelector('.gemstone-name')?.textContent.toLowerCase() || '',
+                    category: card.dataset.category || '',
+                    status: card.dataset.status || '',
+                    availability: card.dataset.availability || ''
+                };
+
+                const matchesSearch = !searchTerm || gemstoneData.name.includes(searchTerm);
+                const matchesCategory = !category || gemstoneData.category === category;
+                const matchesStatus = !status || gemstoneData.status === status;
+                const matchesAvailability = !availability || gemstoneData.availability === availability;
+
+                if (matchesSearch && matchesCategory && matchesStatus && matchesAvailability) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+
+            // Update results count
+            const visibleCards = document.querySelectorAll('.gemstone-card-container[style*="block"], .gemstone-card-container:not([style*="none"])');
+            const totalCards = gemstoneCards.length;
+            console.log(`Showing ${visibleCards.length} of ${totalCards} gemstones`);
+        }
+
+        // Notification system
+        function showNotification(message, type = 'success') {
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg transition-all duration-300 ${
+                type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
+            }`;
+            notification.innerHTML = `
+                <div class="flex items-center">
+                    <i data-lucide="${type === 'success' ? 'check-circle' : 'alert-circle'}" class="w-5 h-5 mr-2"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            lucide.createIcons();
+            
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                notification.style.transform = 'translateX(100%)';
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        document.body.removeChild(notification);
+                    }
+                }, 300);
+            }, 3000);
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeFilters();
+            
+            // Add hover effects
+            const gemstoneCards = document.querySelectorAll('.gemstone-card');
+            gemstoneCards.forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-8px)';
+                });
+                
+                card.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0)';
+                });
+            });
+        });
+    </script>
+    
+    <script src="/admin/assets/js/admin.js"></script>
+</body>
+</html> 

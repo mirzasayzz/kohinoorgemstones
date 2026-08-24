@@ -1,0 +1,1103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#f8fafc',
+                            500: '#0f172a',
+                            600: '#0f172a',
+                            700: '#020617'
+                        },
+                        ruby: '#b91c1c',
+                        emerald: '#047857',
+                        golden: '#facc15'
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/admin/assets/css/admin.css">
+    
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .form-section {
+            transition: all 0.3s ease;
+        }
+        .form-section.collapsed {
+            opacity: 0.7;
+            transform: translateY(-10px);
+        }
+        .input-group {
+            position: relative;
+        }
+        .input-group .form-input:focus + .input-icon {
+            color: #667eea;
+        }
+        .input-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #9ca3af;
+            transition: color 0.3s ease;
+            pointer-events: none;
+        }
+        .input-with-icon {
+            padding-left: 44px;
+        }
+        .progress-step {
+            transition: all 0.3s ease;
+        }
+        .progress-step.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+        .save-animation {
+            animation: saveSuccess 0.6s ease-in-out;
+        }
+        @keyframes saveSuccess {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        .hover-lift {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .hover-lift:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
+    <!-- Mobile menu overlay -->
+    <div id="mobile-menu-overlay" class="fixed inset-0 bg-gray-600 bg-opacity-75 z-20 lg:hidden hidden"></div>
+    
+    <!-- Sidebar -->
+    <div id="sidebar" class="fixed inset-y-0 left-0 z-30 w-64 bg-primary-500 text-white transform -translate-x-full lg:translate-x-0 transition duration-300 ease-in-out">
+        <div class="flex items-center justify-center h-16 bg-primary-700">
+            <div class="flex items-center space-x-2">
+                <img src="/admin/assets/img/kohinoor-logo.png" alt="Kohinoor Logo" class="w-8 h-8 object-contain">
+                <h1 class="text-xl font-bold">Kohinoor Admin</h1>
+            </div>
+            <button id="close-sidebar" class="absolute top-4 right-4 lg:hidden">
+                <i data-lucide="x" class="w-6 h-6"></i>
+            </button>
+        </div>
+        
+        <nav class="mt-5 px-2">
+            <a href="/admin/dashboard" class="group flex items-center px-2 py-2 text-base font-medium rounded-md hover:bg-primary-600 transition duration-200">
+                <i data-lucide="layout-dashboard" class="mr-4 h-6 w-6"></i>
+                Dashboard
+            </a>
+            
+            <a href="/admin/gemstones" class="group flex items-center px-2 py-2 mt-1 text-base font-medium rounded-md hover:bg-primary-600 transition duration-200">
+                <i data-lucide="gem" class="mr-4 h-6 w-6"></i>
+                Gemstones
+            </a>
+            
+            <a href="/admin/business" class="group flex items-center px-2 py-2 mt-1 text-base font-medium rounded-md hover:bg-primary-600 bg-primary-600 transition duration-200">
+                <i data-lucide="building" class="mr-4 h-6 w-6"></i>
+                Business Info
+            </a>
+            
+            <div class="mt-8 pt-4 border-t border-primary-600">
+                <a href="/admin/logout" class="group flex items-center px-2 py-2 text-base font-medium rounded-md hover:bg-red-600 transition duration-200">
+                    <i data-lucide="log-out" class="mr-4 h-6 w-6"></i>
+                    Logout
+                </a>
+            </div>
+        </nav>
+    </div>
+
+    <!-- Main content -->
+    <div class="lg:pl-64 flex flex-col flex-1">
+        <!-- Top bar -->
+        <div class="sticky top-0 z-10 lg:hidden bg-white shadow-sm border-b border-gray-200">
+            <div class="flex items-center justify-between h-16 px-4">
+                <button id="mobile-menu-button" class="text-gray-500 hover:text-gray-900">
+                    <i data-lucide="menu" class="w-6 h-6"></i>
+                </button>
+                <h1 class="text-lg font-semibold text-gray-900">💎 Business Settings</h1>
+                <div class="flex items-center">
+                    <span class="text-sm text-gray-500"><%= user.name %></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page content -->
+        <div class="flex-1 flex flex-col">
+            <!-- Enhanced Header -->
+            <header class="gradient-bg shadow-lg hidden lg:block">
+                <div class="px-6 py-8">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h1 class="text-3xl font-bold text-white mb-2">🏢 Business Information</h1>
+                            <p class="text-blue-100">Manage your business details and online presence</p>
+                        </div>
+                        <div class="bg-white bg-opacity-20 rounded-lg p-4">
+                            <i data-lucide="settings" class="w-8 h-8 text-white"></i>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Progress Indicator -->
+            <div class="bg-white shadow-sm border-b border-gray-200 px-6 py-4 hidden lg:block">
+                <div class="flex items-center space-x-4">
+                    <div class="progress-step active flex items-center space-x-2 px-3 py-1 rounded-full text-sm font-medium">
+                        <i data-lucide="info" class="w-4 h-4"></i>
+                        <span>Basic Info</span>
+                    </div>
+                    <div class="progress-step flex items-center space-x-2 px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-600">
+                        <i data-lucide="map-pin" class="w-4 h-4"></i>
+                        <span>Location</span>
+                    </div>
+                    <div class="progress-step flex items-center space-x-2 px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-600">
+                        <i data-lucide="share-2" class="w-4 h-4"></i>
+                        <span>Social Media</span>
+                    </div>
+                    <div class="progress-step flex items-center space-x-2 px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-600">
+                        <i data-lucide="clock" class="w-4 h-4"></i>
+                        <span>Hours</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main content area -->
+            <main class="flex-1 p-4 sm:p-6">
+                <% if (typeof error !== 'undefined' && error) { %>
+                    <div class="mb-6 p-4 bg-red-50 border-l-4 border-red-400 rounded-r-lg shadow-sm">
+                        <div class="flex items-center">
+                            <i data-lucide="alert-circle" class="w-5 h-5 mr-3 text-red-500"></i>
+                            <p class="text-red-800 font-medium"><%= error %></p>
+                        </div>
+                    </div>
+                <% } %>
+                
+                <% if (typeof success !== 'undefined' && success) { %>
+                    <div class="mb-6 p-4 bg-green-50 border-l-4 border-green-400 rounded-r-lg shadow-sm">
+                        <div class="flex items-center">
+                            <i data-lucide="check-circle" class="w-5 h-5 mr-3 text-green-500"></i>
+                            <p class="text-green-800 font-medium"><%= success %></p>
+                        </div>
+                    </div>
+                <% } %>
+
+                <!-- Business Info Form -->
+                <form method="POST" action="/admin/business" class="space-y-4 sm:space-y-6" id="businessForm">
+                    
+                    <!-- Basic Information Card -->
+                    <div class="bg-white rounded-xl shadow-lg hover-lift form-section" data-section="basic">
+                        <div class="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-6 py-4 rounded-t-xl">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center space-x-3">
+                                    <i data-lucide="building-2" class="w-6 h-6"></i>
+                                    <h3 class="text-xl font-bold">Basic Information</h3>
+                                </div>
+                                <button type="button" class="text-blue-100 hover:text-white" onclick="toggleSection('basic')">
+                                    <i data-lucide="chevron-up" class="w-5 h-5" id="basic-toggle"></i>
+                                </button>
+                            </div>
+                            <p class="text-blue-100 text-sm mt-1">Essential business details</p>
+                        </div>
+                        <div class="p-4 sm:p-6 space-y-4 sm:space-y-6" id="basic-content">
+                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                <div class="input-group">
+                                    <label for="shopName" class="block text-sm font-semibold text-gray-700 mb-2">
+                                        <i data-lucide="store" class="w-4 h-4 inline mr-2 text-blue-500"></i>Business Name
+                                    </label>
+                                    <input type="text" id="shopName" name="shopName" 
+                                           class="form-input input-with-icon w-full px-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200" 
+                                           value="<%= businessInfo && businessInfo.shopName ? businessInfo.shopName : 'Kohinoor Gemstone' %>" 
+                                           placeholder="Your business name">
+                                    <i data-lucide="store" class="input-icon"></i>
+                                </div>
+                                
+                                <div class="input-group">
+                                    <label for="tagline" class="block text-sm font-semibold text-gray-700 mb-2">
+                                        <i data-lucide="tag" class="w-4 h-4 inline mr-2 text-purple-500"></i>Business Tagline
+                                    </label>
+                                    <input type="text" id="tagline" name="tagline" 
+                                           class="form-input input-with-icon w-full px-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-200" 
+                                           value="<%= businessInfo && businessInfo.tagline ? businessInfo.tagline : '' %>" 
+                                           placeholder="Premium Authentic Gemstones">
+                                    <i data-lucide="tag" class="input-icon"></i>
+                                </div>
+                            </div>
+
+                            <div class="input-group">
+                                <label for="description" class="block text-sm font-semibold text-gray-700 mb-2">
+                                    <i data-lucide="file-text" class="w-4 h-4 inline mr-2 text-blue-600"></i>Business Description
+                                </label>
+                                <textarea id="description" name="description" rows="4"
+                                          class="form-textarea w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200" 
+                                          placeholder="Describe your business, what makes you special, your expertise..."><%= businessInfo && businessInfo.description ? businessInfo.description : '' %></textarea>
+                                <p class="text-sm text-gray-500 mt-2">This description will appear on your About page</p>
+                            </div>
+
+                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                <div class="input-group">
+                                    <label for="phone" class="block text-sm font-semibold text-gray-700 mb-2">
+                                        <i data-lucide="phone" class="w-4 h-4 inline mr-2 text-green-500"></i>Phone Number
+                                    </label>
+                                    <input type="tel" id="phone" name="contact[phone]" 
+                                           class="form-input input-with-icon w-full px-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition duration-200" 
+                                           value="<%= businessInfo && businessInfo.contact && businessInfo.contact.phone ? businessInfo.contact.phone : '' %>" 
+                                           placeholder="+91 9876543210">
+                                    <i data-lucide="phone" class="input-icon"></i>
+                                </div>
+                                
+                                <div class="input-group">
+                                    <label for="whatsapp" class="block text-sm font-semibold text-gray-700 mb-2">
+                                        <i data-lucide="message-circle" class="w-4 h-4 inline mr-2 text-green-600"></i>WhatsApp Number
+                                    </label>
+                                    <input type="tel" id="whatsapp" name="contact[whatsapp]" 
+                                           class="form-input input-with-icon w-full px-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-transparent transition duration-200" 
+                                           value="<%= businessInfo && businessInfo.contact && businessInfo.contact.whatsapp ? businessInfo.contact.whatsapp : '' %>" 
+                                           placeholder="+91 9876543210">
+                                    <i data-lucide="message-circle" class="input-icon"></i>
+                                </div>
+                            </div>
+
+                            <div class="input-group">
+                                <label for="email" class="block text-sm font-semibold text-gray-700 mb-2">
+                                    <i data-lucide="mail" class="w-4 h-4 inline mr-2 text-blue-600"></i>Business Email
+                                </label>
+                                <input type="email" id="email" name="contact[email]" 
+                                       class="form-input input-with-icon w-full px-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent transition duration-200" 
+                                       value="<%= businessInfo && businessInfo.contact && businessInfo.contact.email ? businessInfo.contact.email : '' %>" 
+                                       placeholder="info@kohinoorgemstone.com">
+                                <i data-lucide="mail" class="input-icon"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Address Information Card -->
+                    <div class="bg-white rounded-xl shadow-lg hover-lift form-section" data-section="address">
+                        <div class="bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-6 py-4 rounded-t-xl">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center space-x-3">
+                                    <i data-lucide="map-pin" class="w-6 h-6"></i>
+                                    <h3 class="text-xl font-bold">Location & Address</h3>
+                                </div>
+                                <button type="button" class="text-emerald-100 hover:text-white" onclick="toggleSection('address')">
+                                    <i data-lucide="chevron-up" class="w-5 h-5" id="address-toggle"></i>
+                                </button>
+                            </div>
+                            <p class="text-emerald-100 text-sm mt-1">Your business location details</p>
+                        </div>
+                        <div class="p-4 sm:p-6 space-y-4 sm:space-y-6" id="address-content">
+                            <!-- Street Address Section -->
+                            <div class="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-lg p-4 border border-emerald-200">
+                                <div class="flex items-center mb-3">
+                                    <i data-lucide="map-pin" class="w-5 h-5 text-emerald-600 mr-2"></i>
+                                    <h4 class="font-semibold text-emerald-800">Complete Address</h4>
+                                </div>
+                                <div class="space-y-4">
+                                    <div class="input-group">
+                                        <label for="street" class="block text-sm font-medium text-gray-700 mb-2">
+                                            🏪 Street Address & Building
+                                        </label>
+                                        <input type="text" id="street" name="address[street]" 
+                                               class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition duration-200" 
+                                               value="<%= businessInfo && businessInfo.address && businessInfo.address.street ? businessInfo.address.street : '' %>" 
+                                               placeholder="Shop No. 123, Ground Floor, ABC Plaza">
+                                    </div>
+                                    <div class="input-group">
+                                        <label for="area" class="block text-sm font-medium text-gray-700 mb-2">
+                                            🏘️ Area / Locality
+                                        </label>
+                                        <input type="text" id="area" name="address[area]" 
+                                               class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition duration-200" 
+                                               value="<%= businessInfo && businessInfo.address && businessInfo.address.area ? businessInfo.address.area : '' %>" 
+                                               placeholder="Jewelry District, Commercial Complex">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Location Details Grid -->
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div class="input-group">
+                                    <label for="city" class="block text-sm font-semibold text-gray-700 mb-2">
+                                        <i data-lucide="building" class="w-4 h-4 inline mr-2 text-orange-500"></i>City
+                                    </label>
+                                    <select id="city" name="address[city]" class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition duration-200">
+                                        <option value="">Select City</option>
+                                        <option value="Mumbai" <%= businessInfo && businessInfo.address && businessInfo.address.city === 'Mumbai' ? 'selected' : '' %>>Mumbai</option>
+                                        <option value="Delhi" <%= businessInfo && businessInfo.address && businessInfo.address.city === 'Delhi' ? 'selected' : '' %>>Delhi</option>
+                                        <option value="Bengaluru" <%= businessInfo && businessInfo.address && businessInfo.address.city === 'Bengaluru' ? 'selected' : '' %>>Bengaluru</option>
+                                        <option value="Hyderabad" <%= businessInfo && businessInfo.address && businessInfo.address.city === 'Hyderabad' ? 'selected' : '' %>>Hyderabad</option>
+                                        <option value="Chennai" <%= businessInfo && businessInfo.address && businessInfo.address.city === 'Chennai' ? 'selected' : '' %>>Chennai</option>
+                                        <option value="Kolkata" <%= businessInfo && businessInfo.address && businessInfo.address.city === 'Kolkata' ? 'selected' : '' %>>Kolkata</option>
+                                        <option value="Pune" <%= businessInfo && businessInfo.address && businessInfo.address.city === 'Pune' ? 'selected' : '' %>>Pune</option>
+                                        <option value="Ahmedabad" <%= businessInfo && businessInfo.address && businessInfo.address.city === 'Ahmedabad' ? 'selected' : '' %>>Ahmedabad</option>
+                                        <option value="Jaipur" <%= businessInfo && businessInfo.address && businessInfo.address.city === 'Jaipur' ? 'selected' : '' %>>Jaipur</option>
+                                        <option value="Surat" <%= businessInfo && businessInfo.address && businessInfo.address.city === 'Surat' ? 'selected' : '' %>>Surat</option>
+                                        <option value="Other">Other (Specify below)</option>
+                                    </select>
+                                    <input type="text" id="customCity" name="customCity" 
+                                           class="form-input w-full px-4 py-2 border border-gray-300 rounded-lg mt-2 hidden" 
+                                           placeholder="Enter your city name">
+                                </div>
+                                
+                                <div class="input-group">
+                                    <label for="state" class="block text-sm font-semibold text-gray-700 mb-2">
+                                        <i data-lucide="flag" class="w-4 h-4 inline mr-2 text-red-500"></i>State
+                                    </label>
+                                    <select id="state" name="address[state]" class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent transition duration-200">
+                                        <option value="">Select State</option>
+                                        <option value="Maharashtra" <%= businessInfo && businessInfo.address && businessInfo.address.state === 'Maharashtra' ? 'selected' : '' %>>Maharashtra</option>
+                                        <option value="Delhi" <%= businessInfo && businessInfo.address && businessInfo.address.state === 'Delhi' ? 'selected' : '' %>>Delhi</option>
+                                        <option value="Karnataka" <%= businessInfo && businessInfo.address && businessInfo.address.state === 'Karnataka' ? 'selected' : '' %>>Karnataka</option>
+                                        <option value="Telangana" <%= businessInfo && businessInfo.address && businessInfo.address.state === 'Telangana' ? 'selected' : '' %>>Telangana</option>
+                                        <option value="Tamil Nadu" <%= businessInfo && businessInfo.address && businessInfo.address.state === 'Tamil Nadu' ? 'selected' : '' %>>Tamil Nadu</option>
+                                        <option value="West Bengal" <%= businessInfo && businessInfo.address && businessInfo.address.state === 'West Bengal' ? 'selected' : '' %>>West Bengal</option>
+                                        <option value="Gujarat" <%= businessInfo && businessInfo.address && businessInfo.address.state === 'Gujarat' ? 'selected' : '' %>>Gujarat</option>
+                                        <option value="Rajasthan" <%= businessInfo && businessInfo.address && businessInfo.address.state === 'Rajasthan' ? 'selected' : '' %>>Rajasthan</option>
+                                        <option value="Uttar Pradesh" <%= businessInfo && businessInfo.address && businessInfo.address.state === 'Uttar Pradesh' ? 'selected' : '' %>>Uttar Pradesh</option>
+                                        <option value="Madhya Pradesh" <%= businessInfo && businessInfo.address && businessInfo.address.state === 'Madhya Pradesh' ? 'selected' : '' %>>Madhya Pradesh</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="input-group">
+                                    <label for="pincode" class="block text-sm font-semibold text-gray-700 mb-2">
+                                        <i data-lucide="hash" class="w-4 h-4 inline mr-2 text-indigo-500"></i>PIN Code
+                                    </label>
+                                    <input type="text" id="pincode" name="address[pincode]" 
+                                           class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition duration-200" 
+                                           value="<%= businessInfo && businessInfo.address && businessInfo.address.pincode ? businessInfo.address.pincode : '' %>" 
+                                           placeholder="400001" maxlength="6" pattern="[0-9]{6}">
+                                    <div id="pincodeInfo" class="text-xs text-gray-500 mt-1 hidden">
+                                        <i data-lucide="info" class="w-3 h-3 inline mr-1"></i>
+                                        <span id="pincodeDetails"></span>
+                                    </div>
+                                </div>
+                                
+                                <div class="input-group">
+                                    <label for="country" class="block text-sm font-semibold text-gray-700 mb-2">
+                                        <i data-lucide="globe" class="w-4 h-4 inline mr-2 text-blue-500"></i>Country
+                                    </label>
+                                    <select id="country" name="address[country]" class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200">
+                                        <option value="India" <%= businessInfo && businessInfo.address && businessInfo.address.country === 'India' ? 'selected' : '' %>>🇮🇳 India</option>
+                                        <option value="USA" <%= businessInfo && businessInfo.address && businessInfo.address.country === 'USA' ? 'selected' : '' %>>🇺🇸 United States</option>
+                                        <option value="UK" <%= businessInfo && businessInfo.address && businessInfo.address.country === 'UK' ? 'selected' : '' %>>🇬🇧 United Kingdom</option>
+                                        <option value="UAE" <%= businessInfo && businessInfo.address && businessInfo.address.country === 'UAE' ? 'selected' : '' %>>🇦🇪 UAE</option>
+                                        <option value="Canada" <%= businessInfo && businessInfo.address && businessInfo.address.country === 'Canada' ? 'selected' : '' %>>🇨🇦 Canada</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <!-- Address Preview -->
+                            <div class="bg-blue-50 rounded-lg p-4 border border-blue-200">
+                                <div class="flex items-start space-x-3">
+                                    <i data-lucide="map" class="w-5 h-5 text-blue-600 mt-0.5"></i>
+                                    <div>
+                                        <h4 class="font-medium text-blue-800 mb-1">📍 Address Preview</h4>
+                                        <p id="addressPreview" class="text-sm text-blue-700 font-mono">
+                                            Complete the form to see your full address here...
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Google Maps URL -->
+                            <div class="input-group">
+                                <label for="googleMapsUrl" class="block text-sm font-semibold text-gray-700 mb-2">
+                                    <i data-lucide="map-pin" class="w-4 h-4 inline mr-2 text-red-500"></i>Google Maps URL (Optional)
+                                </label>
+                                <input type="url" id="googleMapsUrl" name="googleMapsUrl" 
+                                       class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent transition duration-200" 
+                                       value="<%= businessInfo && businessInfo.googleMapsUrl ? businessInfo.googleMapsUrl : '' %>" 
+                                       placeholder="https://maps.google.com/your-business-location">
+                                <p class="text-sm text-gray-500 mt-2">Add your Google Maps business listing URL for better visibility</p>
+                            </div>
+                            
+                            <!-- Hidden field for combined address -->
+                            <input type="hidden" id="address" name="address">
+                        </div>
+                    </div>
+
+                    <!-- Social Media Card -->
+                    <div class="bg-white rounded-xl shadow-lg hover-lift form-section" data-section="social">
+                        <div class="bg-gradient-to-r from-pink-500 to-rose-600 text-white px-6 py-4 rounded-t-xl">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center space-x-3">
+                                    <i data-lucide="share-2" class="w-6 h-6"></i>
+                                    <h3 class="text-xl font-bold">Social Media Presence</h3>
+                                </div>
+                                <button type="button" class="text-pink-100 hover:text-white" onclick="toggleSection('social')">
+                                    <i data-lucide="chevron-up" class="w-5 h-5" id="social-toggle"></i>
+                                </button>
+                            </div>
+                            <p class="text-pink-100 text-sm mt-1">Connect with your customers online</p>
+                        </div>
+                        <div class="p-4 sm:p-6 space-y-4 sm:space-y-6" id="social-content">
+                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                <div class="input-group">
+                                    <label for="facebook" class="block text-sm font-semibold text-gray-700 mb-2">
+                                        <svg class="w-4 h-4 inline mr-2 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                                        </svg>Facebook Page
+                                    </label>
+                                    <input type="url" id="facebook" name="socialMedia[facebook]" 
+                                           class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent transition duration-200" 
+                                           value="<%= businessInfo && businessInfo.socialMedia && businessInfo.socialMedia.facebook ? businessInfo.socialMedia.facebook : '' %>" 
+                                           placeholder="https://facebook.com/kohinoorgemstone">
+                                </div>
+                                
+                                <div class="input-group">
+                                    <label for="instagram" class="block text-sm font-semibold text-gray-700 mb-2">
+                                        <svg class="w-4 h-4 inline mr-2 text-pink-600" fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M12.017 0C5.396 0 .029 5.367.029 11.987c0 6.621 5.367 11.988 11.988 11.988s11.987-5.367 11.987-11.988C24.014 5.367 18.648.001 12.017.001zM8.449 16.988c-1.297 0-2.348-1.051-2.348-2.348s1.051-2.348 2.348-2.348 2.348 1.051 2.348 2.348-1.051 2.348-2.348 2.348zm7.518 0c-1.297 0-2.348-1.051-2.348-2.348s1.051-2.348 2.348-2.348 2.348 1.051 2.348 2.348-1.051 2.348-2.348 2.348z"/>
+                                        </svg>Instagram Profile
+                                    </label>
+                                    <input type="url" id="instagram" name="socialMedia[instagram]" 
+                                           class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-600 focus:border-transparent transition duration-200" 
+                                           value="<%= businessInfo && businessInfo.socialMedia && businessInfo.socialMedia.instagram ? businessInfo.socialMedia.instagram : '' %>" 
+                                           placeholder="https://instagram.com/kohinoorgemstone">
+                                </div>
+                                
+                                <div class="input-group">
+                                    <label for="youtube" class="block text-sm font-semibold text-gray-700 mb-2">
+                                        <svg class="w-4 h-4 inline mr-2 text-red-600" fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                                        </svg>YouTube Channel
+                                    </label>
+                                    <input type="url" id="youtube" name="socialMedia[youtube]" 
+                                           class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-600 focus:border-transparent transition duration-200" 
+                                           value="<%= businessInfo && businessInfo.socialMedia && businessInfo.socialMedia.youtube ? businessInfo.socialMedia.youtube : '' %>" 
+                                           placeholder="https://youtube.com/@kohinoorgemstone">
+                                </div>
+                                
+                                <div class="input-group">
+                                    <label for="twitter" class="block text-sm font-semibold text-gray-700 mb-2">
+                                        <svg class="w-4 h-4 inline mr-2 text-blue-400" fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
+                                        </svg>Twitter Profile
+                                    </label>
+                                    <input type="url" id="twitter" name="socialMedia[twitter]" 
+                                           class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-transparent transition duration-200" 
+                                           value="<%= businessInfo && businessInfo.socialMedia && businessInfo.socialMedia.twitter ? businessInfo.socialMedia.twitter : '' %>" 
+                                           placeholder="https://twitter.com/kohinoorgemstone">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Business Hours & Details Card -->
+                    <div class="bg-white rounded-xl shadow-lg hover-lift form-section" data-section="details">
+                        <div class="bg-gradient-to-r from-amber-500 to-orange-600 text-white px-6 py-4 rounded-t-xl">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center space-x-3">
+                                    <i data-lucide="clock" class="w-6 h-6"></i>
+                                    <h3 class="text-xl font-bold">Business Hours & Details</h3>
+                                </div>
+                                <button type="button" class="text-amber-100 hover:text-white" onclick="toggleSection('details')">
+                                    <i data-lucide="chevron-up" class="w-5 h-5" id="details-toggle"></i>
+                                </button>
+                            </div>
+                            <p class="text-amber-100 text-sm mt-1">Operating hours and business description</p>
+                        </div>
+                        <div class="p-4 sm:p-6 space-y-4 sm:space-y-6" id="details-content">
+                            <!-- Interactive Business Hours Schedule -->
+                            <div class="input-group">
+                                <label class="block text-sm font-semibold text-gray-700 mb-4">
+                                    <i data-lucide="calendar-clock" class="w-4 h-4 inline mr-2 text-amber-600"></i>Weekly Business Hours
+                                </label>
+                                
+                                <!-- Days Schedule -->
+                                <div class="bg-gray-50 rounded-lg p-3 space-y-3">
+                                    <div class="space-y-3">
+                                        <!-- Monday -->
+                                        <div class="day-schedule bg-white rounded-lg p-3 border border-gray-200 overflow-hidden">
+                                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                                                <div class="flex items-center justify-between min-w-0 flex-shrink-0">
+                                                    <span class="font-medium text-gray-700 text-sm whitespace-nowrap">📅 Monday</span>
+                                                    <label class="relative inline-flex items-center cursor-pointer ml-4">
+                                                        <input type="checkbox" class="sr-only peer day-toggle" data-day="monday" checked>
+                                                        <div class="w-8 h-4 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[1px] after:left-[1px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-blue-600"></div>
+                                                        <span class="ml-2 text-xs text-gray-500 peer-checked:hidden whitespace-nowrap">Closed</span>
+                                                        <span class="ml-2 text-xs text-green-600 hidden peer-checked:inline whitespace-nowrap">Open</span>
+                                                    </label>
+                                                </div>
+                                                <div class="flex items-center space-x-2 flex-shrink-0 min-w-0">
+                                                    <input type="time" name="hours[monday][open]" class="time-input text-sm px-2 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 w-20 min-w-20 max-w-20" value="10:00">
+                                                    <span class="text-sm text-gray-500 whitespace-nowrap">to</span>
+                                                    <input type="time" name="hours[monday][close]" class="time-input text-sm px-2 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 w-20 min-w-20 max-w-20" value="20:00">
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Tuesday -->
+                                        <div class="day-schedule bg-white rounded-lg p-3 border border-gray-200">
+                                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                                                <div class="flex items-center justify-between">
+                                                    <span class="font-medium text-gray-700 text-sm">📅 Tuesday</span>
+                                                    <label class="relative inline-flex items-center cursor-pointer">
+                                                        <input type="checkbox" class="sr-only peer day-toggle" data-day="tuesday" checked>
+                                                        <div class="w-8 h-4 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[1px] after:left-[1px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-blue-600"></div>
+                                                        <span class="ml-2 text-xs text-gray-500 peer-checked:hidden">Closed</span>
+                                                        <span class="ml-2 text-xs text-green-600 hidden peer-checked:inline">Open</span>
+                                                    </label>
+                                                </div>
+                                                <div class="flex items-center space-x-2 flex-shrink-0 min-w-0">
+                                                    <input type="time" name="hours[tuesday][open]" class="time-input text-sm px-2 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 w-20 min-w-20 max-w-20" value="10:00">
+                                                    <span class="text-sm text-gray-500 whitespace-nowrap">to</span>
+                                                    <input type="time" name="hours[tuesday][close]" class="time-input text-sm px-2 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 w-20 min-w-20 max-w-20" value="20:00">
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Wednesday -->
+                                        <div class="day-schedule bg-white rounded-lg p-3 border border-gray-200">
+                                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                                                <div class="flex items-center justify-between">
+                                                    <span class="font-medium text-gray-700 text-sm">📅 Wednesday</span>
+                                                    <label class="relative inline-flex items-center cursor-pointer">
+                                                        <input type="checkbox" class="sr-only peer day-toggle" data-day="wednesday" checked>
+                                                        <div class="w-8 h-4 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[1px] after:left-[1px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-blue-600"></div>
+                                                        <span class="ml-2 text-xs text-gray-500 peer-checked:hidden">Closed</span>
+                                                        <span class="ml-2 text-xs text-green-600 hidden peer-checked:inline">Open</span>
+                                                    </label>
+                                                </div>
+                                                <div class="flex items-center space-x-2 flex-shrink-0 min-w-0">
+                                                    <input type="time" name="hours[wednesday][open]" class="time-input text-sm px-2 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 w-20 min-w-20 max-w-20" value="10:00">
+                                                    <span class="text-sm text-gray-500 whitespace-nowrap">to</span>
+                                                    <input type="time" name="hours[wednesday][close]" class="time-input text-sm px-2 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 w-20 min-w-20 max-w-20" value="20:00">
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Thursday -->
+                                        <div class="day-schedule bg-white rounded-lg p-3 border border-gray-200">
+                                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                                                <div class="flex items-center justify-between">
+                                                    <span class="font-medium text-gray-700 text-sm">📅 Thursday</span>
+                                                    <label class="relative inline-flex items-center cursor-pointer">
+                                                        <input type="checkbox" class="sr-only peer day-toggle" data-day="thursday" checked>
+                                                        <div class="w-8 h-4 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[1px] after:left-[1px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-blue-600"></div>
+                                                        <span class="ml-2 text-xs text-gray-500 peer-checked:hidden">Closed</span>
+                                                        <span class="ml-2 text-xs text-green-600 hidden peer-checked:inline">Open</span>
+                                                    </label>
+                                                </div>
+                                                <div class="flex items-center space-x-2 flex-shrink-0 min-w-0">
+                                                    <input type="time" name="hours[thursday][open]" class="time-input text-sm px-2 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 w-20 min-w-20 max-w-20" value="10:00">
+                                                    <span class="text-sm text-gray-500 whitespace-nowrap">to</span>
+                                                    <input type="time" name="hours[thursday][close]" class="time-input text-sm px-2 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 w-20 min-w-20 max-w-20" value="20:00">
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Friday -->
+                                        <div class="day-schedule bg-white rounded-lg p-3 border border-gray-200">
+                                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                                                <div class="flex items-center justify-between">
+                                                    <span class="font-medium text-gray-700 text-sm">📅 Friday</span>
+                                                    <label class="relative inline-flex items-center cursor-pointer">
+                                                        <input type="checkbox" class="sr-only peer day-toggle" data-day="friday" checked>
+                                                        <div class="w-8 h-4 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[1px] after:left-[1px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-blue-600"></div>
+                                                        <span class="ml-2 text-xs text-gray-500 peer-checked:hidden">Closed</span>
+                                                        <span class="ml-2 text-xs text-green-600 hidden peer-checked:inline">Open</span>
+                                                    </label>
+                                                </div>
+                                                <div class="flex items-center space-x-2 flex-shrink-0 min-w-0">
+                                                    <input type="time" name="hours[friday][open]" class="time-input text-sm px-2 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 w-20 min-w-20 max-w-20" value="10:00">
+                                                    <span class="text-sm text-gray-500 whitespace-nowrap">to</span>
+                                                    <input type="time" name="hours[friday][close]" class="time-input text-sm px-2 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 w-20 min-w-20 max-w-20" value="20:00">
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Saturday -->
+                                        <div class="day-schedule bg-white rounded-lg p-3 border border-gray-200">
+                                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                                                <div class="flex items-center justify-between">
+                                                    <span class="font-medium text-gray-700 text-sm">📅 Saturday</span>
+                                                    <label class="relative inline-flex items-center cursor-pointer">
+                                                        <input type="checkbox" class="sr-only peer day-toggle" data-day="saturday" checked>
+                                                        <div class="w-8 h-4 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[1px] after:left-[1px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-blue-600"></div>
+                                                        <span class="ml-2 text-xs text-gray-500 peer-checked:hidden">Closed</span>
+                                                        <span class="ml-2 text-xs text-green-600 hidden peer-checked:inline">Open</span>
+                                                    </label>
+                                                </div>
+                                                <div class="flex items-center space-x-2 flex-shrink-0 min-w-0">
+                                                    <input type="time" name="hours[saturday][open]" class="time-input text-sm px-2 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 w-20 min-w-20 max-w-20" value="10:00">
+                                                    <span class="text-sm text-gray-500 whitespace-nowrap">to</span>
+                                                    <input type="time" name="hours[saturday][close]" class="time-input text-sm px-2 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 w-20 min-w-20 max-w-20" value="20:00">
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Sunday -->
+                                        <div class="day-schedule bg-white rounded-lg p-3 border border-gray-200">
+                                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                                                <div class="flex items-center justify-between">
+                                                    <span class="font-medium text-gray-700 text-sm">📅 Sunday</span>
+                                                    <label class="relative inline-flex items-center cursor-pointer">
+                                                        <input type="checkbox" class="sr-only peer day-toggle" data-day="sunday">
+                                                        <div class="w-8 h-4 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[1px] after:left-[1px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-blue-600"></div>
+                                                        <span class="ml-2 text-xs text-gray-500 peer-checked:hidden">Closed</span>
+                                                        <span class="ml-2 text-xs text-green-600 hidden peer-checked:inline">Open</span>
+                                                    </label>
+                                                </div>
+                                                <div class="flex items-center space-x-2 flex-shrink-0 min-w-0">
+                                                    <input type="time" name="hours[sunday][open]" class="time-input text-sm px-2 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 w-20 min-w-20 max-w-20" value="10:00" disabled>
+                                                    <span class="text-sm text-gray-500 whitespace-nowrap">to</span>
+                                                    <input type="time" name="hours[sunday][close]" class="time-input text-sm px-2 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 w-20 min-w-20 max-w-20" value="20:00" disabled>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Quick Actions -->
+                                    <div class="flex flex-col sm:flex-row gap-2 pt-3 border-t border-gray-200 overflow-hidden">
+                                        <button type="button" onclick="setAllDays('10:00', '20:00')" class="flex-1 text-sm px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition duration-200 font-medium whitespace-nowrap overflow-hidden text-ellipsis">
+                                            📅 Set All: 10 AM - 8 PM
+                                        </button>
+                                        <button type="button" onclick="setWeekdays('10:00', '18:00')" class="flex-1 text-sm px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition duration-200 font-medium whitespace-nowrap overflow-hidden text-ellipsis">
+                                            💼 Weekdays: 10 AM - 6 PM
+                                        </button>
+                                        <button type="button" onclick="closeAllDays()" class="flex-1 text-sm px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition duration-200 font-medium whitespace-nowrap overflow-hidden text-ellipsis">
+                                            🚫 Close All
+                                        </button>
+                                    </div>
+                                </div>
+                                <p class="text-sm text-gray-500 mt-3">💡 Toggle each day on/off and set opening hours. Use quick actions for faster setup.</p>
+                            </div>
+
+                            <div class="input-group">
+                                <label for="about" class="block text-sm font-semibold text-gray-700 mb-2">
+                                    <i data-lucide="file-text" class="w-4 h-4 inline mr-2 text-blue-600"></i>Business Description
+                                </label>
+                                <textarea id="about" name="about" rows="6"
+                                          class="form-textarea w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200" 
+                                          placeholder="Tell customers about your business heritage, expertise, what makes you special..."><%= businessInfo && businessInfo.about ? businessInfo.about : '' %></textarea>
+                                <p class="text-sm text-gray-500 mt-2">Describe your business in detail to attract customers</p>
+                            </div>
+
+                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                <div class="input-group">
+                                    <label for="foundedYear" class="block text-sm font-semibold text-gray-700 mb-2">
+                                        <i data-lucide="calendar" class="w-4 h-4 inline mr-2 text-green-500"></i>Founded Year
+                                    </label>
+                                    <input type="number" id="foundedYear" name="foundedYear" 
+                                           class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition duration-200" 
+                                           value="<%= businessInfo && businessInfo.heritage && businessInfo.heritage.foundedYear ? businessInfo.heritage.foundedYear : '' %>" 
+                                           placeholder="1985" min="1800" max="2030">
+                                </div>
+                                
+                                <div class="input-group">
+                                    <label for="story" class="block text-sm font-semibold text-gray-700 mb-2">
+                                        <i data-lucide="book-open" class="w-4 h-4 inline mr-2 text-purple-500"></i>Heritage Story
+                                    </label>
+                                    <textarea id="story" name="story" rows="3"
+                                              class="form-textarea w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-200" 
+                                              placeholder="Share your business heritage and story..."><%= businessInfo && businessInfo.heritage && businessInfo.heritage.story ? businessInfo.heritage.story : '' %></textarea>
+                                </div>
+                            </div>
+                            
+                            <div class="input-group">
+                                <label for="specialties" class="block text-sm font-semibold text-gray-700 mb-2">
+                                    <i data-lucide="star" class="w-4 h-4 inline mr-2 text-yellow-500"></i>Business Specialties
+                                </label>
+                                <div class="flex flex-wrap gap-2 mb-3" id="specialtyTags">
+                                    <!-- Dynamic specialty tags will appear here -->
+                                </div>
+                                <div class="flex flex-col sm:flex-row gap-3">
+                                    <input type="text" id="specialtyInput" class="form-input flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition duration-200 text-sm" placeholder="Enter a specialty and press Enter">
+                                    <button type="button" onclick="addSpecialty()" class="w-full sm:w-auto px-6 py-3 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition duration-200 font-medium text-sm flex items-center justify-center">
+                                        <i data-lucide="plus" class="w-4 h-4 mr-2"></i>
+                                        Add Specialty
+                                    </button>
+                                </div>
+                                <input type="hidden" id="specialties" name="specialties" value="<%= businessInfo && businessInfo.heritage && businessInfo.heritage.specialties ? businessInfo.heritage.specialties.join(', ') : '' %>">
+                                <p class="text-sm text-gray-500 mt-2">💡 Add specialties one by one. Click on tags to remove them.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Enhanced Save Button -->
+                    <div class="bg-white rounded-xl shadow-lg p-4 sm:p-6">
+                        <div class="flex flex-col space-y-4">
+                            <div class="flex items-center space-x-3 text-center sm:text-left">
+                                <i data-lucide="save" class="w-5 h-5 text-green-600"></i>
+                                <div>
+                                    <h4 class="font-semibold text-gray-900 text-sm sm:text-base">Ready to Update?</h4>
+                                    <p class="text-xs sm:text-sm text-gray-500">Save your business information changes</p>
+                                </div>
+                            </div>
+                            <button type="submit" id="saveButton" 
+                                    class="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-6 py-4 rounded-lg font-semibold shadow-lg hover:shadow-xl transition duration-200 flex items-center justify-center space-x-2 text-sm sm:text-base">
+                                <i data-lucide="save" class="w-4 h-4 sm:w-5 sm:h-5"></i>
+                                <span>Update Business Information</span>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </main>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+
+        // Form section toggle functionality
+        function toggleSection(sectionName) {
+            const content = document.getElementById(`${sectionName}-content`);
+            const toggle = document.getElementById(`${sectionName}-toggle`);
+            const section = document.querySelector(`[data-section="${sectionName}"]`);
+            
+            if (content.style.display === 'none') {
+                content.style.display = 'block';
+                toggle.style.transform = 'rotate(0deg)';
+                section.classList.remove('collapsed');
+            } else {
+                content.style.display = 'none';
+                toggle.style.transform = 'rotate(180deg)';
+                section.classList.add('collapsed');
+            }
+        }
+
+        // Progress tracking
+        function updateProgress() {
+            const steps = document.querySelectorAll('.progress-step');
+            const sections = document.querySelectorAll('.form-section');
+            
+            sections.forEach((section, index) => {
+                const inputs = section.querySelectorAll('input, textarea');
+                let filledInputs = 0;
+                
+                inputs.forEach(input => {
+                    if (input.value.trim() !== '') filledInputs++;
+                });
+                
+                if (filledInputs > 0 && steps[index]) {
+                    steps[index].classList.add('active');
+                    steps[index].classList.remove('bg-gray-100', 'text-gray-600');
+                }
+            });
+        }
+
+        // Business Hours Schedule Functions
+        function setAllDays(openTime, closeTime) {
+            const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+            days.forEach(day => {
+                const toggle = document.querySelector(`.day-toggle[data-day="${day}"]`);
+                const openInput = document.querySelector(`input[name="hours[${day}][open]"]`);
+                const closeInput = document.querySelector(`input[name="hours[${day}][close]"]`);
+                
+                toggle.checked = true;
+                openInput.disabled = false;
+                closeInput.disabled = false;
+                openInput.value = openTime;
+                closeInput.value = closeTime;
+            });
+            updateDayToggles();
+        }
+        
+        function setWeekdays(openTime, closeTime) {
+            const weekdays = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
+            weekdays.forEach(day => {
+                const toggle = document.querySelector(`.day-toggle[data-day="${day}"]`);
+                const openInput = document.querySelector(`input[name="hours[${day}][open]"]`);
+                const closeInput = document.querySelector(`input[name="hours[${day}][close]"]`);
+                
+                toggle.checked = true;
+                openInput.disabled = false;
+                closeInput.disabled = false;
+                openInput.value = openTime;
+                closeInput.value = closeTime;
+            });
+            updateDayToggles();
+        }
+        
+        function closeAllDays() {
+            const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+            days.forEach(day => {
+                const toggle = document.querySelector(`.day-toggle[data-day="${day}"]`);
+                toggle.checked = false;
+            });
+            updateDayToggles();
+        }
+        
+        function updateDayToggles() {
+            const toggles = document.querySelectorAll('.day-toggle');
+            toggles.forEach(toggle => {
+                const day = toggle.getAttribute('data-day');
+                const openInput = document.querySelector(`input[name="hours[${day}][open]"]`);
+                const closeInput = document.querySelector(`input[name="hours[${day}][close]"]`);
+                
+                if (toggle.checked) {
+                    openInput.disabled = false;
+                    closeInput.disabled = false;
+                    openInput.classList.remove('bg-gray-100');
+                    closeInput.classList.remove('bg-gray-100');
+                } else {
+                    openInput.disabled = true;
+                    closeInput.disabled = true;
+                    openInput.classList.add('bg-gray-100');
+                    closeInput.classList.add('bg-gray-100');
+                }
+            });
+        }
+        
+        // Specialty Tags Functions
+        let specialties = [];
+        
+        function initializeSpecialties() {
+            const specialtiesInput = document.getElementById('specialties');
+            const existingSpecialties = specialtiesInput.value;
+            if (existingSpecialties) {
+                specialties = existingSpecialties.split(',').map(s => s.trim()).filter(s => s);
+                renderSpecialtyTags();
+            }
+        }
+        
+        function addSpecialty() {
+            const input = document.getElementById('specialtyInput');
+            const value = input.value.trim();
+            if (value && !specialties.includes(value)) {
+                specialties.push(value);
+                input.value = '';
+                renderSpecialtyTags();
+                updateSpecialtiesInput();
+            }
+        }
+        
+        function removeSpecialty(index) {
+            specialties.splice(index, 1);
+            renderSpecialtyTags();
+            updateSpecialtiesInput();
+        }
+        
+        function renderSpecialtyTags() {
+            const container = document.getElementById('specialtyTags');
+            container.innerHTML = '';
+            
+            specialties.forEach((specialty, index) => {
+                const tag = document.createElement('div');
+                tag.className = 'bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm flex items-center space-x-2 cursor-pointer hover:bg-yellow-200 transition duration-200';
+                tag.innerHTML = `
+                    <span>${specialty}</span>
+                    <button type="button" onclick="removeSpecialty(${index})" class="hover:bg-yellow-300 rounded-full p-1">
+                        <i data-lucide="x" class="w-3 h-3"></i>
+                    </button>
+                `;
+                container.appendChild(tag);
+            });
+            
+            // Re-initialize Lucide icons for the new tags
+            lucide.createIcons();
+        }
+        
+        function updateSpecialtiesInput() {
+            const input = document.getElementById('specialties');
+            input.value = specialties.join(', ');
+        }
+
+        // Address Functions
+        function updateAddressPreview() {
+            const street = document.getElementById('street').value.trim();
+            const area = document.getElementById('area').value.trim();
+            const city = document.getElementById('city').value.trim();
+            const state = document.getElementById('state').value.trim();
+            const pincode = document.getElementById('pincode').value.trim();
+            const country = document.getElementById('country').value.trim();
+            
+            const parts = [street, area, city, state, pincode, country].filter(part => part !== '');
+            const fullAddress = parts.join(', ');
+            
+            const preview = document.getElementById('addressPreview');
+            if (fullAddress) {
+                preview.textContent = fullAddress;
+                preview.classList.remove('text-blue-400');
+                preview.classList.add('text-blue-700');
+            } else {
+                preview.textContent = 'Complete the form to see your full address here...';
+                preview.classList.remove('text-blue-700');
+                preview.classList.add('text-blue-400');
+            }
+            
+            // Update hidden address field
+            document.getElementById('address').value = fullAddress;
+        }
+        
+        function handleCityChange() {
+            const citySelect = document.getElementById('city');
+            const customCityInput = document.getElementById('customCity');
+            
+            if (citySelect.value === 'Other') {
+                customCityInput.classList.remove('hidden');
+                customCityInput.focus();
+            } else {
+                customCityInput.classList.add('hidden');
+                customCityInput.value = '';
+            }
+            updateAddressPreview();
+        }
+        
+        function validatePincode() {
+            const pincodeInput = document.getElementById('pincode');
+            const pincodeInfo = document.getElementById('pincodeInfo');
+            const pincodeDetails = document.getElementById('pincodeDetails');
+            
+            const pincode = pincodeInput.value.trim();
+            
+            if (pincode.length === 6 && /^\d{6}$/.test(pincode)) {
+                pincodeInput.classList.remove('border-red-500');
+                pincodeInput.classList.add('border-green-500');
+                
+                // Show mock location info (in real app, you'd use a postal code API)
+                const mockInfo = {
+                    '400001': 'Fort, Mumbai, Maharashtra',
+                    '110001': 'Connaught Place, New Delhi, Delhi',
+                    '560001': 'Bangalore City, Bengaluru, Karnataka',
+                    '500001': 'Secunderabad, Hyderabad, Telangana'
+                };
+                
+                if (mockInfo[pincode]) {
+                    pincodeDetails.textContent = `Location: ${mockInfo[pincode]}`;
+                    pincodeInfo.classList.remove('hidden');
+                } else {
+                    pincodeDetails.textContent = 'Valid PIN code format';
+                    pincodeInfo.classList.remove('hidden');
+                }
+            } else if (pincode.length > 0) {
+                pincodeInput.classList.add('border-red-500');
+                pincodeInput.classList.remove('border-green-500');
+                pincodeDetails.textContent = 'Please enter a valid 6-digit PIN code';
+                pincodeInfo.classList.remove('hidden');
+            } else {
+                pincodeInput.classList.remove('border-red-500', 'border-green-500');
+                pincodeInfo.classList.add('hidden');
+            }
+            
+            updateAddressPreview();
+        }
+
+        // Form validation and enhancement
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize specialties
+            initializeSpecialties();
+            
+            // Address handling
+            const addressFields = ['street', 'area', 'city', 'state', 'pincode', 'country'];
+            addressFields.forEach(fieldId => {
+                const field = document.getElementById(fieldId);
+                if (field) {
+                    field.addEventListener('input', updateAddressPreview);
+                    field.addEventListener('change', updateAddressPreview);
+                }
+            });
+            
+            // City dropdown special handling
+            document.getElementById('city').addEventListener('change', handleCityChange);
+            document.getElementById('customCity').addEventListener('input', updateAddressPreview);
+            
+            // PIN code validation
+            document.getElementById('pincode').addEventListener('input', validatePincode);
+            
+            // Initial address preview
+            updateAddressPreview();
+            
+            // Day toggle functionality
+            const dayToggles = document.querySelectorAll('.day-toggle');
+            dayToggles.forEach(toggle => {
+                toggle.addEventListener('change', updateDayToggles);
+            });
+            updateDayToggles(); // Initial setup
+            
+            // Specialty input Enter key handling
+            const specialtyInput = document.getElementById('specialtyInput');
+            specialtyInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    addSpecialty();
+                }
+            });
+            
+            // Real-time progress updates
+            const inputs = document.querySelectorAll('input, textarea');
+            inputs.forEach(input => {
+                input.addEventListener('input', updateProgress);
+            });
+            
+            // Initial progress check
+            updateProgress();
+            
+            // Enhanced form submission
+            const form = document.getElementById('businessForm');
+            const saveButton = document.getElementById('saveButton');
+            
+            form.addEventListener('submit', function(e) {
+                saveButton.classList.add('save-animation');
+                saveButton.innerHTML = '<i data-lucide="loader" class="w-5 h-5 animate-spin"></i><span>Saving...</span>';
+                lucide.createIcons();
+            });
+            
+            // Phone number formatting
+            const phoneInputs = document.querySelectorAll('input[type="tel"]');
+            phoneInputs.forEach(input => {
+                input.addEventListener('input', function() {
+                    // Simple validation feedback
+                    if (this.value && !this.value.match(/^[\+]?[0-9\s\-\(\)]+$/)) {
+                        this.classList.add('border-red-500');
+                        this.classList.remove('border-gray-300');
+                    } else {
+                        this.classList.remove('border-red-500');
+                        this.classList.add('border-gray-300');
+                    }
+                });
+            });
+            
+            // URL validation for social media
+            const urlInputs = document.querySelectorAll('input[type="url"]');
+            urlInputs.forEach(input => {
+                input.addEventListener('input', function() {
+                    if (this.value && !this.value.match(/^https?:\/\/.+/)) {
+                        this.classList.add('border-red-500');
+                        this.classList.remove('border-gray-300');
+                    } else {
+                        this.classList.remove('border-red-500');
+                        this.classList.add('border-gray-300');
+                    }
+                });
+            });
+        });
+
+        // Auto-hide success/error messages
+        setTimeout(() => {
+            const alerts = document.querySelectorAll('.bg-red-50, .bg-green-50');
+            alerts.forEach(alert => {
+                alert.style.transition = 'opacity 0.5s, transform 0.5s';
+                alert.style.opacity = '0';
+                alert.style.transform = 'translateY(-20px)';
+                setTimeout(() => alert.remove(), 500);
+            });
+        }, 5000);
+    </script>
+    
+    <script src="/admin/assets/js/admin.js"></script>
+</body>
+</html> 

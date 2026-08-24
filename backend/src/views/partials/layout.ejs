@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#f8fafc',
+                            500: '#0f172a',
+                            600: '#0f172a',
+                            700: '#020617'
+                        },
+                        ruby: '#b91c1c',
+                        emerald: '#047857',
+                        golden: '#facc15'
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/admin/assets/css/admin.css">
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <!-- Mobile menu overlay -->
+    <div id="mobile-menu-overlay" class="fixed inset-0 bg-gray-600 bg-opacity-75 z-20 lg:hidden hidden"></div>
+    
+    <!-- Sidebar -->
+    <div id="sidebar" class="fixed inset-y-0 left-0 z-30 w-64 bg-primary-500 text-white transform -translate-x-full lg:translate-x-0 lg:static lg:inset-0 transition duration-300 ease-in-out">
+        <div class="flex items-center justify-center h-16 bg-primary-700">
+            <h1 class="text-xl font-bold">💎 Kohinoor Admin</h1>
+            <button id="close-sidebar" class="absolute top-4 right-4 lg:hidden">
+                <i data-lucide="x" class="w-6 h-6"></i>
+            </button>
+        </div>
+        
+        <nav class="mt-5 px-2">
+            <a href="/admin/dashboard" class="group flex items-center px-2 py-2 text-base font-medium rounded-md hover:bg-primary-600 <%= title.includes('Dashboard') ? 'bg-primary-600' : '' %>">
+                <i data-lucide="layout-dashboard" class="mr-4 h-6 w-6"></i>
+                Dashboard
+            </a>
+            
+            <a href="/admin/gemstones" class="group flex items-center px-2 py-2 mt-1 text-base font-medium rounded-md hover:bg-primary-600 <%= title.includes('Gemstone') ? 'bg-primary-600' : '' %>">
+                <i data-lucide="gem" class="mr-4 h-6 w-6"></i>
+                Gemstones
+            </a>
+            
+            <a href="/admin/business" class="group flex items-center px-2 py-2 mt-1 text-base font-medium rounded-md hover:bg-primary-600 <%= title.includes('Business') ? 'bg-primary-600' : '' %>">
+                <i data-lucide="building" class="mr-4 h-6 w-6"></i>
+                Business Info
+            </a>
+            
+            <div class="mt-8 pt-4 border-t border-primary-600">
+                <a href="/admin/logout" class="group flex items-center px-2 py-2 text-base font-medium rounded-md hover:bg-red-600">
+                    <i data-lucide="log-out" class="mr-4 h-6 w-6"></i>
+                    Logout
+                </a>
+            </div>
+        </nav>
+    </div>
+
+    <!-- Main content -->
+    <div class="lg:pl-64 flex flex-col flex-1">
+        <!-- Top bar -->
+        <div class="sticky top-0 z-10 lg:hidden bg-white shadow-sm border-b border-gray-200">
+            <div class="flex items-center justify-between h-16 px-4">
+                <button id="mobile-menu-button" class="text-gray-500 hover:text-gray-900">
+                    <i data-lucide="menu" class="w-6 h-6"></i>
+                </button>
+                <h1 class="text-lg font-semibold text-gray-900">💎 Kohinoor Admin</h1>
+                <div class="flex items-center">
+                    <% if (typeof user !== 'undefined') { %>
+                        <span class="text-sm text-gray-500"><%= user.name %></span>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page content -->
+        <div class="flex-1 flex flex-col">
+            <!-- Header -->
+            <header class="bg-white shadow-sm border-b border-gray-200 hidden lg:block">
+                <div class="px-6 py-4">
+                    <div class="flex items-center justify-between">
+                        <h1 class="text-2xl font-bold text-gray-900"><%= title.replace(' - Kohinoor Gemstone', '') %></h1>
+                        <% if (typeof user !== 'undefined') { %>
+                            <div class="flex items-center space-x-4">
+                                <span class="text-gray-700">Welcome, <%= user.name %></span>
+                                <span class="px-3 py-1 bg-emerald text-white text-xs rounded-full"><%= user.role %></span>
+                            </div>
+                        <% } %>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Main content area -->
+            <main class="flex-1 p-6 bg-gray-50">
+                <% if (typeof error !== 'undefined' && error) { %>
+                    <div class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-md">
+                        <div class="flex items-center">
+                            <i data-lucide="alert-circle" class="w-5 h-5 mr-2"></i>
+                            <%= error %>
+                        </div>
+                    </div>
+                <% } %>
+                
+                <% if (typeof success !== 'undefined' && success) { %>
+                    <div class="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded-md">
+                        <div class="flex items-center">
+                            <i data-lucide="check-circle" class="w-5 h-5 mr-2"></i>
+                            <%= success %>
+                        </div>
+                    </div>
+                <% } %>
+
+                <%- body %>
+            </main>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+
+        // Mobile menu functionality
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('mobile-menu-overlay');
+        const closeSidebar = document.getElementById('close-sidebar');
+
+        function openSidebar() {
+            sidebar.classList.remove('-translate-x-full');
+            overlay.classList.remove('hidden');
+        }
+
+        function closeSidebarFn() {
+            sidebar.classList.add('-translate-x-full');
+            overlay.classList.add('hidden');
+        }
+
+        if (mobileMenuButton) {
+            mobileMenuButton.addEventListener('click', openSidebar);
+        }
+        
+        if (closeSidebar) {
+            closeSidebar.addEventListener('click', closeSidebarFn);
+        }
+        
+        if (overlay) {
+            overlay.addEventListener('click', closeSidebarFn);
+        }
+
+        // Auto-hide success/error messages
+        setTimeout(() => {
+            const alerts = document.querySelectorAll('.bg-red-100, .bg-green-100');
+            alerts.forEach(alert => {
+                alert.style.transition = 'opacity 0.5s';
+                alert.style.opacity = '0';
+                setTimeout(() => alert.remove(), 500);
+            });
+        }, 5000);
+    </script>
+    
+    <script src="/admin/assets/js/admin.js"></script>
+</body>
+</html> 

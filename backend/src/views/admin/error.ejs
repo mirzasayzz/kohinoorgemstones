@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#f8fafc',
+                            500: '#0f172a',
+                            600: '#0f172a',
+                            700: '#020617'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
+    <div class="max-w-md w-full text-center">
+        <div class="bg-white rounded-lg shadow-sm p-8">
+            <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100 mb-4">
+                <i data-lucide="alert-circle" class="h-8 w-8 text-red-600"></i>
+            </div>
+            
+            <h1 class="text-2xl font-bold text-gray-900 mb-2">Oops! Something went wrong</h1>
+            
+            <% if (typeof error !== 'undefined' && error) { %>
+                <p class="text-gray-600 mb-6"><%= error %></p>
+            <% } else { %>
+                <p class="text-gray-600 mb-6">An unexpected error occurred. Please try again.</p>
+            <% } %>
+            
+            <div class="space-x-4">
+                <button onclick="history.back()" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-md transition duration-150">
+                    Go Back
+                </button>
+                <a href="/admin/dashboard" class="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-md transition duration-150">
+                    Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+    </script>
+</body>
+</html> 
