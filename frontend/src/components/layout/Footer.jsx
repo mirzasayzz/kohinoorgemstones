@@ -21,7 +21,7 @@ const Footer = () => {
     if (!businessInfo?.businessHours) return null;
     
     const now = new Date();
-    const currentDay = now.toLocaleLowerCase().substring(0, 3); // 'mon', 'tue', etc.
+    const currentDay = now.toLocaleDateString('en-US', { weekday: 'short' }).toLowerCase(); // 'mon', 'tue', etc.
     const currentTime = now.getHours() * 100 + now.getMinutes(); // Convert to HHMM format
     
     const dayMap = {
@@ -63,7 +63,7 @@ const Footer = () => {
     if (!businessInfo?.businessHours) return '';
     
     const now = new Date();
-    const currentDay = now.toLocaleLowerCase().substring(0, 3);
+    const currentDay = now.toLocaleDateString('en-US', { weekday: 'short' }).toLowerCase();
     
     const dayMap = {
       'sun': 'sunday',
