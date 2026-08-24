@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
 import { businessService } from '../services/api';
 import { SITE_CONFIG } from '../config/config';
 
@@ -12,11 +12,18 @@ export const useBusiness = () => {
   return context;
 };
 
-export const BusinessProvider = ({ children }) => {
+export const BusinessProvider = ({ children, onBusinessUpdate }) => {
   const [businessInfo, setBusinessInfo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [darkMode, setDarkMode] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState(null);
+  
+  // Refs for managing intervals and preventing memory leaks
+  const refreshIntervalRef = useRef(null);
+  const lastUpdatedAtRef = useRef(null);
+  const isLoadingRef = useRef(false);
+  const hasInitiallyLoadedRef = useRef(false);
 
   // Initialize dark mode from localStorage or system preference
   useEffect(() => {
@@ -44,9 +51,35 @@ export const BusinessProvider = ({ children }) => {
     setDarkMode(prev => !prev);
   };
 
-  const loadBusinessInfo = async () => {
+  // Smart cache check - only fetch if data has changed
+  const checkForUpdates = useCallback(async () => {
+    if (isLoadingRef.current) return false;
+    
     try {
-      setLoading(true);
+      // Quick timestamp check without fetching full data
+      const response = await businessService.getBusinessInfo();
+      const serverUpdatedAt = response.data.businessInfo.updatedAt;
+      
+      if (!lastUpdatedAtRef.current || new Date(serverUpdatedAt) > new Date(lastUpdatedAtRef.current)) {
+        console.log('🔄 Business data updated, refreshing...');
+        return true; // Data has changed
+      }
+      
+      return false; // No changes
+    } catch (err) {
+      console.error('Failed to check for updates:', err);
+      return false;
+    }
+  }, []);
+
+  const loadBusinessInfo = useCallback(async (forceRefresh = false, showNotification = false) => {
+    if (isLoadingRef.current && !forceRefresh) return;
+    
+    try {
+      isLoadingRef.current = true;
+      if (forceRefresh || !businessInfo) {
+        setLoading(true);
+      }
       setError(null);
       
       // Fetch both business info and contact info concurrently
@@ -54,6 +87,12 @@ export const BusinessProvider = ({ children }) => {
         businessService.getBusinessInfo(),
         businessService.getCompleteContactInfo()
       ]);
+      
+      // Update timestamp for cache invalidation
+      const serverUpdatedAt = businessResponse.data.businessInfo.updatedAt;
+      const wasUpdated = lastUpdatedAtRef.current && new Date(serverUpdatedAt) > new Date(lastUpdatedAtRef.current);
+      lastUpdatedAtRef.current = serverUpdatedAt;
+      setLastUpdated(serverUpdatedAt);
       
       // Merge the responses - correctly access nested businessInfo
       const mergedBusinessInfo = {
@@ -64,6 +103,17 @@ export const BusinessProvider = ({ children }) => {
       };
       
       setBusinessInfo(mergedBusinessInfo);
+      console.log('✅ Business info loaded successfully');
+      
+      // Notify about automatic updates (not for initial load or manual refresh)
+      if (hasInitiallyLoadedRef.current && wasUpdated && showNotification && onBusinessUpdate) {
+        onBusinessUpdate(mergedBusinessInfo, {
+          type: 'auto-update',
+          message: 'Business information updated automatically! 🔄'
+        });
+      }
+      
+      hasInitiallyLoadedRef.current = true;
     } catch (err) {
       console.error('Failed to load business info:', err);
       setError(err.message || 'Failed to load business information');
@@ -86,8 +136,70 @@ export const BusinessProvider = ({ children }) => {
       });
     } finally {
       setLoading(false);
+      isLoadingRef.current = false;
     }
-  };
+  }, [businessInfo, onBusinessUpdate]);
+
+  // Smart refresh that only loads if data has changed
+  const smartRefresh = useCallback(async () => {
+    const hasUpdates = await checkForUpdates();
+    if (hasUpdates) {
+      await loadBusinessInfo(false, true); // Show notification for automatic updates
+    }
+  }, [checkForUpdates, loadBusinessInfo]);
+
+  // Force refresh method for manual updates
+  const forceRefresh = useCallback(async () => {
+    console.log('🔄 Force refreshing business data...');
+    await loadBusinessInfo(true, false); // No notification for manual refresh
+  }, [loadBusinessInfo]);
+
+  // Setup automatic refresh intervals and visibility handling
+  useEffect(() => {
+    // Initial load
+    loadBusinessInfo(true, false);
+
+    // Setup periodic smart refresh every 30 seconds when tab is active
+    const setupRefreshInterval = () => {
+      if (refreshIntervalRef.current) {
+        clearInterval(refreshIntervalRef.current);
+      }
+      
+      refreshIntervalRef.current = setInterval(() => {
+        if (!document.hidden) { // Only refresh if tab is active
+          smartRefresh();
+        }
+      }, 10000); // 10 seconds for testing (can be increased to 30000 for production)
+    };
+
+    setupRefreshInterval();
+
+    // Handle visibility change - refresh when user comes back to tab
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        console.log('👁️ Tab became visible, checking for updates...');
+        smartRefresh();
+      }
+    };
+
+    // Handle window focus - refresh when user switches back to window
+    const handleWindowFocus = () => {
+      console.log('🎯 Window focused, checking for updates...');
+      smartRefresh();
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('focus', handleWindowFocus);
+
+    // Cleanup
+    return () => {
+      if (refreshIntervalRef.current) {
+        clearInterval(refreshIntervalRef.current);
+      }
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('focus', handleWindowFocus);
+    };
+  }, [loadBusinessInfo, smartRefresh]);
 
   // Generate WhatsApp URL with prefilled message
   const generateWhatsAppURL = (gemstone = null, customMessage = null) => {
@@ -305,11 +417,6 @@ Thanks!`;
     }
   };
 
-  // Load business info on mount
-  useEffect(() => {
-    loadBusinessInfo();
-  }, []);
-
   const value = {
     businessInfo,
     loading,
@@ -321,7 +428,9 @@ Thanks!`;
     getCompleteContactInfo,
     updateAllContactInfo,
     generateWhatsAppURL,
-    shareGemstoneWithImage
+    shareGemstoneWithImage,
+    lastUpdated, // Expose lastUpdated for display
+    forceRefresh // Expose forceRefresh for manual updates
   };
 
   return (

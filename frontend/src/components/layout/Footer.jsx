@@ -9,6 +9,7 @@ import {
   Clock
 } from 'lucide-react';
 import { useBusiness } from '../../context/BusinessContext';
+import UpdateIndicator from '../common/UpdateIndicator';
 
 const Footer = () => {
   const { businessInfo, generateWhatsAppURL } = useBusiness();
@@ -144,7 +145,7 @@ Thank you!`;
             </p>
 
             {/* Essential Links - Horizontal */}
-            <div className="flex gap-3">
+            <div className="flex gap-3 mb-2">
               {essentialLinks.map((link, index) => (
                 <Link 
                   key={index}
@@ -155,6 +156,9 @@ Thank you!`;
                 </Link>
               ))}
             </div>
+
+            {/* Update Indicator */}
+            <UpdateIndicator className="mt-2" />
           </div>
 
           {/* Contact Info - Compact */}

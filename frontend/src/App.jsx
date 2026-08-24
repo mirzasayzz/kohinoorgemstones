@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { HelmetProvider } from '@dr.pogodin/react-helmet';
 import { BusinessProvider } from './context/BusinessContext';
 import { WishlistProvider } from './context/WishlistContext';
+import { useToast } from './components/common/Toast';
 import Layout from './components/layout/Layout';
 import Home from './pages/Home';
 import AllGemstones from './pages/AllGemstones';
@@ -22,11 +23,30 @@ const NotFound = () => (
   </div>
 );
 
-function App() {
+// App wrapper with toast notifications
+const AppWithToasts = () => {
+  const { ToastContainer, showUpdate } = useToast();
+  
+  // Handle business update notifications
+  const handleBusinessUpdate = (businessInfo, updateInfo) => {
+    if (updateInfo.type === 'auto-update') {
+      showUpdate(updateInfo.message, {
+        duration: 5000,
+        actionButton: (
+          <button
+            onClick={() => window.location.reload()}
+            className="text-purple-600 hover:text-purple-800 text-xs font-medium underline"
+          >
+            Refresh
+          </button>
+        )
+      });
+    }
+  };
+  
   return (
-    <HelmetProvider>
-      <BusinessProvider>
-        <WishlistProvider>
+    <BusinessProvider onBusinessUpdate={handleBusinessUpdate}>
+      <WishlistProvider>
         <Router>
           <div className="App font-body">
             <Routes>
@@ -36,14 +56,24 @@ function App() {
                 <Route path="gemstone/:slug" element={<GemstoneDetail />} />
                 <Route path="about" element={<About />} />
                 <Route path="contact" element={<Contact />} />
-                  <Route path="wishlist" element={<Wishlist />} />
+                <Route path="wishlist" element={<Wishlist />} />
                 <Route path="*" element={<NotFound />} />
               </Route>
             </Routes>
           </div>
+          
+          {/* Toast notifications for auto-updates */}
+          <ToastContainer />
         </Router>
-        </WishlistProvider>
-      </BusinessProvider>
+      </WishlistProvider>
+    </BusinessProvider>
+  );
+};
+
+function App() {
+  return (
+    <HelmetProvider>
+      <AppWithToasts />
     </HelmetProvider>
   );
 }

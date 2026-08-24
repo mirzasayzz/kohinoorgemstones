@@ -1,91 +1,148 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Heart, X, Check } from 'lucide-react';
+import { 
+  CheckCircle, 
+  AlertCircle, 
+  Info, 
+  X, 
+  AlertTriangle,
+  RefreshCw
+} from 'lucide-react';
 
-let toastId = 0;
+const Toast = ({ 
+  message, 
+  type = 'info', 
+  duration = 4000, 
+  onClose,
+  persistent = false,
+  showIcon = true,
+  actionButton = null
+}) => {
+  const [isVisible, setIsVisible] = useState(true);
 
-const Toast = ({ toast, onRemove }) => {
   useEffect(() => {
-    const timer = setTimeout(() => {
-      onRemove(toast.id);
-    }, toast.duration || 3000);
+    if (!persistent && duration > 0) {
+      const timer = setTimeout(() => {
+        setIsVisible(false);
+        setTimeout(onClose, 300); // Wait for animation to complete
+      }, duration);
 
-    return () => clearTimeout(timer);
-  }, [toast.id, toast.duration, onRemove]);
+      return () => clearTimeout(timer);
+    }
+  }, [duration, onClose, persistent]);
 
-  const getIcon = () => {
-    switch (toast.type) {
-      case 'wishlist-add':
-        return <Heart className="w-5 h-5 text-red-500 fill-current" />;
-      case 'wishlist-remove':
-        return <Heart className="w-5 h-5 text-gray-500" />;
+  const getToastStyles = () => {
+    switch (type) {
       case 'success':
-        return <Check className="w-5 h-5 text-green-500" />;
+        return 'bg-green-50 border-green-200 text-green-800 shadow-green-100';
+      case 'error':
+        return 'bg-red-50 border-red-200 text-red-800 shadow-red-100';
+      case 'warning':
+        return 'bg-yellow-50 border-yellow-200 text-yellow-800 shadow-yellow-100';
+      case 'info':
+        return 'bg-blue-50 border-blue-200 text-blue-800 shadow-blue-100';
+      case 'update':
+        return 'bg-purple-50 border-purple-200 text-purple-800 shadow-purple-100';
       default:
-        return <Heart className="w-5 h-5 text-blue-500" />;
+        return 'bg-gray-50 border-gray-200 text-gray-800 shadow-gray-100';
     }
   };
 
-  const getBgColor = () => {
-    switch (toast.type) {
-      case 'wishlist-add':
-        return 'bg-red-50 border-red-200';
-      case 'wishlist-remove':
-        return 'bg-gray-50 border-gray-200';
+  const getIcon = () => {
+    switch (type) {
       case 'success':
-        return 'bg-green-50 border-green-200';
+        return <CheckCircle className="w-5 h-5 text-green-500" />;
+      case 'error':
+        return <AlertCircle className="w-5 h-5 text-red-500" />;
+      case 'warning':
+        return <AlertTriangle className="w-5 h-5 text-yellow-500" />;
+      case 'info':
+        return <Info className="w-5 h-5 text-blue-500" />;
+      case 'update':
+        return <RefreshCw className="w-5 h-5 text-purple-500" />;
       default:
-        return 'bg-blue-50 border-blue-200';
+        return <Info className="w-5 h-5 text-gray-500" />;
     }
+  };
+
+  const handleClose = () => {
+    setIsVisible(false);
+    setTimeout(onClose, 300);
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 50, scale: 0.3 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, y: 20, scale: 0.5 }}
-      className={`
-        ${getBgColor()}
-        rounded-lg shadow-lg border p-4 max-w-sm w-full
-        backdrop-blur-sm
-      `}
-    >
-      <div className="flex items-start">
-        <div className="flex-shrink-0">
-          {getIcon()}
-        </div>
-        <div className="ml-3 flex-1">
-          <p className="text-sm font-medium text-gray-900">
-            {toast.title}
-          </p>
-          {toast.message && (
-            <p className="text-sm text-gray-500 mt-1">
-              {toast.message}
-            </p>
+    <AnimatePresence>
+      {isVisible && (
+        <motion.div
+          initial={{ opacity: 0, y: -50, scale: 0.9 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: -50, scale: 0.9 }}
+          transition={{ duration: 0.3, ease: "easeOut" }}
+          className={`
+            fixed top-4 right-4 z-50 max-w-sm w-full
+            border rounded-lg shadow-lg backdrop-blur-sm
+            ${getToastStyles()}
+          `}
+        >
+          <div className="p-4">
+            <div className="flex items-start space-x-3">
+              {showIcon && (
+                <div className="flex-shrink-0">
+                  {getIcon()}
+                </div>
+              )}
+              
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium leading-5">
+                  {message}
+                </p>
+              </div>
+              
+              {actionButton && (
+                <div className="flex-shrink-0 ml-2">
+                  {actionButton}
+                </div>
+              )}
+              
+              {!persistent && (
+                <div className="flex-shrink-0 ml-2">
+                  <button
+                    onClick={handleClose}
+                    className="inline-flex rounded-md p-1.5 hover:bg-black hover:bg-opacity-10 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white focus:ring-gray-600 transition-colors"
+                  >
+                    <span className="sr-only">Dismiss</span>
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+          
+          {/* Progress bar for timed toasts */}
+          {!persistent && duration > 0 && (
+            <motion.div
+              initial={{ width: "100%" }}
+              animate={{ width: "0%" }}
+              transition={{ duration: duration / 1000, ease: "linear" }}
+              className="h-1 bg-current opacity-20 rounded-b-lg"
+            />
           )}
-        </div>
-        <div className="ml-4 flex-shrink-0">
-          <button
-            onClick={() => onRemove(toast.id)}
-            className="inline-flex text-gray-400 hover:text-gray-500 focus:outline-none"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
-      </div>
-    </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 };
 
-const ToastContainer = ({ toasts, onRemove }) => {
+// Toast Manager Component
+const ToastContainer = ({ toasts, removeToast }) => {
   return (
     <div className="fixed top-4 right-4 z-50 space-y-2">
-      <AnimatePresence>
+      <AnimatePresence mode="popLayout">
         {toasts.map((toast) => (
           <Toast
             key={toast.id}
-            toast={toast}
-            onRemove={onRemove}
+            {...toast}
+            onClose={() => removeToast(toast.id)}
           />
         ))}
       </AnimatePresence>
@@ -93,15 +150,13 @@ const ToastContainer = ({ toasts, onRemove }) => {
   );
 };
 
-// Toast context and hook
+// Toast Hook for easy usage
 export const useToast = () => {
   const [toasts, setToasts] = useState([]);
 
-  const addToast = ({ type = 'info', title, message, duration = 3000 }) => {
-    const id = ++toastId;
-    const toast = { id, type, title, message, duration };
-    
-    setToasts(prev => [...prev, toast]);
+  const addToast = (toast) => {
+    const id = Date.now() + Math.random();
+    setToasts(prev => [...prev, { ...toast, id }]);
     return id;
   };
 
@@ -109,29 +164,31 @@ export const useToast = () => {
     setToasts(prev => prev.filter(toast => toast.id !== id));
   };
 
-  const showWishlistAdd = (gemstone) => {
-    addToast({
-      type: 'wishlist-add',
-      title: 'Added to Wishlist',
-      message: `${gemstone?.name?.english} saved to your wishlist`
+  const showToast = (message, type = 'info', options = {}) => {
+    return addToast({
+      message,
+      type,
+      ...options
     });
   };
 
-  const showWishlistRemove = (gemstone) => {
-    addToast({
-      type: 'wishlist-remove',
-      title: 'Removed from Wishlist',
-      message: `${gemstone?.name?.english} removed from your wishlist`
-    });
-  };
+  const showSuccess = (message, options = {}) => showToast(message, 'success', options);
+  const showError = (message, options = {}) => showToast(message, 'error', options);
+  const showWarning = (message, options = {}) => showToast(message, 'warning', options);
+  const showInfo = (message, options = {}) => showToast(message, 'info', options);
+  const showUpdate = (message, options = {}) => showToast(message, 'update', options);
 
   return {
     toasts,
     addToast,
     removeToast,
-    showWishlistAdd,
-    showWishlistRemove,
-    ToastContainer: () => <ToastContainer toasts={toasts} onRemove={removeToast} />
+    showToast,
+    showSuccess,
+    showError,
+    showWarning,
+    showInfo,
+    showUpdate,
+    ToastContainer: () => <ToastContainer toasts={toasts} removeToast={removeToast} />
   };
 };
 
