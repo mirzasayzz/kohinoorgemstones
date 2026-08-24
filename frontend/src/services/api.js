@@ -18,7 +18,8 @@ const api = axios.create({
 // Request interceptor to add auth token
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token');
+    // Customer token key is 'kohinoor_token'; admin token key is 'token'
+    const token = localStorage.getItem('kohinoor_token') || localStorage.getItem('token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -46,6 +47,8 @@ api.interceptors.response.use(
 
     // Handle token expiration
     if (error.response?.status === 401) {
+      localStorage.removeItem('kohinoor_token');
+      localStorage.removeItem('kohinoor_user');
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       if (window.location.pathname.startsWith('/admin')) {
