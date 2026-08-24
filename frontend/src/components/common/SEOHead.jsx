@@ -83,31 +83,29 @@ const SEOHead = ({
 
   return (
     <Helmet>
-      {finalTitle && <title>{finalTitle}</title>}
-      {finalDescription && <meta name="description" content={finalDescription} />}
-      {finalKeywords && <meta name="keywords" content={finalKeywords} />}
+      {finalTitle ? <title>{finalTitle}</title> : null}
+      {finalDescription ? <meta name="description" content={finalDescription} /> : null}
+      {finalKeywords ? <meta name="keywords" content={finalKeywords} /> : null}
       <link rel="canonical" href={currentUrl} />
 
-      <meta property="og:title" content={finalTitle || ''} />
-      {finalDescription && <meta property="og:description" content={finalDescription} />}
+      {finalTitle ? <meta property="og:title" content={finalTitle} /> : null}
+      {finalDescription ? <meta property="og:description" content={finalDescription} /> : null}
       <meta property="og:image" content={finalImage} />
       <meta property="og:url" content={currentUrl} />
       <meta property="og:type" content={type} />
-      {siteName && <meta property="og:site_name" content={siteName} />}
+      {siteName ? <meta property="og:site_name" content={siteName} /> : null}
       <meta property="og:locale" content="en_IN" />
 
       <meta name="twitter:card" content="summary_large_image" />
-      <meta name="twitter:title" content={finalTitle || ''} />
-      {finalDescription && <meta name="twitter:description" content={finalDescription} />}
+      {finalTitle ? <meta name="twitter:title" content={finalTitle} /> : null}
+      {finalDescription ? <meta name="twitter:description" content={finalDescription} /> : null}
       <meta name="twitter:image" content={finalImage} />
 
-      {siteName && <meta name="author" content={siteName} />}
+      {siteName ? <meta name="author" content={siteName} /> : null}
       <meta name="robots" content="index, follow, max-image-preview:large" />
 
       {schemas.map((schema, index) => (
-        <script key={index} type="application/ld+json">
-          {JSON.stringify(schema)}
-        </script>
+        <script key={index} type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />
       ))}
 
       <link rel="preconnect" href="https://fonts.googleapis.com" />
