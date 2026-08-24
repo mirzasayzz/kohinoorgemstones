@@ -104,8 +104,8 @@ const Footer = () => {
 
   return (
     <footer className="bg-gray-900 text-white border-t border-gray-800">
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <div className="max-w-7xl mx-auto px-4 py-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           
           {/* Business Info */}
           <div className="space-y-4">
@@ -194,68 +194,115 @@ const Footer = () => {
             </div>
           </div>
 
-          {/* Business Hours & Status */}
-          <div className="space-y-4">
+          {/* Business Hours & Status - Compact */}
+          <div className="space-y-3">
             <h3 className="text-lg font-semibold text-amber-400">Store Hours</h3>
             
-            {/* Current Status */}
-            <div className="flex items-center space-x-2 p-3 rounded-lg bg-gray-800">
+            {/* Current Status - Compact */}
+            <div className="flex items-center space-x-2 p-2 rounded bg-gray-800">
               {currentlyOpen === true ? (
                 <>
-                  <CheckCircle className="w-5 h-5 text-green-400" />
-                  <div>
-                    <div className="text-green-400 font-medium">Open Now</div>
-                    <div className="text-gray-400 text-sm">{todayHours}</div>
+                  <CheckCircle className="w-4 h-4 text-green-400" />
+                  <div className="text-sm">
+                    <span className="text-green-400 font-medium">Open Now</span>
+                    <span className="text-gray-400 ml-2">{todayHours}</span>
                   </div>
                 </>
               ) : currentlyOpen === false ? (
                 <>
-                  <XCircle className="w-5 h-5 text-red-400" />
-                  <div>
-                    <div className="text-red-400 font-medium">Closed</div>
-                    <div className="text-gray-400 text-sm">{todayHours}</div>
+                  <XCircle className="w-4 h-4 text-red-400" />
+                  <div className="text-sm">
+                    <span className="text-red-400 font-medium">Closed</span>
+                    <span className="text-gray-400 ml-2">{todayHours}</span>
                   </div>
                 </>
               ) : (
                 <>
-                  <Clock className="w-5 h-5 text-gray-400" />
-                  <div>
-                    <div className="text-gray-400 font-medium">Hours Not Set</div>
-                    <div className="text-gray-500 text-sm">Contact us for availability</div>
+                  <Clock className="w-4 h-4 text-gray-400" />
+                  <div className="text-sm">
+                    <span className="text-gray-400 font-medium">Contact for hours</span>
                   </div>
                 </>
               )}
             </div>
 
-            {/* All Week Hours - Simplified */}
+            {/* Simplified Hours Summary */}
             {businessInfo?.businessHours && (
-              <div className="space-y-1 text-sm">
-                {['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].map(day => {
-                  const dayInfo = businessInfo.businessHours[day];
-                  const dayName = day.charAt(0).toUpperCase() + day.slice(1, 3);
+              <div className="text-xs text-gray-400 space-y-1">
+                {(() => {
+                  const weekdays = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
+                  const weekend = ['saturday', 'sunday'];
+                  
+                  // Check if weekdays have same hours
+                  const weekdayHours = weekdays.map(day => {
+                    const dayInfo = businessInfo.businessHours[day];
+                    if (dayInfo?.closed || (!dayInfo?.open && !dayInfo?.close)) return 'Closed';
+                    if (dayInfo?.open && dayInfo?.close) return `${formatTime(dayInfo.open)}-${formatTime(dayInfo.close)}`;
+                    return 'N/A';
+                  });
+                  
+                  const uniqueWeekdayHours = [...new Set(weekdayHours)];
+                  const sameWeekdayHours = uniqueWeekdayHours.length === 1;
+                  
+                  // Check weekend hours
+                  const saturdayInfo = businessInfo.businessHours.saturday;
+                  const sundayInfo = businessInfo.businessHours.sunday;
+                  
+                  const satHours = saturdayInfo?.closed || (!saturdayInfo?.open && !saturdayInfo?.close) 
+                    ? 'Closed' 
+                    : saturdayInfo?.open && saturdayInfo?.close 
+                      ? `${formatTime(saturdayInfo.open)}-${formatTime(saturdayInfo.close)}`
+                      : 'N/A';
+                      
+                  const sunHours = sundayInfo?.closed || (!sundayInfo?.open && !sundayInfo?.close) 
+                    ? 'Closed' 
+                    : sundayInfo?.open && sundayInfo?.close 
+                      ? `${formatTime(sundayInfo.open)}-${formatTime(sundayInfo.close)}`
+                      : 'N/A';
                   
                   return (
-                    <div key={day} className="flex justify-between items-center text-gray-400">
-                      <span>{dayName}</span>
-                      <span>
-                        {dayInfo?.closed || (!dayInfo?.open && !dayInfo?.close) 
-                          ? 'Closed' 
-                          : dayInfo?.open && dayInfo?.close 
-                            ? `${formatTime(dayInfo.open)} - ${formatTime(dayInfo.close)}`
-                            : 'N/A'
-                        }
-                      </span>
-                    </div>
+                    <>
+                      {sameWeekdayHours ? (
+                        <div className="flex justify-between">
+                          <span>Mon-Fri:</span>
+                          <span>{uniqueWeekdayHours[0]}</span>
+                        </div>
+                      ) : (
+                        weekdays.map(day => {
+                          const dayInfo = businessInfo.businessHours[day];
+                          const dayName = day.charAt(0).toUpperCase() + day.slice(1, 3);
+                          const hours = dayInfo?.closed || (!dayInfo?.open && !dayInfo?.close) 
+                            ? 'Closed' 
+                            : dayInfo?.open && dayInfo?.close 
+                              ? `${formatTime(dayInfo.open)}-${formatTime(dayInfo.close)}`
+                              : 'N/A';
+                          return (
+                            <div key={day} className="flex justify-between">
+                              <span>{dayName}:</span>
+                              <span>{hours}</span>
+                            </div>
+                          );
+                        })
+                      )}
+                      <div className="flex justify-between">
+                        <span>Sat:</span>
+                        <span>{satHours}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Sun:</span>
+                        <span>{sunHours}</span>
+                      </div>
+                    </>
                   );
-                })}
+                })()}
               </div>
             )}
           </div>
         </div>
 
         {/* Bottom Copyright */}
-        <div className="border-t border-gray-800 mt-8 pt-6">
-          <div className="text-center text-gray-500 text-sm">
+        <div className="border-t border-gray-800 mt-6 pt-4">
+          <div className="text-center text-gray-500 text-xs">
             © {currentYear} {businessInfo?.shopName || ''}. All rights reserved.
           </div>
         </div>
