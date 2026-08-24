@@ -1,0 +1,14 @@
+<svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Main Diamond Shape -->
+  <path d="M20 4L36 16L20 36L4 16L20 4Z" fill="#D4AF37"/>
+  <!-- Top Facet - Lighter -->
+  <path d="M20 4L36 16H4L20 4Z" fill="#E5C158"/>
+  <!-- Left Facet - Darker -->
+  <path d="M4 16L20 36L12 16H4Z" fill="#B8860B"/>
+  <!-- Center Facet -->
+  <path d="M12 16L20 36L28 16H12Z" fill="#D4AF37"/>
+  <!-- Right Facet -->
+  <path d="M28 16L20 36L36 16H28Z" fill="#C9A227"/>
+  <!-- Shine Effect -->
+  <path d="M20 4L12 16L20 12L28 16L20 4Z" fill="rgba(255,255,255,0.3)"/>
+</svg>

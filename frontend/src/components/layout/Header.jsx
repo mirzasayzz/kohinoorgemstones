@@ -1,23 +1,50 @@
-import { useState } from 'react';
-import { Menu, X, Moon, Sun, Heart, Search, Phone, Mail } from 'lucide-react';
-import { Link, useLocation } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Menu, Moon, Sun, Heart, Search, ShoppingCart, User, Sparkles } from 'lucide-react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useBusinessContext } from '../../context/BusinessContext';
 import { useWishlist } from '../../context/WishlistContext';
+import { useCart } from '../../context/CartContext';
+import { useAuth } from '../../context/AuthContext';
 import SearchBar from '../common/SearchBar';
+import Logo from '../common/Logo';
+import UserMenu from '../auth/UserMenu';
+import ChatPanel from '../common/ChatPanel';
+import MenuPanel from '../common/MenuPanel';
 
 const Header = () => {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [showMenuPanel, setShowMenuPanel] = useState(false);
   const [showMobileSearch, setShowMobileSearch] = useState(false);
+  const [showChat, setShowChat] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
   const { businessInfo, darkMode, toggleDarkMode } = useBusinessContext();
-  const { getWishlistCount } = useWishlist();
+  const { getWishlistCount, openWishlist } = useWishlist();
+  const { cartCount, openCart } = useCart();
+  const { isAuthenticated, user } = useAuth();
+
+  // Scroll effect
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 20);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const handleOpenAuth = () => {
+    navigate('/signin');
+  };
+
+  const handleOpenChat = () => {
+    setShowChat(true);
+  };
 
   const navigation = [
     { name: 'Home', href: '/' },
     { name: 'All Gemstones', href: '/gemstones' },
-    { name: 'About Us', href: '/about' },
-    { name: 'Contact', href: '/contact' }
+    { name: 'Our Story & Contact', href: '/about' }
   ];
 
   const wishlistCount = getWishlistCount();
@@ -29,18 +56,24 @@ const Header = () => {
   };
 
   const handleMenuToggle = () => {
-    setIsMobileMenuOpen(!isMobileMenuOpen);
+    setShowMenuPanel(!showMenuPanel);
     setShowMobileSearch(false);
   };
 
   const handleSearchToggle = () => {
     setShowMobileSearch(!showMobileSearch);
-    setIsMobileMenuOpen(false);
+    setShowMenuPanel(false);
   };
 
   const closeMobileMenu = () => {
-    setIsMobileMenuOpen(false);
+    setShowMenuPanel(false);
     setShowMobileSearch(false);
+  };
+
+  // Get user initials for avatar
+  const getInitials = (name) => {
+    if (!name) return 'U';
+    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
   };
 
   const handleSearch = (searchTerm) => {
@@ -52,367 +85,308 @@ const Header = () => {
 
   return (
     <>
-      {/* Main Header */}
-      <header className="bg-white/95 dark:bg-luxury-charcoal/95 backdrop-luxury border-b border-luxury-platinum/30 dark:border-luxury-charcoal/30 sticky top-0 z-50 transition-all duration-300">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16 md:h-20">
+      {/* Modern Glassmorphic Header */}
+      <motion.header 
+        initial={{ y: -100 }}
+        animate={{ y: 0 }}
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
+          scrolled 
+            ? 'py-2 bg-white/70 dark:bg-neutral-900/80 backdrop-blur-xl shadow-lg shadow-black/5 dark:shadow-black/20 border-b border-white/20 dark:border-white/10' 
+            : 'py-3 sm:py-4 bg-white/50 dark:bg-neutral-900/50 backdrop-blur-md'
+        }`}
+      >
+        {/* Animated gradient border */}
+        <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-amber-500/50 to-transparent"></div>
+        
+        <div className="w-full max-w-[1600px] mx-auto px-3 sm:px-4 lg:px-6">
+          <div className="flex items-center justify-between gap-2 sm:gap-4">
             
-            {/* Logo Section - Enhanced Visibility */}
-            <div className="flex items-center">
-              <Link 
-                to="/" 
-                className="flex items-center space-x-3 group"
-                onClick={closeMobileMenu}
-              >
-                {/* Logo with enhanced visibility */}
-                <div className="relative">
-                  <img 
-                    src="/kohinoor-logo.png" 
-                    alt="Kohinoor Logo" 
-                    className="w-10 h-10 sm:w-12 sm:h-12 object-contain transition-all duration-300 group-hover:scale-110 filter brightness-110 contrast-125"
-                    style={{ opacity: 1 }}
-                  />
+            {/* Logo - Fixed width */}
+            <motion.div 
+              className="flex-shrink-0"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              <div className="hidden sm:block">
+                <Logo size="default" onClick={closeMobileMenu} />
+              </div>
+              <div className="sm:hidden">
+                <Logo size="small" onClick={closeMobileMenu} />
+              </div>
+            </motion.div>
 
-                </div>
-                
-                {/* Brand Text - Enhanced */}
-                <div className="hidden sm:block">
-                  <div className="relative">
-                    {/* Main brand name with stroke */}
-                    <h1 
-                      className="font-luxury text-2xl font-bold text-luxury-charcoal dark:text-luxury-pearl group-hover:text-luxury-gold transition-colors duration-300"
-                      style={{ 
-                        opacity: 1,
-                        textShadow: '0 1px 2px rgba(0,0,0,0.1), 0 0 0 1px rgba(212,175,55,0.1)',
-                        WebkitTextStroke: '0.5px rgba(212,175,55,0.2)'
-                      }}
-                    >
-                      {businessInfo?.shopName || 'Kohinoor'}
-                    </h1>
-                    
-                    {/* Subtitle with better contrast */}
-                    <div 
-                      className="text-xs font-semibold tracking-wide text-luxury-gold/90 dark:text-luxury-gold"
-                      style={{ 
-                        opacity: 1,
-                        textShadow: '0 1px 1px rgba(0,0,0,0.2)'
-                      }}
-                    >
-                      Premium Gemstones
-                    </div>
+            {/* Desktop Search Bar - Centered */}
+            {location.pathname !== '/' && (
+              <div className="hidden lg:flex flex-1 justify-center max-w-md xl:max-w-xl">
+                <div className="relative group w-full">
+                  <div className="absolute -inset-1 bg-gradient-to-r from-amber-500/20 via-orange-500/20 to-amber-500/20 rounded-2xl blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                  <div className="relative w-full">
+                    <SearchBar 
+                      onSearch={handleSearch}
+                      placeholder="Search gemstones..."
+                      className="w-full"
+                    />
                   </div>
                 </div>
-                
-                {/* Mobile brand text */}
-                <div className="sm:hidden">
-                  <div className="relative">
-                    <h1 
-                      className="font-luxury text-xl font-bold text-luxury-charcoal dark:text-luxury-pearl group-hover:text-luxury-gold transition-colors duration-300"
-                      style={{ 
-                        opacity: 1,
-                        textShadow: '0 1px 2px rgba(0,0,0,0.1)',
-                        WebkitTextStroke: '0.3px rgba(212,175,55,0.2)'
-                      }}
-                    >
-                      {businessInfo?.shopName?.split(' ')?.[0] || 'Kohinoor'}
-                    </h1>
-                    <div 
-                      className="text-xs font-medium text-luxury-gold/90"
-                      style={{ 
-                        opacity: 1,
-                        textShadow: '0 1px 1px rgba(0,0,0,0.2)'
-                      }}
-                    >
-                      Premium Gemstones
-                    </div>
-                  </div>
-                </div>
-              </Link>
-            </div>
+              </div>
+            )}
 
-            {/* Desktop Search Bar */}
-            <div className="hidden lg:block flex-1 max-w-2xl mx-8">
-              <SearchBar 
-                onSearch={handleSearch}
-                placeholder="Search premium gemstones, jewelry..."
-                className="w-full"
-              />
-            </div>
-
-            {/* Desktop Navigation */}
-            <nav className="hidden md:flex items-center space-x-1">
-              {navigation.map((item) => {
-                const Icon = item.icon;
-                return (
+            {/* Desktop Navigation - Right side */}
+            <div className="hidden md:flex items-center gap-4">
+              {/* Nav Links */}
+              <nav className="flex items-center gap-1">
+                {navigation.map((item) => (
                   <Link
                     key={item.name}
                     to={item.href}
-                    className={`nav-link ${isActive(item.href) ? 'active' : ''}`}
+                    className="relative group"
                   >
-                    {Icon && <Icon className="w-4 h-4" />}
-                    <span className="text-sm font-medium">{item.name}</span>
+                    <motion.div
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-300 whitespace-nowrap ${
+                        isActive(item.href)
+                          ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-lg shadow-amber-500/30'
+                          : 'text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-white/10'
+                      }`}
+                    >
+                      {item.name}
+                    </motion.div>
                   </Link>
-                );
-              })}
-            </nav>
+                ))}
+              </nav>
 
-            {/* Desktop Actions */}
-            <div className="hidden md:flex items-center space-x-2">
+              {/* Divider */}
+              <div className="w-px h-6 bg-neutral-300 dark:bg-neutral-700"></div>
+
+              {/* Action Buttons */}
+              <div className="flex items-center gap-2">
               {/* Search Button for tablets */}
-              <button
-                onClick={handleSearchToggle}
-                className="lg:hidden p-2 rounded-xl text-luxury-charcoal dark:text-luxury-pearl hover:bg-luxury-champagne/20 dark:hover:bg-luxury-charcoal/20 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-luxury-gold"
-                aria-label="Search"
-              >
-                <Search className="w-5 h-5" />
-              </button>
+              {location.pathname !== '/' && (
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={handleSearchToggle}
+                  className="lg:hidden p-2.5 rounded-xl bg-white/50 dark:bg-white/10 backdrop-blur-sm text-neutral-600 dark:text-neutral-300 hover:bg-white/80 dark:hover:bg-white/20 hover:text-amber-600 transition-all duration-300 shadow-sm hover:shadow-md"
+                  aria-label="Search"
+                >
+                  <Search className="w-4.5 h-4.5" />
+                </motion.button>
+              )}
 
               {/* Wishlist Button */}
-              <Link
-                to="/wishlist"
-                className="relative p-2 rounded-xl text-luxury-charcoal dark:text-luxury-pearl hover:bg-luxury-champagne/20 dark:hover:bg-luxury-charcoal/20 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-luxury-gold group"
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={openWishlist}
+                className="relative p-2.5 rounded-xl bg-white/50 dark:bg-white/10 backdrop-blur-sm text-neutral-600 dark:text-neutral-300 hover:bg-red-50 dark:hover:bg-red-500/20 hover:text-red-500 transition-all duration-300 shadow-sm hover:shadow-md group"
                 aria-label="Wishlist"
               >
-                <Heart className="w-5 h-5 group-hover:text-luxury-ruby transition-colors duration-200" />
+                <Heart className="w-4.5 h-4.5 transition-transform group-hover:scale-110" />
                 {wishlistCount > 0 && (
                   <motion.span 
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
-                    className="absolute -top-1 -right-1 bg-luxury-ruby text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-medium shadow-luxury"
+                    className="absolute -top-1.5 -right-1.5 bg-gradient-to-r from-red-500 to-pink-500 text-white text-[10px] rounded-full min-w-[18px] h-[18px] flex items-center justify-center font-bold shadow-lg shadow-red-500/30"
                   >
                     {wishlistCount > 99 ? '99+' : wishlistCount}
                   </motion.span>
                 )}
-              </Link>
+              </motion.button>
 
-              {/* Dark Mode Slider Toggle */}
-              <div 
-                onClick={toggleDarkMode}
-                className="relative w-12 h-6 bg-luxury-champagne dark:bg-luxury-charcoal border-2 border-luxury-platinum/30 dark:border-luxury-charcoal/50 rounded-full cursor-pointer transition-all duration-300 hover:shadow-md"
-                role="button"
-                tabIndex={0}
-                aria-label="Toggle dark mode"
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    toggleDarkMode();
-                  }
-                }}
+              {/* Cart Button */}
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={openCart}
+                className="relative p-2.5 rounded-xl bg-white/50 dark:bg-white/10 backdrop-blur-sm text-neutral-600 dark:text-neutral-300 hover:bg-amber-50 dark:hover:bg-amber-500/20 hover:text-amber-600 transition-all duration-300 shadow-sm hover:shadow-md group"
+                aria-label="Cart"
               >
-                {/* Slider Track */}
-                <div className="absolute inset-0.5 rounded-full overflow-hidden">
-                  <div className={`absolute inset-0 transition-all duration-500 ${
-                    darkMode 
-                      ? 'bg-gradient-to-r from-blue-900 via-purple-900 to-indigo-900' 
-                      : 'bg-gradient-to-r from-yellow-200 via-orange-200 to-blue-200'
-                  }`}>
-                    {/* Stars for dark mode */}
-                    {darkMode && (
-                      <div className="absolute inset-0">
-                        <div className="absolute top-0.5 left-1.5 w-0.5 h-0.5 bg-white rounded-full animate-pulse"></div>
-                        <div className="absolute top-1.5 right-2 w-0.5 h-0.5 bg-white rounded-full animate-pulse" style={{ animationDelay: '0.5s' }}></div>
-                        <div className="absolute bottom-0.5 left-2.5 w-0.5 h-0.5 bg-white rounded-full animate-pulse" style={{ animationDelay: '1s' }}></div>
-                      </div>
-                    )}
-                  </div>
+                <ShoppingCart className="w-4.5 h-4.5 transition-transform group-hover:scale-110" />
+                {cartCount > 0 && (
+                  <motion.span 
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    className="absolute -top-1.5 -right-1.5 bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-[10px] rounded-full min-w-[18px] h-[18px] flex items-center justify-center font-bold shadow-lg shadow-emerald-500/30"
+                  >
+                    {cartCount > 99 ? '99+' : cartCount}
+                  </motion.span>
+                )}
+              </motion.button>
+
+              {/* Dark Mode Toggle - Beautiful Slider */}
+              <button
+                onClick={toggleDarkMode}
+                className="relative w-14 h-7 rounded-full p-1 transition-all duration-500 focus:outline-none focus:ring-2 focus:ring-amber-500/50"
+                style={{
+                  background: darkMode 
+                    ? 'linear-gradient(to right, #1e3a5f, #0f172a)' 
+                    : 'linear-gradient(to right, #fbbf24, #f59e0b)'
+                }}
+                aria-label="Toggle dark mode"
+              >
+                {/* Stars for dark mode */}
+                <div className={`absolute inset-0 overflow-hidden rounded-full transition-opacity duration-500 ${darkMode ? 'opacity-100' : 'opacity-0'}`}>
+                  <div className="absolute top-1 left-2 w-1 h-1 bg-white rounded-full animate-pulse"></div>
+                  <div className="absolute top-3 left-4 w-0.5 h-0.5 bg-white/80 rounded-full animate-pulse" style={{ animationDelay: '0.3s' }}></div>
+                  <div className="absolute bottom-2 left-3 w-0.5 h-0.5 bg-white/60 rounded-full animate-pulse" style={{ animationDelay: '0.6s' }}></div>
                 </div>
-                
-                {/* Slider Button */}
-                <div className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow-lg transition-all duration-300 flex items-center justify-center ${
-                  darkMode ? 'translate-x-6' : 'translate-x-0.5'
-                }`}>
+                {/* Slider circle */}
+                <motion.div
+                  className="relative w-5 h-5 rounded-full shadow-lg flex items-center justify-center"
+                  animate={{ 
+                    x: darkMode ? 28 : 0,
+                    backgroundColor: darkMode ? '#1e293b' : '#ffffff'
+                  }}
+                  transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                >
                   {darkMode ? (
-                    <Moon className="w-3 h-3 text-slate-700" />
+                    <Moon className="w-3 h-3 text-blue-300" />
                   ) : (
                     <Sun className="w-3 h-3 text-amber-500" />
                   )}
-                </div>
+                </motion.div>
+              </button>
+
+              {/* User Menu / Login Button */}
+              <UserMenu onLoginClick={() => handleOpenAuth('login')} onChatClick={handleOpenChat} />
               </div>
             </div>
 
-            {/* Mobile Actions */}
-            <div className="md:hidden flex items-center space-x-2">
+            {/* Mobile Actions - Compact & Responsive */}
+            <div className="md:hidden flex items-center gap-1 flex-shrink-0">
               {/* Mobile Search Toggle */}
-              <button
-                onClick={handleSearchToggle}
-                className="p-2 rounded-xl text-luxury-charcoal dark:text-luxury-pearl hover:bg-luxury-champagne/20 dark:hover:bg-luxury-charcoal/20 transition-all duration-200"
-                aria-label="Search"
-              >
-                <Search className="w-5 h-5" />
-              </button>
+              {location.pathname !== '/' && (
+                <motion.button
+                  whileTap={{ scale: 0.9 }}
+                  onClick={handleSearchToggle}
+                  className="p-1.5 rounded-lg bg-white/50 dark:bg-white/10 backdrop-blur-sm text-neutral-600 dark:text-neutral-300 transition-all duration-300"
+                  aria-label="Search"
+                >
+                  <Search className="w-[18px] h-[18px]" />
+                </motion.button>
+              )}
 
-              {/* Mobile Dark Mode Slider Toggle */}
-              <div 
+              {/* Mobile Dark Mode - Compact Slider */}
+              <button
                 onClick={toggleDarkMode}
-                className="relative w-12 h-6 bg-luxury-champagne dark:bg-luxury-charcoal border-2 border-luxury-platinum/30 dark:border-luxury-charcoal/50 rounded-full cursor-pointer transition-all duration-300 hover:shadow-md"
-                role="button"
-                tabIndex={0}
-                aria-label="Toggle dark mode"
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    toggleDarkMode();
-                  }
+                className="relative w-9 h-5 rounded-full p-0.5 transition-all duration-500 focus:outline-none flex-shrink-0"
+                style={{
+                  background: darkMode 
+                    ? 'linear-gradient(to right, #1e3a5f, #0f172a)' 
+                    : 'linear-gradient(to right, #fbbf24, #f59e0b)'
                 }}
+                aria-label="Toggle dark mode"
               >
-                {/* Slider Track */}
-                <div className="absolute inset-0.5 rounded-full overflow-hidden">
-                  <div className={`absolute inset-0 transition-all duration-500 ${
-                    darkMode 
-                      ? 'bg-gradient-to-r from-blue-900 via-purple-900 to-indigo-900' 
-                      : 'bg-gradient-to-r from-yellow-200 via-orange-200 to-blue-200'
-                  }`}>
-                    {/* Stars for dark mode */}
-                    {darkMode && (
-                      <div className="absolute inset-0">
-                        <div className="absolute top-0.5 left-1.5 w-0.5 h-0.5 bg-white rounded-full animate-pulse"></div>
-                        <div className="absolute top-1.5 right-2 w-0.5 h-0.5 bg-white rounded-full animate-pulse" style={{ animationDelay: '0.5s' }}></div>
-                        <div className="absolute bottom-0.5 left-2.5 w-0.5 h-0.5 bg-white rounded-full animate-pulse" style={{ animationDelay: '1s' }}></div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-                
-                {/* Slider Button */}
-                <div className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow-lg transition-all duration-300 flex items-center justify-center ${
-                  darkMode ? 'translate-x-6' : 'translate-x-0.5'
-                }`}>
+                <motion.div
+                  className="w-4 h-4 rounded-full shadow-md flex items-center justify-center"
+                  animate={{ 
+                    x: darkMode ? 16 : 0,
+                    backgroundColor: darkMode ? '#1e293b' : '#ffffff'
+                  }}
+                  transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                >
                   {darkMode ? (
-                    <Moon className="w-3 h-3 text-slate-700" />
+                    <Moon className="w-2 h-2 text-blue-300" />
                   ) : (
-                    <Sun className="w-3 h-3 text-amber-500" />
+                    <Sun className="w-2 h-2 text-amber-500" />
                   )}
-                </div>
-              </div>
-
-              {/* Mobile Menu Toggle */}
-              <button
-                onClick={handleMenuToggle}
-                className="p-2 rounded-xl text-luxury-charcoal dark:text-luxury-pearl hover:bg-luxury-champagne/20 dark:hover:bg-luxury-charcoal/20 transition-all duration-200"
-                aria-label="Toggle menu"
-                aria-expanded={isMobileMenuOpen}
-                aria-controls="mobile-nav"
-              >
-                {isMobileMenuOpen ? (
-                  <X className="w-5 h-5" />
-                ) : (
-                  <Menu className="w-5 h-5" />
-                )}
+                </motion.div>
               </button>
+
+              {/* Mobile Menu Toggle - Compact */}
+              <motion.button
+                whileTap={{ scale: 0.9 }}
+                onClick={handleMenuToggle}
+                className="flex items-center gap-1 p-1 rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 shadow-md shadow-amber-500/20 transition-all duration-300"
+                aria-label="Open menu"
+                aria-expanded={showMenuPanel}
+              >
+                {isAuthenticated && user ? (
+                  user.avatar ? (
+                    <img 
+                      src={user.avatar} 
+                      alt={user.name}
+                      className="w-6 h-6 rounded-md object-cover"
+                    />
+                  ) : (
+                    <div className="w-6 h-6 rounded-md bg-white/20 flex items-center justify-center text-white text-[10px] font-bold">
+                      {getInitials(user.name)}
+                    </div>
+                  )
+                ) : (
+                  <div className="w-6 h-6 rounded-md bg-white/20 flex items-center justify-center text-white">
+                    <User className="w-3.5 h-3.5" />
+                  </div>
+                )}
+                <Menu className="w-3.5 h-3.5 text-white" />
+              </motion.button>
             </div>
           </div>
 
-          {/* Mobile Search Bar */}
+          {/* Mobile Search Bar - Glassmorphic */}
           <AnimatePresence>
             {showMobileSearch && (
               <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                transition={{ duration: 0.3 }}
-                className="md:hidden pb-4 border-t border-luxury-platinum/20 dark:border-luxury-charcoal/20 mt-4 pt-4"
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+                className="md:hidden mt-3 pb-2"
               >
-                <SearchBar 
-                  onSearch={handleSearch}
-                  placeholder="Search gemstones..."
-                  showFilters={false}
-                />
+                <div className="relative">
+                  <div className="absolute -inset-1 bg-gradient-to-r from-amber-500/20 via-orange-500/20 to-amber-500/20 rounded-2xl blur-lg"></div>
+                  <div className="relative bg-white/80 dark:bg-neutral-800/80 backdrop-blur-xl rounded-xl p-2 shadow-lg">
+                    <SearchBar 
+                      onSearch={handleSearch}
+                      placeholder="Search gemstones..."
+                      showFilters={false}
+                    />
+                  </div>
+                </div>
               </motion.div>
             )}
           </AnimatePresence>
 
-          {/* Tablet Search Bar */}
+          {/* Tablet Search Bar - Glassmorphic */}
           <AnimatePresence>
             {showMobileSearch && (
               <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                transition={{ duration: 0.3 }}
-                className="hidden md:block lg:hidden pb-4 border-t border-luxury-platinum/20 dark:border-luxury-charcoal/20 mt-4 pt-4"
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+                className="hidden md:block lg:hidden mt-3 pb-2"
               >
-                <SearchBar 
-                  onSearch={handleSearch}
-                  placeholder="Search premium gemstones, jewelry..."
-                />
+                <div className="relative">
+                  <div className="absolute -inset-1 bg-gradient-to-r from-amber-500/20 via-orange-500/20 to-amber-500/20 rounded-2xl blur-lg"></div>
+                  <div className="relative bg-white/80 dark:bg-neutral-800/80 backdrop-blur-xl rounded-xl p-2 shadow-lg">
+                    <SearchBar 
+                      onSearch={handleSearch}
+                      placeholder="Search premium gemstones..."
+                    />
+                  </div>
+                </div>
               </motion.div>
             )}
           </AnimatePresence>
         </div>
 
-        {/* Mobile Navigation Menu */}
-        <AnimatePresence>
-          {isMobileMenuOpen && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.3 }}
-              className="md:hidden border-t border-luxury-platinum/20 dark:border-luxury-charcoal/20"
-              id="mobile-nav"
-            >
-              <div className="px-4 pt-2 pb-4 space-y-1 bg-white/98 dark:bg-luxury-charcoal/98 backdrop-blur-xl">
-                {navigation.map((item) => {
-                  const Icon = item.icon;
-                  return (
-                    <Link
-                      key={item.name}
-                      to={item.href}
-                      onClick={closeMobileMenu}
-                      className={`flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${
-                        isActive(item.href)
-                          ? 'text-luxury-gold bg-luxury-gold/10 shadow-luxury'
-                          : 'text-luxury-charcoal dark:text-luxury-pearl hover:text-luxury-gold hover:bg-luxury-champagne/20 dark:hover:bg-luxury-charcoal/20'
-                      }`}
-                    >
-                      {Icon && <Icon className="w-5 h-5" />}
-                      <span>{item.name}</span>
-                    </Link>
-                  );
-                })}
-                
-                {/* Mobile Wishlist Link */}
-                <Link
-                  to="/wishlist"
-                  onClick={closeMobileMenu}
-                  className="flex items-center justify-between px-4 py-3 rounded-xl text-sm font-medium text-luxury-charcoal dark:text-luxury-pearl hover:text-luxury-gold hover:bg-luxury-champagne/20 dark:hover:bg-luxury-charcoal/20 transition-all duration-200"
-                >
-                  <div className="flex items-center space-x-3">
-                    <Heart className="w-5 h-5" />
-                    <span>My Wishlist</span>
-                  </div>
-                  {wishlistCount > 0 && (
-                    <span className="bg-luxury-ruby text-white text-xs rounded-full w-6 h-6 flex items-center justify-center font-medium shadow-luxury">
-                      {wishlistCount > 99 ? '99+' : wishlistCount}
-                    </span>
-                  )}
-                </Link>
-                
-                {/* Mobile Contact Info */}
-                <div className="pt-4 mt-4 border-t border-luxury-platinum/20 dark:border-luxury-charcoal/20">
-                  <div className="px-4 py-2 text-xs font-medium text-neutral-warm-600 dark:text-neutral-warm-400 uppercase tracking-wider">
-                    Quick Contact
-                  </div>
-                  <a
-                    href={`tel:${businessInfo?.contact?.phone}`}
-                    className="flex items-center space-x-3 px-4 py-3 text-sm text-luxury-charcoal dark:text-luxury-pearl hover:text-luxury-gold transition-colors duration-200"
-                  >
-                    <Phone className="w-4 h-4" />
-                    <span>{businessInfo?.contact?.phone}</span>
-                  </a>
-                  <a
-                    href={`mailto:${businessInfo?.contact?.email}`}
-                    className="flex items-center space-x-3 px-4 py-3 text-sm text-luxury-charcoal dark:text-luxury-pearl hover:text-luxury-gold transition-colors duration-200"
-                  >
-                    <Mail className="w-4 h-4" />
-                    <span>{businessInfo?.contact?.email}</span>
-                  </a>
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </header>
+      </motion.header>
+      
+      {/* Spacer for fixed header */}
+      <div className={`transition-all duration-300 ${scrolled ? 'h-14' : 'h-16 sm:h-20'}`}></div>
+
+      {/* Unified Menu Slide Panel */}
+      <MenuPanel 
+        isOpen={showMenuPanel} 
+        onClose={() => setShowMenuPanel(false)}
+        onChatClick={handleOpenChat}
+        onCartClick={openCart}
+      />
+
+      {/* Chat Slide Panel */}
+      <ChatPanel isOpen={showChat} onClose={() => setShowChat(false)} />
     </>
   );
 };

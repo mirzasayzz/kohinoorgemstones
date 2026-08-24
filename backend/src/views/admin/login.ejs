@@ -4,122 +4,158 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><%= title %></title>
-    
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: {
-                            50: '#f8fafc',
-                            500: '#0f172a',
-                            600: '#0f172a',
-                            700: '#020617'
-                        },
-                        ruby: '#b91c1c',
-                        emerald: '#047857',
-                        golden: '#facc15'
-                    }
-                }
-            }
-        }
-    </script>
-    
-    <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <style>
+        * { font-family: 'Segoe UI', system-ui, sans-serif; }
+        
+        /* Royal Background */
+        body {
+            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+            min-height: 100vh;
+        }
+        
+        /* White shimmer line on load */
+        .shimmer-line {
+            position: fixed;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.8), transparent);
+            animation: shimmerPass 2s ease-out forwards;
+        }
+        @keyframes shimmerPass {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+        
+        /* Card styling */
+        .card {
+            background: rgba(15, 32, 39, 0.9);
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            transition: all 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-6px);
+            border-color: rgba(212, 175, 55, 0.5);
+            box-shadow: 0 20px 40px rgba(212, 175, 55, 0.15);
+        }
+        
+        /* Input */
+        .input-box {
+            background: rgba(32, 58, 67, 0.8);
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            color: #fff;
+        }
+        .input-box:focus {
+            outline: none;
+            border-color: #d4af37;
+            box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.2);
+        }
+        
+        /* Gold button */
+        .btn-gold {
+            background: linear-gradient(135deg, #d4af37, #c9a227);
+            color: #0f2027;
+            font-weight: 600;
+            position: relative;
+            overflow: hidden;
+        }
+        .btn-gold::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+        }
+        .btn-gold:hover::after {
+            animation: btnShimmer 0.6s ease;
+        }
+        @keyframes btnShimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+        .btn-gold:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(212, 175, 55, 0.4);
+        }
+        
+        /* Gold text */
+        .text-gold { color: #d4af37; }
+        .border-gold { border-color: rgba(212, 175, 55, 0.3); }
+    </style>
 </head>
-<body class="bg-gradient-to-br from-primary-500 via-primary-600 to-primary-700 min-h-screen flex items-center justify-center p-4">
-    <div class="max-w-md w-full space-y-8">
-        <!-- Logo and Title -->
-        <div class="text-center">
-            <div class="mx-auto h-16 w-16 bg-white rounded-full flex items-center justify-center p-3 mb-4">
-                <img src="/admin/assets/img/kohinoor-logo.png" alt="Kohinoor Logo" class="w-full h-full object-contain">
+<body class="flex items-center justify-center p-4">
+    <!-- Shimmer line on page load -->
+    <div class="shimmer-line"></div>
+
+    <div class="w-full max-w-sm">
+        <!-- Logo -->
+        <div class="text-center mb-8">
+            <div class="w-16 h-16 bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-yellow-500/30">
+                <i data-lucide="gem" class="w-8 h-8 text-white"></i>
             </div>
-            <h2 class="text-3xl font-bold text-white">Kohinoor Gemstone</h2>
-            <p class="mt-2 text-lg text-gray-300">Admin Dashboard</p>
+            <h1 class="text-2xl font-bold text-gold">Kohinoor</h1>
+            <p class="text-gray-400 text-sm mt-1">Admin Panel</p>
         </div>
 
-        <!-- Login Form -->
-        <div class="bg-white rounded-2xl shadow-2xl p-8">
-            <form method="POST" action="/admin/login" class="space-y-6">
-                <% if (error) { %>
-                    <div class="bg-red-50 border-l-4 border-red-400 p-4">
-                        <div class="flex">
-                            <div class="flex-shrink-0">
-                                <i data-lucide="alert-circle" class="h-5 w-5 text-red-400"></i>
-                            </div>
-                            <div class="ml-3">
-                                <p class="text-red-700"><%= error %></p>
-                            </div>
-                        </div>
-                    </div>
-                <% } %>
-
+        <!-- Login Card -->
+        <div class="card rounded-2xl p-6">
+            <h2 class="text-lg font-semibold text-white mb-6 text-center">Sign In</h2>
+            
+            <% if (typeof error !== 'undefined' && error) { %>
+            <div class="mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded-lg flex items-center">
+                <i data-lucide="alert-circle" class="w-4 h-4 text-red-400 mr-2"></i>
+                <span class="text-red-400 text-sm"><%= error %></span>
+            </div>
+            <% } %>
+            
+            <form method="POST" action="/admin/login" class="space-y-4">
                 <div>
-                    <label for="email" class="block text-sm font-medium text-gray-700 mb-2">
-                        Email Address
-                    </label>
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <i data-lucide="mail" class="h-5 w-5 text-gray-400"></i>
-                        </div>
-                        <input 
-                            id="email" 
-                            name="email" 
-                            type="email" 
-                            required 
-                            class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-gray-900 placeholder-gray-500"
-                            placeholder="Enter your email address"
-                        >
-                    </div>
+                    <label class="block text-sm text-gray-300 mb-2">Email</label>
+                    <input type="email" name="email" required
+                           class="input-box w-full px-4 py-3 rounded-lg text-sm"
+                           placeholder="Enter your email">
+                </div>
+                
+                <div>
+                    <label class="block text-sm text-gray-300 mb-2">Password</label>
+                    <input type="password" name="password" required
+                           class="input-box w-full px-4 py-3 rounded-lg text-sm"
+                           placeholder="Enter your password">
                 </div>
 
-                <div>
-                    <label for="password" class="block text-sm font-medium text-gray-700 mb-2">
-                        Password
-                    </label>
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <i data-lucide="lock" class="h-5 w-5 text-gray-400"></i>
-                        </div>
-                        <input 
-                            id="password" 
-                            name="password" 
-                            type="password" 
-                            required 
-                            class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-gray-900 placeholder-gray-500"
-                            placeholder="Enter your password"
-                        >
-                    </div>
+                <!-- Forgot password link -->
+                <div class="mt-2 flex justify-end">
+                    <a href="/admin/forgot-password" class="text-xs text-gray-400 hover:text-gold transition-colors">
+                        Forgot password?
+                    </a>
                 </div>
 
-                <div>
-                    <button 
-                        type="submit" 
-                        class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition duration-150 ease-in-out"
-                    >
-                        <span class="absolute left-0 inset-y-0 flex items-center pl-3">
-                            <i data-lucide="log-in" class="h-5 w-5 text-primary-500 group-hover:text-primary-400"></i>
-                        </span>
-                        Sign In to Dashboard
-                    </button>
-                </div>
+                <button type="submit" class="btn-gold w-full py-3 rounded-lg text-sm flex items-center justify-center mt-4 transition-all">
+                    <i data-lucide="log-in" class="w-4 h-4 mr-2"></i>
+                    Login
+                </button>
             </form>
+            
+            <% if (typeof frontendUrl !== 'undefined' && frontendUrl) { %>
+            <div class="mt-6 pt-4 border-t border-gold text-center">
+                <a href="<%= frontendUrl %>" class="text-gray-400 hover:text-gold text-sm flex items-center justify-center transition-colors">
+                    <i data-lucide="arrow-left" class="w-4 h-4 mr-2"></i>
+                    Back to Website
+                </a>
+            </div>
+            <% } %>
         </div>
-
-        <!-- Footer -->
-        <div class="text-center">
-            <p class="text-sm text-gray-300">
-                © 2024 Kohinoor Gemstone. All rights reserved.
-            </p>
-        </div>
+        
+        <p class="text-center text-gray-500 text-xs mt-6">
+            © <%= new Date().getFullYear() %> Kohinoor Gemstone
+        </p>
     </div>
-
-    <script>
-        // Initialize Lucide icons
-        lucide.createIcons();
-    </script>
+    
+    <script>lucide.createIcons();</script>
 </body>
 </html> 

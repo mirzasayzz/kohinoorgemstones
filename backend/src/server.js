@@ -1,4 +1,5 @@
 import express from 'express';
+import http from 'http';
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
@@ -11,27 +12,43 @@ import session from 'express-session';
 import MongoStore from 'connect-mongo';
 
 import connectDB from './config/database.js';
+import { initializeSocket } from './services/socketService.js';
 import authRoutes from './routes/authRoutes.js';
 import gemstoneRoutes from './routes/gemstoneRoutes.js';
 import businessRoutes from './routes/businessRoutes.js';
 import uploadRoutes from './routes/uploadRoutes.js';
 import adminRoutes from './routes/adminDashboardRoutes.js';
 import gemstoneAIRoutes from './routes/gemstoneAIRoutes.js';
+import customerAuthRoutes from './routes/customerAuthRoutes.js';
+import paymentRoutes from './routes/paymentRoutes.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { setupDefaultAdmin, displayStartupInfo } from './utils/setupAdmin.js';
 
 // Load environment variables
 dotenv.config();
 
+// Validate required environment variables
+const requiredEnvVars = [
+  'NODE_ENV',
+  'MONGODB_URI',
+  'JWT_SECRET',
+  'GEMINI_API_KEY'
+];
+
+const missingEnvVars = requiredEnvVars.filter(envVar => !process.env[envVar]);
+if (missingEnvVars.length > 0) {
+  console.error('❌ Missing required environment variables:');
+  missingEnvVars.forEach(envVar => console.error(`   - ${envVar}`));
+  console.error('\nPlease check your .env file');
+  process.exit(1);
+}
+
 // Get __dirname equivalent in ES modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Connect to MongoDB
-connectDB();
-
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 3001;
 
 // Trust proxy for accurate IP detection in production (required for Render, Heroku, etc.)
 if (process.env.NODE_ENV === 'production') {
@@ -70,26 +87,40 @@ app.use(helmet({
   contentSecurityPolicy: false // Disable CSP for admin dashboard
 }));
 
-// CORS configuration with environment-based frontend URLs
-const getFrontendUrls = () => {
-  if (process.env.NODE_ENV === 'production') {
-    return [
-      process.env.FRONTEND_URL || 'https://kohinoorgemstone.vercel.app',
-      process.env.BACKEND_URL || 'https://kohinoor-w94f.onrender.com',
-      process.env.CORS_ORIGIN
-    ].filter(Boolean);
-  } else {
-    return [
-      process.env.FRONTEND_DEV_URL || 'http://localhost:3000',
-      process.env.FRONTEND_DEV_URL_VITE || 'http://localhost:5173'
-    ].filter(Boolean);
-  }
+// CORS configuration
+const allowedOrigins = [
+  'https://kohinoorgemstone.com',
+  'https://www.kohinoorgemstone.com',
+  'http://kohinoorgemstone.com',
+  'http://www.kohinoorgemstone.com',
+  'https://kohinoorgemstone.vercel.app',
+  'https://kohinoor-w94f.onrender.com',
+  'https://kohinoorgemstone-06a4b66393f6.herokuapp.com',
+  process.env.FRONTEND_URL,
+  process.env.BACKEND_URL,
+  process.env.FRONTEND_DEV_URL,
+  process.env.FRONTEND_DEV_URL_VITE
+].filter(Boolean);
+
+const corsOptions = {
+  origin: function(origin, callback) {
+    // Allow requests with no origin (mobile apps, curl, etc)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin) || process.env.NODE_ENV !== 'production') {
+      callback(null, true);
+    } else {
+      callback(null, true); // Allow all for now to debug
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 };
 
-app.use(cors({
-  origin: getFrontendUrls(),
-  credentials: true
-}));
+app.use(cors(corsOptions));
+
+// Handle preflight requests
+app.options('*', cors(corsOptions));
 app.use(compression());
 app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
 app.use(express.json({ limit: '10mb' }));
@@ -99,7 +130,19 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use('/admin/assets', express.static(path.join(__dirname, 'public')));
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
-// Admin Dashboard Routes (before API routes)
+// Set global template variables
+app.use((req, res, next) => {
+  res.locals.frontendUrl = process.env.FRONTEND_URL || '';
+  next();
+});
+
+// Serve frontend static files in production FIRST
+if (process.env.NODE_ENV === 'production') {
+  const publicPath = path.join(__dirname, 'public');
+  app.use(express.static(publicPath));
+}
+
+// Admin Dashboard Routes (only /admin paths)
 app.use('/', adminRoutes);
 
 // API Rate Limiter
@@ -107,9 +150,11 @@ app.use('/api', apiLimiter);
 
 // API Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/customer', customerAuthRoutes);
 app.use('/api/gemstones', gemstoneRoutes);
 app.use('/api/business', businessRoutes);
 app.use('/api/upload', uploadRoutes);
+app.use('/api/payment', paymentRoutes);
 app.use('/api', gemstoneAIRoutes);
 
 // Health check route
@@ -122,22 +167,56 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Handle 404 routes
+// Handle React Router - serve index.html for all non-API, non-admin routes
+if (process.env.NODE_ENV === 'production') {
+  const publicPath = path.join(__dirname, 'public');
+  
+  app.get('*', (req, res, next) => {
+    // Skip API and admin routes
+    if (req.path.startsWith('/api/') || req.path.startsWith('/admin')) {
+      return next();
+    }
+    res.sendFile(path.join(publicPath, 'index.html'));
+  });
+}
+
+// Handle 404 routes (API only)
 app.use((req, res) => {
+  // For API routes, return JSON error
+  if (req.path.startsWith('/api/')) {
+    return res.status(404).json({
+      status: 'error',
+      message: `Route ${req.originalUrl} not found on this server`
+    });
+  }
+  // For other routes in production, this shouldn't be reached
   res.status(404).json({
     status: 'error',
-    message: `Route ${req.originalUrl} not found on this server`
+    message: `Route ${req.originalUrl} not found`
   });
 });
 
 // Error handling middleware
 app.use(errorHandler);
 
-// Start server
-app.listen(PORT, async () => {
-  // Setup default admin and business info
-  await setupDefaultAdmin();
-  
-  // Display startup information
-  displayStartupInfo();
-}); 
+// Start server - bind to port FIRST (required for Render), then connect DB
+const server = http.createServer(app);
+
+// Initialize Socket.IO
+const io = initializeSocket(server);
+
+server.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`🔌 WebSocket server ready`);
+});
+
+// Connect to DB and setup after server is listening
+(async () => {
+  try {
+    await connectDB();
+    await setupDefaultAdmin();
+    displayStartupInfo();
+  } catch (err) {
+    console.error('Startup error:', err.message);
+  }
+})(); 

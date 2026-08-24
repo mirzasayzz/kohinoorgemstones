@@ -15,6 +15,11 @@ const WISHLIST_STORAGE_KEY = 'kohinoor_wishlist';
 export const WishlistProvider = ({ children }) => {
   const [wishlistItems, setWishlistItems] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isWishlistOpen, setIsWishlistOpen] = useState(false);
+
+  // Open/Close wishlist drawer
+  const openWishlist = () => setIsWishlistOpen(true);
+  const closeWishlist = () => setIsWishlistOpen(false);
 
   // Load wishlist from localStorage on mount
   useEffect(() => {
@@ -111,7 +116,11 @@ export const WishlistProvider = ({ children }) => {
 
   const value = {
     wishlistItems: getSortedWishlistItems(),
+    wishlistCount: wishlistItems.length,
     isLoading,
+    isWishlistOpen,
+    openWishlist,
+    closeWishlist,
     addToWishlist,
     removeFromWishlist,
     toggleWishlist,

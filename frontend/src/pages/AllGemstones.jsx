@@ -24,7 +24,9 @@ const AllGemstones = () => {
   
   // State management
   const [gemstones, setGemstones] = useState([]);
+  const [suggestions, setSuggestions] = useState([]); // Suggestions when no results
   const [loading, setLoading] = useState(true);
+  const [loadingSuggestions, setLoadingSuggestions] = useState(false);
   const [error, setError] = useState(null);
   const [totalGemstones, setTotalGemstones] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
@@ -51,10 +53,64 @@ const AllGemstones = () => {
     { value: 'name', label: 'Name A-Z', icon: Gem }
   ];
 
+  // Helper to count active filters
+  const getActiveFilterCount = useCallback(() => {
+    return Object.values(filters).reduce((count, filterArray) => {
+      return count + filterArray.length;
+    }, 0);
+  }, [filters]);
+
+  // Load suggestions when no results found - try partial matches
+  const loadSuggestions = useCallback(async () => {
+    try {
+      setLoadingSuggestions(true);
+      setSuggestions([]);
+      
+      // Try loading with relaxed filters (one filter at a time)
+      const suggestionParams = { page: 1, limit: 8, sort: 'trending' };
+      
+      // Priority order: category > purpose > color
+      if (filters.category.length > 0) {
+        // Try first category
+        suggestionParams.category = [filters.category[0]];
+      } else if (filters.purpose.length > 0) {
+        // Try first purpose
+        suggestionParams.purpose = [filters.purpose[0]];
+      } else if (filters.color.length > 0) {
+        // Try first color
+        suggestionParams.color = [filters.color[0]];
+      } else {
+        // No filters, just get trending/popular
+        suggestionParams.trending = 'true';
+      }
+      
+      const response = await gemstoneService.getGemstones(suggestionParams);
+      
+      if (response.success && response.data.gemstones?.length > 0) {
+        setSuggestions(response.data.gemstones);
+      } else {
+        // Fallback: just get any trending gemstones
+        const fallbackResponse = await gemstoneService.getGemstones({
+          page: 1,
+          limit: 8,
+          sort: 'trending'
+        });
+        if (fallbackResponse.success) {
+          setSuggestions(fallbackResponse.data.gemstones || []);
+        }
+      }
+    } catch (err) {
+      console.error('Failed to load suggestions:', err);
+    } finally {
+      setLoadingSuggestions(false);
+    }
+  }, [filters]);
+
   const loadGemstones = useCallback(async (page = 1, append = false) => {
     try {
       setLoading(true);
       setError(null);
+      setSuggestions([]); // Clear suggestions when loading new results
 
       const params = {
         page,
@@ -82,6 +138,11 @@ const AllGemstones = () => {
         setTotalGemstones(response.data.total || 0);
         setCurrentPage(page);
         setHasMorePages(page < (response.data.totalPages || 1));
+        
+        // If no results and filters are active, load suggestions
+        if (newGemstones.length === 0 && getActiveFilterCount() > 0) {
+          loadSuggestions();
+        }
       } else {
         throw new Error(response.message || 'Failed to load gemstones');
       }
@@ -96,7 +157,7 @@ const AllGemstones = () => {
     } finally {
       setLoading(false);
     }
-  }, [searchQuery, filters, sortBy]);
+  }, [searchQuery, filters, sortBy, loadSuggestions, getActiveFilterCount]);
 
   const updateSearchParams = useCallback(() => {
     const params = new URLSearchParams();
@@ -152,12 +213,6 @@ const AllGemstones = () => {
     if (hasMorePages && !loading) {
       loadGemstones(currentPage + 1, true);
     }
-  };
-
-  const getActiveFilterCount = () => {
-    return Object.values(filters).reduce((count, filterArray) => {
-      return count + filterArray.length;
-    }, 0);
   };
 
   return (
@@ -301,7 +356,7 @@ const AllGemstones = () => {
 
             {/* Loading State */}
             {loading && currentPage === 1 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-6">
+              <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6">
                 {[...Array(15)].map((_, i) => (
                   <div key={i} className="premium-card animate-pulse">
                     <div className="aspect-square bg-gray-200 dark:bg-gray-600"></div>
@@ -328,21 +383,79 @@ const AllGemstones = () => {
                 </button>
               </div>
             ) : gemstones.length === 0 ? (
-              /* Empty State */
-              <div className="text-center py-10 sm:py-12">
-                <Sparkles className="w-14 h-14 sm:w-16 sm:h-16 text-gray-400 mx-auto mb-3 sm:mb-4" />
-                <h3 className="font-heading text-lg sm:text-xl font-semibold text-gray-900 dark:text-white mb-1.5 sm:mb-2">
-                  No gemstones found
-                </h3>
-                <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mb-5 sm:mb-6">
-                  Try adjusting your search or filters to find what you're looking for.
-                </p>
-                <button
-                  onClick={handleClearFilters}
-                  className="btn-secondary"
-                >
-                  Clear All Filters
-                </button>
+              /* Empty State with Suggestions */
+              <div className="space-y-8">
+                {/* No Results Message */}
+                <div className="text-center py-8 sm:py-10 bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700">
+                  <Sparkles className="w-12 h-12 sm:w-14 sm:h-14 text-amber-400 mx-auto mb-3" />
+                  <h3 className="font-heading text-lg sm:text-xl font-semibold text-gray-900 dark:text-white mb-1.5">
+                    No exact matches found
+                  </h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 max-w-md mx-auto px-4">
+                    We couldn't find gemstones matching all your selected filters. 
+                    Try removing some filters or check out our suggestions below.
+                  </p>
+                  <button
+                    onClick={handleClearFilters}
+                    className="btn-secondary text-sm"
+                  >
+                    Clear All Filters
+                  </button>
+                </div>
+
+                {/* Suggestions Section */}
+                {(loadingSuggestions || suggestions.length > 0) && (
+                  <div>
+                    <div className="flex items-center gap-2 mb-4">
+                      <div className="w-8 h-8 bg-gradient-to-r from-amber-500 to-orange-500 rounded-full flex items-center justify-center">
+                        <Sparkles className="w-4 h-4 text-white" />
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-gray-900 dark:text-white">
+                          You might like these
+                        </h4>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                          {filters.category.length > 0 
+                            ? `Related ${filters.category[0]} gemstones`
+                            : filters.purpose.length > 0
+                              ? `Gemstones for ${filters.purpose[0]}`
+                              : 'Popular gemstones'}
+                        </p>
+                      </div>
+                    </div>
+                    
+                    {loadingSuggestions ? (
+                      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                        {[...Array(4)].map((_, i) => (
+                          <div key={i} className="premium-card animate-pulse">
+                            <div className="aspect-square bg-gray-200 dark:bg-gray-600"></div>
+                            <div className="p-2.5">
+                              <div className="h-4 bg-gray-200 dark:bg-gray-600 rounded mb-2"></div>
+                              <div className="h-3 bg-gray-200 dark:bg-gray-600 rounded w-2/3"></div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                        {suggestions.map((gemstone, index) => (
+                          <motion.div
+                            key={gemstone._id}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: index * 0.05 }}
+                          >
+                            <GemstoneCard
+                              gemstone={gemstone}
+                              index={index}
+                              variant="grid"
+                            />
+                          </motion.div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             ) : (
               /* Gemstones Grid */
@@ -350,7 +463,7 @@ const AllGemstones = () => {
                 <div className={`
                   grid gap-3 sm:gap-6
                   ${viewMode === 'grid' 
-                    ? 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5' 
+                    ? 'grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' 
                     : 'grid-cols-1'
                   }
                 `}>
@@ -360,6 +473,7 @@ const AllGemstones = () => {
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: index * 0.05 }}
+                      className="h-full flex flex-col"
                     >
                       <GemstoneCard
                         gemstone={gemstone}

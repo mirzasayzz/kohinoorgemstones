@@ -13,19 +13,41 @@ import {
   Share2,
   ShoppingCart,
   Zap,
-  Info
+  Info,
+  Plus
 } from 'lucide-react';
-import { FaWhatsapp } from 'react-icons/fa';
 import { useBusinessContext } from '../../context/BusinessContext';
 import { useWishlist } from '../../context/WishlistContext';
+import { useCart } from '../../context/CartContext';
+import { useAuth } from '../../context/AuthContext';
 import { GemstoneImage } from '../common/LazyImage';
-import { useToast } from '../common/Toast';
+import { useGlobalToast } from '../../context/ToastContext';
+import { SITE_CONFIG } from '../../config/config';
 
 const GemstoneCard = ({ gemstone, index = 0, variant = 'grid' }) => {
   const { generateWhatsAppURL, shareGemstoneWithImage } = useBusinessContext();
   const { toggleWishlist, isInWishlist } = useWishlist();
-  const { showWishlistAdd, showWishlistRemove } = useToast();
+  const { addToCart, isInCart } = useCart();
+  const { isAuthenticated } = useAuth();
+  const toast = useGlobalToast();
   const [isHovered, setIsHovered] = useState(false);
+
+  const handleAddToCart = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (!isAuthenticated) {
+      toast.error('Please login to add items to cart');
+      return;
+    }
+    
+    const result = addToCart(gemstone);
+    if (result?.success) {
+      toast.cartAdd(gemstone);
+    } else if (result?.message) {
+      toast.error(result.message);
+    }
+  };
 
   const handleWhatsAppClick = (e) => {
     e.preventDefault();
@@ -52,18 +74,21 @@ const GemstoneCard = ({ gemstone, index = 0, variant = 'grid' }) => {
       
       if (shared !== true) {
         if (navigator.share) {
-          navigator.share({
+          await navigator.share({
             title: `${gemstone?.name?.english} - ${gemstone?.name?.urdu}`,
             text: gemstone?.summary || `Check out this beautiful ${gemstone?.category} gemstone from Kohinoor.`,
-            url: window.location.origin + `/gemstone/${gemstone?.slug || gemstone?._id}`
+            url: `${SITE_CONFIG.BASE_URL}/gemstone/${gemstone?.slug || gemstone?._id}`
           });
         } else {
-          navigator.clipboard.writeText(window.location.origin + `/gemstone/${gemstone?.slug || gemstone?._id}`);
+          await navigator.clipboard.writeText(`${SITE_CONFIG.BASE_URL}/gemstone/${gemstone?.slug || gemstone?._id}`);
+          toast.success('Link copied to clipboard!');
         }
       }
     } catch (error) {
-      console.error('Sharing failed:', error);
-      navigator.clipboard.writeText(window.location.origin + `/gemstone/${gemstone?.slug || gemstone?._id}`);
+      if (error.name !== 'AbortError') {
+        await navigator.clipboard.writeText(`${SITE_CONFIG.BASE_URL}/gemstone/${gemstone?.slug || gemstone?._id}`);
+        toast.success('Link copied to clipboard!');
+      }
     }
   };
 
@@ -79,9 +104,9 @@ const GemstoneCard = ({ gemstone, index = 0, variant = 'grid' }) => {
     toggleWishlist(gemstone);
     
     if (wasInWishlist) {
-      showWishlistRemove(gemstone);
+      toast.wishlistRemove(gemstone);
     } else {
-      showWishlistAdd(gemstone);
+      toast.wishlistAdd(gemstone);
     }
   };
 
@@ -89,7 +114,7 @@ const GemstoneCard = ({ gemstone, index = 0, variant = 'grid' }) => {
     hidden: { 
       opacity: 0, 
       y: 20,
-      scale: 0.95 
+      scale: 0.98 
     },
     visible: { 
       opacity: 1, 
@@ -97,17 +122,15 @@ const GemstoneCard = ({ gemstone, index = 0, variant = 'grid' }) => {
       scale: 1,
       transition: {
         duration: 0.4,
-        delay: index * 0.1,
+        delay: index * 0.05,
         ease: "easeOut"
       }
     },
     hover: {
-      y: -12,
-      scale: 1.03,
-      rotateY: 2,
+      y: -8,
       transition: {
-        duration: 0.3,
-        ease: "easeOut"
+        duration: 0.25,
+        ease: "easeInOut"
       }
     },
     tap: {
@@ -121,13 +144,15 @@ const GemstoneCard = ({ gemstone, index = 0, variant = 'grid' }) => {
   const overlayVariants = {
     hidden: {
       opacity: 0,
-      backdropFilter: "blur(0px)"
+      backdropFilter: "blur(0px)",
+      backgroundColor: "rgba(0, 0, 0, 0)"
     },
     visible: {
       opacity: 1,
-      backdropFilter: "blur(4px)",
+      backdropFilter: "blur(8px)",
+      backgroundColor: "rgba(0, 0, 0, 0.4)",
       transition: {
-        duration: 0.3,
+        duration: 0.25,
         ease: "easeOut"
       }
     }
@@ -136,16 +161,14 @@ const GemstoneCard = ({ gemstone, index = 0, variant = 'grid' }) => {
   const actionButtonVariants = {
     hidden: {
       scale: 0,
-      rotate: -180,
       opacity: 0
     },
     visible: (i) => ({
       scale: 1,
-      rotate: 0,
       opacity: 1,
       transition: {
-        delay: i * 0.1,
-        duration: 0.3,
+        delay: i * 0.05,
+        duration: 0.2,
         ease: "backOut"
       }
     })
@@ -153,10 +176,6 @@ const GemstoneCard = ({ gemstone, index = 0, variant = 'grid' }) => {
 
   const fallbackImage = '/placeholder-gemstone.svg';
   const imageUrl = gemstone?.images?.[0]?.url || fallbackImage;
-  
-  if (gemstone && (!gemstone.images || gemstone.images.length === 0)) {
-    console.log('Gemstone missing images:', gemstone.name?.english, gemstone.images);
-  }
 
   return (
     <motion.div
@@ -168,297 +187,234 @@ const GemstoneCard = ({ gemstone, index = 0, variant = 'grid' }) => {
       onHoverStart={() => setIsHovered(true)}
       onHoverEnd={() => setIsHovered(false)}
       className={`
-        premium-card overflow-hidden group cursor-pointer transform-gpu
+        bg-white dark:bg-neutral-900/60 border border-neutral-100 dark:border-neutral-800/80
+        rounded-2xl overflow-hidden group cursor-pointer transition-shadow duration-300 flex flex-col h-full
         ${variant === 'featured' ? 'md:col-span-2 md:row-span-2' : ''}
-        ${variant === 'list' ? 'flex flex-row' : 'flex flex-col'}
-        ${isHovered ? 'shadow-2xl' : 'shadow-md'}
+        ${isHovered ? 'shadow-xl border-neutral-200 dark:border-neutral-700' : 'shadow-sm'}
       `}
     >
-      <Link to={`/gemstone/${gemstone?.slug || gemstone?._id}`} className="block h-full">
+      <Link 
+        to={`/gemstone/${gemstone?.slug || gemstone?._id}`} 
+        className={`flex w-full flex-grow ${variant === 'list' ? 'flex-row h-full' : 'flex-col'}`}
+      >
         
-        {/* Image */}
+        {/* Image Display */}
         <div className={`
-          relative overflow-hidden group/image
-          ${variant === 'list' ? 'w-28 h-28 sm:w-32 sm:h-32 flex-shrink-0' : 'aspect-square w-full'}
-          ${variant === 'featured' ? 'md:aspect-[2/1]' : ''}
+          relative overflow-hidden bg-neutral-50 dark:bg-neutral-950/40 flex-shrink-0
+          ${variant === 'list' ? 'w-36 h-full sm:w-44' : 'aspect-square w-full'}
+          ${variant === 'featured' ? 'md:aspect-[1.5/1]' : ''}
         `}>
           
-          {/* Trending Badge */}
-          {gemstone?.trending && (
-            <motion.div 
-              className="absolute top-2 left-2 z-10"
-              initial={{ scale: 0, rotate: -180 }}
-              animate={{ scale: 1, rotate: 0 }}
-              transition={{ delay: 0.3, type: "spring" }}
-            >
-              <div className="bg-ruby text-white px-2 py-1 rounded-full text-[10px] sm:text-xs font-semibold flex items-center space-x-1 shadow-lg backdrop-blur-sm">
-                <TrendingUp className="w-3 h-3" />
+          {/* Badge overlays - elegant stack */}
+          <div className="absolute top-1.5 left-1.5 sm:top-2.5 sm:left-2.5 z-20 flex flex-col gap-1 sm:gap-1.5 items-start">
+            {/* Discount Badge */}
+            {gemstone?.discount?.isActive && gemstone?.discount?.percentage > 0 && (
+              <div className="bg-rose-500/90 dark:bg-rose-500/80 backdrop-blur-md text-white text-[8px] sm:text-[10px] font-bold px-1.5 py-0.5 sm:px-2 rounded-md sm:rounded-lg shadow-sm">
+                {gemstone.discount.percentage}% OFF
+              </div>
+            )}
+
+            {/* Trending Badge */}
+            {gemstone?.trending && (
+              <div className="bg-purple-600/90 dark:bg-purple-500/80 backdrop-blur-md text-white text-[8px] sm:text-[10px] font-bold px-1.5 py-0.5 sm:px-2 rounded-md sm:rounded-lg shadow-sm flex items-center gap-0.5 sm:gap-1">
+                <TrendingUp className="w-2.5 h-2.5" />
                 <span>Trending</span>
               </div>
-            </motion.div>
-          )}
+            )}
+
+            {/* Certified Badge */}
+            {gemstone?.certification?.certified && (
+              <div className="bg-amber-500/90 dark:bg-amber-500/80 backdrop-blur-md text-neutral-900 text-[8px] sm:text-[10px] font-bold px-1.5 py-0.5 sm:px-2 rounded-md sm:rounded-lg shadow-sm flex items-center gap-0.5">
+                <Award className="w-2.5 h-2.5 text-neutral-900" />
+                <span>Certified</span>
+              </div>
+            )}
+          </div>
 
           {/* Featured Badge */}
           {variant === 'featured' && (
-            <motion.div 
-              className="absolute top-2 right-2 z-10"
-              initial={{ scale: 0, rotate: 180 }}
-              animate={{ scale: 1, rotate: 0 }}
-              transition={{ delay: 0.4, type: "spring" }}
-            >
-              <div className="bg-golden text-sapphire px-2 py-1 rounded-full text-[10px] sm:text-xs font-semibold flex items-center space-x-1 shadow-lg backdrop-blur-sm">
-                <Star className="w-3 h-3" />
-                <span>Featured</span>
-              </div>
-            </motion.div>
+            <div className="absolute top-1.5 right-1.5 sm:top-2.5 sm:right-2.5 z-20 bg-amber-500 text-neutral-900 px-1.5 py-0.5 sm:px-2 rounded-md sm:rounded-lg text-[8px] sm:text-[10px] font-bold shadow-sm flex items-center gap-0.5 sm:gap-1">
+              <Star className="w-2.5 h-2.5 fill-neutral-900 text-neutral-900" />
+              <span>Featured</span>
+            </div>
           )}
 
-          {/* Image */}
+          {/* Product Image */}
           <GemstoneImage
-            src={gemstone?.images?.[0]?.url}
+            src={imageUrl}
             alt={`${gemstone?.name?.english} - ${gemstone?.name?.urdu}`}
             containerClassName="w-full h-full"
-            className="group-hover:scale-110 transition-transform duration-500 ease-out"
+            className="group-hover:scale-105 transition-transform duration-700 ease-out object-cover"
             quality="85"
           />
 
-          {/* Mobile Action Bar */}
-          <motion.div 
-            className="md:hidden absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/60 to-transparent p-2.5 sm:p-3 z-10"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-          >
-            <div className="flex items-center justify-between">
-              {/* Left side - Share & Wishlist */}
-              <div className="flex items-center space-x-2">
-                {/* Share Button */}
-                <motion.button
-                  onClick={handleShare}
-                  whileTap={{ scale: 0.9 }}
-                  className="bg-white/20 backdrop-blur-sm text-white p-2 rounded-full shadow-lg hover:bg-white/30 transition-colors"
-                  title="Share"
-                >
-                  <Share2 className="w-4 h-4" />
-                </motion.button>
-
-                {/* Wishlist Button */}
-                <motion.button
-                  onClick={handleWishlist}
-                  whileTap={{ scale: 0.9 }}
-                  className={`backdrop-blur-sm text-white p-2 rounded-full shadow-lg transition-colors ${
-                    isInWishlist(gemstone?._id) 
-                      ? 'bg-red-500 hover:bg-red-600' 
-                      : 'bg-white/20 hover:bg-white/30'
-                  }`}
-                  title={isInWishlist(gemstone?._id) ? "Remove from Wishlist" : "Add to Wishlist"}
-                >
-                  <Heart className={`w-4 h-4 ${isInWishlist(gemstone?._id) ? 'fill-current' : ''}`} />
-                </motion.button>
-              </div>
-
-              {/* Right side - WhatsApp Buy Now */}
-              <motion.button
-                onClick={handleWhatsAppClick}
-                whileTap={{ scale: 0.95 }}
-                className="bg-green-500 text-white px-2 py-1.5 sm:px-3 sm:py-2 rounded-lg shadow-lg hover:bg-green-600 transition-colors backdrop-blur-sm flex items-center justify-center space-x-1.5"
-                title="Buy via WhatsApp"
-              >
-                <FaWhatsapp className="w-4 h-4 sm:w-5 sm:h-5" />
-                <span className="text-xs sm:text-sm font-medium whitespace-nowrap">Buy</span>
-              </motion.button>
-            </div>
-          </motion.div>
-
           {/* Desktop Hover Overlay */}
           <motion.div 
-            className="hidden md:block absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent"
+            className="hidden md:flex absolute inset-0 items-center justify-center z-25"
             variants={overlayVariants}
             initial="hidden"
             animate={isHovered ? "visible" : "hidden"}
           >
-            {/* Action Buttons */}
-            <motion.div 
-              className="absolute inset-0 flex items-center justify-center"
-              initial="hidden"
-              animate={isHovered ? "visible" : "hidden"}
-            >
-              <div className="flex items-center space-x-3">
-                {[
-                  { icon: Eye, color: 'bg-sapphire hover:bg-sapphire/90', label: 'Quick View' },
-                  { icon: FaWhatsapp, color: 'bg-green-500 hover:bg-green-600', label: 'WhatsApp', onClick: handleWhatsAppClick },
-                  { icon: Share2, color: 'bg-golden hover:bg-golden/90', label: 'Share', onClick: handleShare }
-                ].map((action, i) => (
-                  <motion.button
-                    key={action.label}
-                    custom={i}
-                    variants={actionButtonVariants}
-                    onClick={action.onClick || (() => {})}
-                    className={`${action.color} text-white p-3 rounded-full shadow-lg backdrop-blur-sm transition-all duration-200 hover:shadow-xl`}
-                    whileHover={{ scale: 1.1, y: -2 }}
-                    whileTap={{ scale: 0.9 }}
-                    title={action.label}
-                  >
-                    <action.icon className="w-4 h-4" />
-                  </motion.button>
-                ))}
-                
-                {/* Wishlist Button */}
+            <div className="flex items-center space-x-2">
+              {[
+                { icon: Eye, color: 'bg-white/10 hover:bg-white/20 text-white border border-white/20', label: 'View Details' },
+                { icon: ShoppingCart, color: 'bg-amber-500 hover:bg-amber-600 text-neutral-900', label: 'Add to Cart', onClick: handleAddToCart, active: isInCart(gemstone?._id) },
+                { icon: MessageCircle, color: 'bg-green-500 hover:bg-green-600 text-white', label: 'WhatsApp Buy', onClick: handleWhatsAppClick }
+              ].map((action, i) => (
                 <motion.button
-                  custom={3}
+                  key={action.label}
+                  custom={i}
                   variants={actionButtonVariants}
-                  onClick={handleWishlist}
-                  className={`text-white p-3 rounded-full shadow-lg backdrop-blur-sm transition-all duration-200 hover:shadow-xl ${
-                    isInWishlist(gemstone?._id) 
-                      ? 'bg-red-500 hover:bg-red-600' 
-                      : 'bg-ruby hover:bg-ruby/90'
-                  }`}
+                  onClick={action.onClick || (() => {})}
+                  className={`w-10 h-10 rounded-xl flex items-center justify-center shadow-lg transition-all duration-200 ${action.color} ${action.active ? 'ring-2 ring-emerald-400' : ''}`}
                   whileHover={{ scale: 1.1, y: -2 }}
                   whileTap={{ scale: 0.9 }}
-                  title={isInWishlist(gemstone?._id) ? "Remove from Wishlist" : "Add to Wishlist"}
+                  title={action.label}
                 >
-                  <Heart className={`w-4 h-4 ${isInWishlist(gemstone?._id) ? 'fill-current' : ''}`} />
+                  <action.icon className="w-4 h-4" />
                 </motion.button>
-              </div>
-            </motion.div>
-
-            <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent h-20" />
+              ))}
+              
+              {/* Desktop Wishlist Button inside overlay */}
+              <motion.button
+                custom={3}
+                variants={actionButtonVariants}
+                onClick={handleWishlist}
+                className={`w-10 h-10 rounded-xl flex items-center justify-center shadow-lg transition-all duration-200 ${
+                  isInWishlist(gemstone?._id) 
+                    ? 'bg-rose-500 text-white' 
+                    : 'bg-white/10 hover:bg-white/20 text-white border border-white/20'
+                }`}
+                whileHover={{ scale: 1.1, y: -2 }}
+                whileTap={{ scale: 0.9 }}
+                title={isInWishlist(gemstone?._id) ? "Remove Wishlist" : "Save Wishlist"}
+              >
+                <Heart className={`w-4 h-4 ${isInWishlist(gemstone?._id) ? 'fill-current' : ''}`} />
+              </motion.button>
+            </div>
           </motion.div>
-
-          {/* View Count */}
-          {gemstone?.viewCount > 0 && (
-            <motion.div 
-              className="absolute bottom-16 left-2 md:bottom-2 md:left-2 z-10"
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.5 }}
-            >
-              <div className="bg-black/60 text-white px-2 py-1 rounded-full text-[10px] sm:text-xs flex items-center space-x-1 backdrop-blur-sm">
-                <Eye className="w-3 h-3" />
-                <span>{gemstone.viewCount.toLocaleString()}</span>
-              </div>
-            </motion.div>
-          )}
-
-          {/* Certified */}
-          {gemstone?.certification?.certified && (
-            <motion.div
-              className="absolute top-2 left-1/2 transform -translate-x-1/2 z-10"
-              initial={{ y: -20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.6 }}
-            >
-              <div className="bg-emerald-500 text-white px-2 py-1 rounded-full text-[10px] sm:text-xs font-semibold flex items-center space-x-1 shadow-lg backdrop-blur-sm">
-                <Award className="w-3 h-3" />
-                <span>Certified</span>
-              </div>
-            </motion.div>
-          )}
         </div>
 
-        {/* Content */}
+        {/* Content Section */}
         <div className={`
-          p-2.5 sm:p-3 flex-grow flex flex-col
-          ${variant === 'list' ? 'justify-center ml-3 sm:ml-4' : ''}
+          p-2 sm:p-4 flex-grow flex flex-col justify-between
+          ${variant === 'list' ? 'ml-1 sm:ml-2' : ''}
         `}>
-          
-          {/* Names */}
-          <div className="mb-1.5 sm:mb-2">
-            <h3 className={`
-              font-heading font-semibold text-gray-900 dark:text-white mb-0.5
-              ${variant === 'featured' ? 'text-base sm:text-lg md:text-xl' : 'text-sm md:text-base'}
-              line-clamp-1
-            `}>
-              {gemstone?.name?.english}
-            </h3>
-            <p className={`
-              text-gray-600 dark:text-gray-400 font-medium
-              ${variant === 'featured' ? 'text-xs sm:text-sm md:text-base' : 'text-[11px] sm:text-xs md:text-sm'}
-              line-clamp-1
-            `}>
-              {gemstone?.name?.urdu}
-            </p>
-          </div>
-
-          {/* Summary */}
-          {variant === 'featured' && gemstone?.summary && (
-            <p className="text-sm text-gray-700 dark:text-gray-300 mb-2.5 line-clamp-2">
-              {gemstone.summary}
-            </p>
-          )}
-
-          {/* Category/Color */}
-          <div className="flex items-center justify-between mb-1.5 sm:mb-2">
-            <span className="bg-emerald/10 text-emerald-700 dark:text-emerald-400 px-2 py-0.5 rounded-full text-[11px] sm:text-xs font-medium max-w-full truncate">
-              {gemstone?.category}
-            </span>
-            <span className="text-[11px] sm:text-xs text-gray-500 dark:text-gray-400">
-              {gemstone?.color}
-            </span>
-          </div>
-
-          {/* Purpose Tags */}
-          {gemstone?.purpose && gemstone.purpose.length > 0 && (
-            <div className="flex flex-wrap gap-1 mb-2.5">
-              {gemstone.purpose.slice(0, variant === 'list' ? 1 : 2).map((purpose, index) => (
-                <span
-                  key={index}
-                  className="bg-golden/10 text-golden-700 dark:text-golden-400 px-2 py-0.5 rounded-full text-[11px] sm:text-xs font-medium"
-                >
-                  {purpose}
-                </span>
-              ))}
-              {gemstone.purpose.length > 2 && variant !== 'list' && (
-                <span className="text-[11px] sm:text-xs text-gray-500 dark:text-gray-400">
-                  +{gemstone.purpose.length - 2} more
-                </span>
-              )}
+          {/* Header Area */}
+          <div>
+            <div className="flex flex-wrap items-center gap-1.5 mb-1 sm:mb-1.5">
+              <span className="text-[9px] sm:text-[10px] uppercase font-bold tracking-wider text-amber-600 dark:text-amber-400 bg-amber-500/5 dark:bg-amber-400/5 px-1.5 py-0.5 rounded">
+                {gemstone?.category}
+              </span>
+              <span className="text-[9px] sm:text-[10px] text-neutral-450 dark:text-neutral-500 font-medium">
+                {gemstone?.color}
+              </span>
             </div>
-          )}
 
-          {/* Price Range */}
-          {gemstone?.priceRange && (gemstone.priceRange.min || gemstone.priceRange.max) && (
-            <div className="mb-2.5">
-              <div className={`
-                font-bold text-emerald-600 dark:text-emerald-400 flex items-center space-x-1
-                ${variant === 'featured' ? 'text-base sm:text-lg' : 'text-sm md:text-base'}
+            {/* Names & Price - Unified Same-Line Layout */}
+            <div className="flex items-start justify-between gap-1.5 sm:gap-2.5 mb-0.5 sm:mb-1">
+              <h3 className={`
+                font-heading font-semibold text-neutral-900 dark:text-neutral-50 tracking-tight group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors
+                ${variant === 'featured' ? 'text-base sm:text-xl md:text-2xl' : 'text-xs sm:text-base'}
+                truncate flex-grow
               `}>
-                <span className="text-emerald-500">₹</span>
-                <span>
-                  {gemstone.priceRange.min && gemstone.priceRange.max ? 
-                    `${gemstone.priceRange.min.toLocaleString('en-IN')} - ₹${gemstone.priceRange.max.toLocaleString('en-IN')}` :
-                    gemstone.priceRange.min ? 
-                      `${gemstone.priceRange.min.toLocaleString('en-IN')}+` :
-                      `Up to ₹${gemstone.priceRange.max.toLocaleString('en-IN')}`
-                  }
-                </span>
+                {gemstone?.name?.english}
+              </h3>
+              
+              {/* Price Block */}
+              <div className="flex flex-col items-end flex-shrink-0 text-right">
+                {gemstone?.discount?.isActive && gemstone?.discount?.percentage > 0 && gemstone.price ? (
+                  <span className="text-[9px] sm:text-[10px] text-neutral-400 dark:text-neutral-500 line-through font-medium leading-none mb-0.5">
+                    ₹{Math.round(gemstone.price / (1 - gemstone.discount.percentage / 100)).toLocaleString('en-IN')}
+                  </span>
+                ) : null}
+                
+                {(gemstone?.price || (gemstone?.priceRange && (gemstone.priceRange.min || gemstone.priceRange.max))) ? (
+                  <div className="font-bold text-emerald-600 dark:text-emerald-450 text-xs sm:text-base leading-none">
+                    <span>₹</span>
+                    <span>
+                      {gemstone.price ? 
+                        gemstone.price.toLocaleString('en-IN') :
+                        gemstone.priceRange?.min ? 
+                          gemstone.priceRange.min.toLocaleString('en-IN') :
+                          gemstone.priceRange?.max?.toLocaleString('en-IN')
+                      }
+                    </span>
+                  </div>
+                ) : (
+                  <span className="text-[9px] sm:text-[10px] font-bold text-neutral-400 dark:text-neutral-500 leading-none">Contact</span>
+                )}
               </div>
-              {gemstone.priceRange.currency && gemstone.priceRange.currency !== 'INR' && (
-                <div className="text-[11px] sm:text-xs text-gray-500 dark:text-gray-400">
-                  Currency: {gemstone.priceRange.currency}
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Desktop Actions */}
-          <div className="hidden md:flex items-center justify-between mt-auto pt-2">
-            <div className="flex items-center space-x-2 text-xs text-gray-500 dark:text-gray-400">
-              {gemstone?.certification?.certified && (
-                <div className="flex items-center space-x-1">
-                  <Award className="w-3 h-3" />
-                  <span>Certified</span>
-                </div>
-              )}
             </div>
             
+            {gemstone?.name?.urdu && (
+              <p className="text-neutral-400 dark:text-neutral-500 text-[10px] sm:text-xs font-luxury italic mb-1 sm:mb-2 tracking-wide truncate">
+                {gemstone.name.urdu}
+              </p>
+            )}
+
+            {/* Specifications row - Weight & Origin */}
+            <div className="flex items-center gap-1.5 text-[10px] sm:text-[11px] text-neutral-550 dark:text-neutral-400 font-medium mt-0.5 sm:mt-1">
+              {gemstone?.weight?.value && (
+                <span>{gemstone.weight.value} {gemstone.weight.unit || 'carats'}</span>
+              )}
+              {gemstone?.ratti && (
+                <>
+                  <span className="w-0.5 h-0.5 rounded-full bg-neutral-300 dark:bg-neutral-700"></span>
+                  <span>{gemstone.ratti} ratti</span>
+                </>
+              )}
+              {gemstone?.origin && (
+                <>
+                  <span className="w-0.5 h-0.5 rounded-full bg-neutral-300 dark:bg-neutral-700"></span>
+                  <span className="truncate">{gemstone.origin}</span>
+                </>
+              )}
+            </div>
+
+            {/* Astrology zodiac / purposes tags - small pills */}
+            <div className="flex items-center gap-1 mt-1.5 sm:mt-2.5 overflow-hidden flex-wrap max-h-5 sm:max-h-6">
+              {gemstone?.purpose?.slice(0, 2).map((purp, i) => (
+                <span key={i} className="text-[8px] sm:text-[9px] font-semibold bg-neutral-50 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 px-1.5 py-0.5 rounded border border-neutral-105 dark:border-neutral-800">
+                  {purp}
+                </span>
+              ))}
+              {gemstone?.purpose?.length > 2 && (
+                <span className="text-[8px] sm:text-[9px] text-neutral-400 font-bold">+{gemstone.purpose.length - 2}</span>
+              )}
+            </div>
+          </div>
+
+          {/* Footer Area - Mobile Actions Only */}
+          <div className="mt-auto pt-1.5 sm:pt-2.5 border-t border-neutral-100 dark:border-neutral-800/80 flex items-center justify-end gap-1 sm:gap-1.5 md:hidden">
+            <button
+              onClick={handleWishlist}
+              className={`p-1.5 rounded-lg transition-all duration-300 ${
+                isInWishlist(gemstone?._id)
+                  ? 'bg-rose-500 text-white'
+                  : 'bg-neutral-50 dark:bg-neutral-800 text-neutral-500 hover:text-rose-500 border border-neutral-100 dark:border-neutral-800'
+              }`}
+              aria-label="Save Wishlist"
+            >
+              <Heart className={`w-3 h-3 sm:w-3.5 sm:h-3.5 ${isInWishlist(gemstone?._id) ? 'fill-current' : ''}`} />
+            </button>
+            <button
+              onClick={handleAddToCart}
+              className={`p-1.5 rounded-lg transition-all duration-300 ${
+                isInCart(gemstone?._id)
+                  ? 'bg-amber-500 text-neutral-900 font-bold'
+                  : 'bg-neutral-50 dark:bg-neutral-800 text-neutral-500 hover:text-amber-500 border border-neutral-100 dark:border-neutral-800'
+              }`}
+              aria-label="Add to cart"
+            >
+              <ShoppingCart className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+            </button>
             <button
               onClick={handleWhatsAppClick}
-              className="bg-green-500 hover:bg-green-600 text-white px-2 py-1.5 md:px-3 md:py-2 rounded-lg transition-colors shadow-md flex items-center justify-center text-xs md:text-sm space-x-1.5"
-              title="Buy via WhatsApp"
+              className="bg-green-500 hover:bg-green-600 text-white p-1.5 rounded-lg transition-colors duration-300 flex items-center justify-center shadow-sm"
+              aria-label="Inquire via WhatsApp"
             >
-              <FaWhatsapp className="w-3.5 h-3.5 md:w-4 md:h-4" />
-              <span className="font-medium whitespace-nowrap">Buy</span>
+              <MessageCircle className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
             </button>
           </div>
         </div>
@@ -467,4 +423,4 @@ const GemstoneCard = ({ gemstone, index = 0, variant = 'grid' }) => {
   );
 };
 
-export default GemstoneCard; 
+export default GemstoneCard;

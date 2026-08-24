@@ -3,8 +3,10 @@ import Gemstone from '../models/Gemstone.js';
 import BusinessInfo from '../models/BusinessInfo.js';
 import Category from '../models/Category.js';
 import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
 import { v2 as cloudinary } from 'cloudinary';
 import fs from 'fs';
+import { sendPasswordResetEmail, sendPasswordChangedEmail } from '../utils/sendEmail.js';
 
 // Configure Cloudinary
 cloudinary.config({
@@ -23,13 +25,28 @@ const getCategories = async () => {
   }
 };
 
-// Utility function to get frontend URL based on environment
+// Predefined gemstones with full details for Quick Select
+const PREDEFINED_GEMSTONES = [
+  { name: 'Ruby', urdu: 'یاقوت (Yaqoot)', value: 'Ruby', color: 'Deep Red', summary: 'Known as the king of gemstones, Ruby symbolizes passion, love, and vitality.', description: 'Ruby is one of the most precious gemstones in the world. It represents passion, love, and courage. In Vedic astrology, it is associated with the Sun and believed to bring success, fame, and leadership qualities.', purpose: ['Love', 'Success', 'Vitality', 'Leadership'] },
+  { name: 'Emerald', urdu: 'زمرد (Zamurrad)', value: 'Emerald', color: 'Deep Green', summary: 'The stone of successful love, Emerald brings loyalty and domestic bliss.', description: 'Emerald is the sacred stone of the goddess Venus and represents unconditional love. It is known for bringing wisdom, growth, and patience. Associated with Mercury in astrology.', purpose: ['Love', 'Wisdom', 'Growth', 'Prosperity'] },
+  { name: 'Sapphire', urdu: 'نیلم (Neelam)', value: 'Sapphire', color: 'Royal Blue', summary: 'A stone of wisdom and royalty, Sapphire brings mental clarity and spiritual insight.', description: 'Blue Sapphire is one of the most powerful gemstones. It is associated with Saturn and known for bringing rapid results. It enhances focus, discipline, and spiritual awareness.', purpose: ['Wisdom', 'Protection', 'Spiritual Growth', 'Success'] },
+  { name: 'Diamond', urdu: 'ہیرا (Heera)', value: 'Diamond', color: 'Crystal Clear', summary: 'The ultimate symbol of purity and strength, Diamond represents eternal love.', description: 'Diamond is the hardest natural substance and symbolizes invincibility, purity, and eternal love. Associated with Venus, it brings luxury, beauty, and harmonious relationships.', purpose: ['Love', 'Purity', 'Strength', 'Luxury'] },
+  { name: 'Pearl', urdu: 'موتی (Moti)', value: 'Pearl', color: 'White/Cream', summary: 'Symbol of purity and innocence, Pearl brings calmness and emotional balance.', description: 'Pearl is an organic gemstone formed in oysters. It is associated with the Moon and brings emotional balance, calmness, and maternal love. Known for enhancing beauty and charm.', purpose: ['Peace', 'Emotional Balance', 'Beauty', 'Calmness'] },
+  { name: 'Coral', urdu: 'مونگا (Moonga)', value: 'Coral', color: 'Red/Orange', summary: 'A protective stone that brings courage and helps overcome fears.', description: 'Red Coral is associated with Mars and brings courage, vitality, and protection. It helps overcome fears, laziness, and brings success in competitive fields.', purpose: ['Courage', 'Protection', 'Energy', 'Victory'] },
+  { name: 'Topaz', urdu: 'پکھراج (Pukhraj)', value: 'Topaz', color: 'Yellow/Golden', summary: 'The stone of Jupiter, bringing wisdom, prosperity, and good fortune.', description: 'Yellow Topaz or Pukhraj is associated with Jupiter, the planet of wisdom and fortune. It brings prosperity, good health, academic success, and spiritual growth.', purpose: ['Prosperity', 'Wisdom', 'Good Fortune', 'Health'] },
+  { name: 'Turquoise', urdu: 'فیروزہ (Feroza)', value: 'Turquoise', color: 'Sky Blue/Green', summary: 'An ancient protective stone that brings good luck and positive energy.', description: 'Turquoise is one of the oldest known gemstones, prized for its protective properties. It brings good fortune, success in endeavors, and protects travelers.', purpose: ['Protection', 'Good Luck', 'Communication', 'Healing'] },
+  { name: 'Aqeeq', urdu: 'عقیق (Aqeeq)', value: 'Aqeeq', color: 'Red/Brown/Black', summary: 'A blessed stone in Islamic tradition, bringing protection and prosperity.', description: 'Aqeeq (Agate) holds special significance in Islamic tradition. It is believed to ward off evil, bring prosperity, and provide protection. Wearing it is considered Sunnah.', purpose: ['Protection', 'Prosperity', 'Blessings', 'Health'] },
+  { name: 'Onyx', urdu: 'سلیمانی (Sulemani)', value: 'Onyx', color: 'Black', summary: 'A powerful protection stone that absorbs negative energy.', description: 'Black Onyx is a powerful protective stone. It absorbs and transforms negative energy, provides emotional and physical strength, and helps in making wise decisions.', purpose: ['Protection', 'Strength', 'Focus', 'Grounding'] },
+  { name: 'Moonstone', urdu: 'چندرکانتا (Chandrakanta)', value: 'Moonstone', color: 'Milky White/Blue Sheen', summary: 'The stone of new beginnings, connected to moon and intuition.', description: 'Moonstone is connected to the moon and feminine energy. It enhances intuition, promotes inspiration, and brings success in love and business matters.', purpose: ['Intuition', 'New Beginnings', 'Love', 'Fertility'] },
+  { name: 'Garnet', urdu: 'یمنی (Yamani)', value: 'Garnet', color: 'Deep Red/Wine', summary: 'A stone of passion and energy that revitalizes and balances energy.', description: 'Garnet is known as the stone of commitment and passion. It energizes, purifies, and balances energy. It brings courage and hope in difficult situations.', purpose: ['Passion', 'Energy', 'Commitment', 'Courage'] },
+  { name: 'Opal', urdu: 'اوپل (Opal)', value: 'Opal', color: 'Multi-color Play', summary: 'A stone of creativity and inspiration with magical color play.', description: 'Opal displays a beautiful play of colors and is associated with creativity, inspiration, and imagination. It amplifies emotions and brings out one\'s true self.', purpose: ['Creativity', 'Inspiration', 'Confidence', 'Love'] },
+  { name: 'Zircon', urdu: 'زرقون (Zarqun)', value: 'Zircon', color: 'Various Colors', summary: 'Known for its brilliance, Zircon brings wisdom and prosperity.', description: 'Natural Zircon is one of the oldest minerals on Earth. It brings wisdom, honor, and prosperity. It helps in achieving goals and brings spiritual growth.', purpose: ['Wisdom', 'Prosperity', 'Honor', 'Healing'] },
+  { name: 'Tourmaline', urdu: 'ٹورمالین (Turmali)', value: 'Tourmaline', color: 'Various Colors', summary: 'A powerful healing stone available in rainbow of colors.', description: 'Tourmaline comes in many colors, each with unique properties. It is known for its powerful healing and protective energies. It cleanses and balances all chakras.', purpose: ['Healing', 'Protection', 'Balance', 'Creativity'] }
+];
+
+// Utility function to get frontend URL from environment variable
 const getFrontendUrl = () => {
-  if (process.env.NODE_ENV === 'production') {
-    return process.env.FRONTEND_URL || 'https://kohinoorgemstone.vercel.app';
-  } else {
-    return process.env.FRONTEND_DEV_URL_VITE || 'http://localhost:5173';
-  }
+  return process.env.FRONTEND_URL || '';
 };
 
 // Authentication middleware
@@ -99,6 +116,10 @@ export const handleLogin = async (req, res) => {
       });
     }
     
+    // Update last login
+    user.lastLogin = new Date();
+    await user.save({ validateBeforeSave: false });
+    
     // Set session
     req.session.user = {
       id: user._id,
@@ -127,12 +148,296 @@ export const handleLogout = (req, res) => {
   });
 };
 
+// Show forgot password page
+export const showForgotPassword = (req, res) => {
+  res.render('admin/forgot-password', {
+    title: 'Forgot Password - Kohinoor Admin',
+    error: null,
+    success: null
+  });
+};
+
+// Handle forgot password
+export const handleForgotPassword = async (req, res) => {
+  try {
+    const rawEmail = req.body.email;
+    const email = rawEmail ? String(rawEmail).trim().toLowerCase() : '';
+    console.log('🔒 Forgot password requested for:', email);
+    
+    if (!email) {
+      return res.render('admin/forgot-password', {
+        title: 'Forgot Password - Kohinoor Admin',
+        error: 'Please provide your email address',
+        success: null
+      });
+    }
+
+    // Ensure an admin account actually exists for this email
+    const user = await User.findOne({
+      email,
+      role: { $in: ['admin', 'super_admin'] },
+      isActive: true
+    });
+
+    if (!user) {
+      console.log('🔍 No admin user found for email:', email);
+      return res.render('admin/forgot-password', {
+        title: 'Forgot Password - Kohinoor Admin',
+        error: 'No admin account found with this email address.',
+        success: null
+      });
+    }
+
+    // Generate reset token
+    const resetToken = user.getResetPasswordToken();
+    await user.save({ validateBeforeSave: false });
+
+    // Create reset URL
+    const baseUrl = process.env.BASE_URL;
+    const resetUrl = `${baseUrl}/admin/reset-password/${resetToken}`;
+
+    console.log('📧 Sending reset email to:', user.email);
+    console.log('📧 Reset URL:', resetUrl);
+
+    try {
+      await sendPasswordResetEmail(user.email, resetUrl, user.name);
+      console.log('✅ Reset email sent successfully!');
+      res.render('admin/forgot-password', {
+        title: 'Forgot Password - Kohinoor Admin',
+        error: null,
+        success: 'Password reset email sent! Check your inbox.',
+        resetUrl: null
+      });
+    } catch (emailError) {
+      console.error('❌ Email send error:', emailError.message);
+      // Don't clear the token - show the link directly instead
+      console.log('📧 Reset link (email failed):', resetUrl);
+      
+      res.render('admin/forgot-password', {
+        title: 'Forgot Password - Kohinoor Admin',
+        error: null,
+        success: 'Email service unavailable. Use the link below:',
+        resetUrl: resetUrl
+      });
+    }
+  } catch (error) {
+    console.error('Forgot password error:', error);
+    res.render('admin/forgot-password', {
+      title: 'Forgot Password - Kohinoor Admin',
+      error: 'An error occurred. Please try again.',
+      success: null
+    });
+  }
+};
+
+// Show reset password page
+export const showResetPassword = async (req, res) => {
+  try {
+    const resetPasswordToken = crypto.createHash('sha256').update(req.params.token).digest('hex');
+    
+    const user = await User.findOne({
+      resetPasswordToken,
+      resetPasswordExpire: { $gt: Date.now() }
+    });
+
+    if (!user) {
+      return res.render('admin/reset-password', {
+        title: 'Reset Password - Kohinoor Admin',
+        error: 'Invalid or expired reset token',
+        token: null,
+        success: null
+      });
+    }
+
+    res.render('admin/reset-password', {
+      title: 'Reset Password - Kohinoor Admin',
+      error: null,
+      token: req.params.token,
+      success: null
+    });
+  } catch (error) {
+    console.error('Show reset password error:', error);
+    res.render('admin/reset-password', {
+      title: 'Reset Password - Kohinoor Admin',
+      error: 'An error occurred',
+      token: null,
+      success: null
+    });
+  }
+};
+
+// Handle reset password
+export const handleResetPassword = async (req, res) => {
+  try {
+    const { password, confirmPassword } = req.body;
+    const token = req.params.token;
+
+    if (!password || !confirmPassword) {
+      return res.render('admin/reset-password', {
+        title: 'Reset Password - Kohinoor Admin',
+        error: 'Please provide both password fields',
+        token,
+        success: null
+      });
+    }
+
+    if (password !== confirmPassword) {
+      return res.render('admin/reset-password', {
+        title: 'Reset Password - Kohinoor Admin',
+        error: 'Passwords do not match',
+        token,
+        success: null
+      });
+    }
+
+    if (password.length < 6) {
+      return res.render('admin/reset-password', {
+        title: 'Reset Password - Kohinoor Admin',
+        error: 'Password must be at least 6 characters',
+        token,
+        success: null
+      });
+    }
+
+    const resetPasswordToken = crypto.createHash('sha256').update(token).digest('hex');
+    
+    const user = await User.findOne({
+      resetPasswordToken,
+      resetPasswordExpire: { $gt: Date.now() }
+    });
+
+    if (!user) {
+      return res.render('admin/reset-password', {
+        title: 'Reset Password - Kohinoor Admin',
+        error: 'Invalid or expired reset token',
+        token: null,
+        success: null
+      });
+    }
+
+    // Set new password
+    user.password = password;
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpire = undefined;
+    await user.save();
+
+    // Send confirmation email
+    try {
+      await sendPasswordChangedEmail(user.email, user.name);
+    } catch (emailError) {
+      console.error('Confirmation email error:', emailError);
+    }
+
+    res.render('admin/reset-password', {
+      title: 'Reset Password - Kohinoor Admin',
+      error: null,
+      token: null,
+      success: 'Password reset successful! You can now login with your new password.'
+    });
+  } catch (error) {
+    console.error('Reset password error:', error);
+    res.render('admin/reset-password', {
+      title: 'Reset Password - Kohinoor Admin',
+      error: 'An error occurred. Please try again.',
+      token: req.params.token,
+      success: null
+    });
+  }
+};
+
+// Show change password page (for logged in users)
+export const showChangePassword = (req, res) => {
+  res.render('admin/change-password', {
+    title: 'Change Password - Kohinoor Admin',
+    user: req.session.user,
+    error: null,
+    success: null
+  });
+};
+
+// Handle change password
+export const handleChangePassword = async (req, res) => {
+  try {
+    const { currentPassword, newPassword, confirmPassword } = req.body;
+    const userId = req.session.user.id;
+
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      return res.render('admin/change-password', {
+        title: 'Change Password - Kohinoor Admin',
+        user: req.session.user,
+        error: 'Please fill in all fields',
+        success: null
+      });
+    }
+
+    if (newPassword !== confirmPassword) {
+      return res.render('admin/change-password', {
+        title: 'Change Password - Kohinoor Admin',
+        user: req.session.user,
+        error: 'New passwords do not match',
+        success: null
+      });
+    }
+
+    if (newPassword.length < 6) {
+      return res.render('admin/change-password', {
+        title: 'Change Password - Kohinoor Admin',
+        user: req.session.user,
+        error: 'New password must be at least 6 characters',
+        success: null
+      });
+    }
+
+    const user = await User.findById(userId).select('+password');
+    
+    if (!user) {
+      return res.redirect('/admin/logout');
+    }
+
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    
+    if (!isMatch) {
+      return res.render('admin/change-password', {
+        title: 'Change Password - Kohinoor Admin',
+        user: req.session.user,
+        error: 'Current password is incorrect',
+        success: null
+      });
+    }
+
+    user.password = newPassword;
+    await user.save();
+
+    // Send confirmation email
+    try {
+      await sendPasswordChangedEmail(user.email, user.name);
+    } catch (emailError) {
+      console.error('Confirmation email error:', emailError);
+    }
+
+    res.render('admin/change-password', {
+      title: 'Change Password - Kohinoor Admin',
+      user: req.session.user,
+      error: null,
+      success: 'Password changed successfully!'
+    });
+  } catch (error) {
+    console.error('Change password error:', error);
+    res.render('admin/change-password', {
+      title: 'Change Password - Kohinoor Admin',
+      user: req.session.user,
+      error: 'An error occurred. Please try again.',
+      success: null
+    });
+  }
+};
+
 // Show dashboard
 export const showDashboard = async (req, res) => {
   try {
     // Get basic stats
     const totalGemstones = await Gemstone.countDocuments({ isActive: true });
-    const trendingGemstones = await Gemstone.countDocuments({ isTrending: true, isActive: true });
+    const trendingGemstones = await Gemstone.countDocuments({ trending: true, isActive: true });
     const featuredGemstones = await Gemstone.countDocuments({ featured: true, isActive: true });
     const totalViews = await Gemstone.aggregate([
       { $match: { isActive: true } },
@@ -150,7 +455,7 @@ export const showDashboard = async (req, res) => {
     const recentGemstones = await Gemstone.find({ isActive: true })
       .sort({ createdAt: -1 })
       .limit(5)
-      .select('name category images createdAt isTrending viewCount priceRange availability')
+      .select('name category images createdAt trending viewCount priceRange availability')
       .populate('addedBy', 'name');
 
     // Top performing gemstones
@@ -263,7 +568,8 @@ export const showAddGemstone = async (req, res) => {
     res.render('admin/add-gemstone', {
       title: 'Add Gemstone - Kohinoor Gemstone',
       user: req.session.user,
-      predefinedGemstones: categories,
+      categories: categories,
+      predefinedGemstones: PREDEFINED_GEMSTONES,
       error: null,
       success: null
     });
@@ -272,7 +578,8 @@ export const showAddGemstone = async (req, res) => {
     res.render('admin/add-gemstone', {
       title: 'Add Gemstone - Kohinoor Gemstone',
       user: req.session.user,
-      predefinedGemstones: [],
+      categories: [],
+      predefinedGemstones: PREDEFINED_GEMSTONES,
       error: 'Failed to load categories',
       success: null
     });
@@ -282,12 +589,13 @@ export const showAddGemstone = async (req, res) => {
 // Handle add gemstone form submission
 export const handleAddGemstone = async (req, res) => {
   try {
-    const { name, urduName, category, summary, description, purpose, color, isTrending } = req.body;
+    const { name, urduName, category, customCategory, summary, description, purpose, color, isTrending, price, priceMin, priceMax, ratti, letter, discountPercentage, discountMessage, discountActive, certified, certificateNumber, certifyingBody } = req.body;
     
-    // Upload images to Cloudinary
+    // Upload gemstone images to Cloudinary
     const imageUrls = [];
-    if (req.files && req.files.length > 0) {
-      for (const file of req.files) {
+    const gemstoneImages = req.files?.images || [];
+    if (gemstoneImages.length > 0) {
+      for (const file of gemstoneImages) {
         const result = await cloudinary.uploader.upload(file.path, {
           folder: 'kohinoor-gemstones',
           transformation: [
@@ -304,6 +612,39 @@ export const handleAddGemstone = async (req, res) => {
       }
     }
     
+    // Upload certification image if provided (independent of certified checkbox)
+    let certificationImage = undefined;
+    const certImageFiles = req.files?.certificationImage || [];
+    if (certImageFiles.length > 0) {
+      try {
+        const certFile = certImageFiles[0];
+        const certResult = await cloudinary.uploader.upload(certFile.path, {
+          folder: 'kohinoor-certifications',
+          transformation: [
+            { width: 800, height: 600, crop: 'limit', quality: 'auto' }
+          ]
+        });
+        certificationImage = {
+          url: certResult.secure_url,
+          publicId: certResult.public_id
+        };
+        fs.unlinkSync(certFile.path);
+      } catch (uploadErr) {
+        console.error('Failed to upload certification image:', uploadErr.message || 'Upload error');
+      }
+    }
+    
+    // Parse purpose properly
+    let parsedPurpose = [];
+    if (purpose) {
+      const validPurposes = ['Love', 'Health', 'Wealth', 'Protection', 'Spiritual Growth', 'Success', 'Peace', 'Wisdom'];
+      let purposes = typeof purpose === 'string' ? purpose.split(',') : purpose;
+      if (Array.isArray(purposes)) {
+        purposes = purposes.flatMap(p => typeof p === 'string' ? p.split(',').map(s => s.trim()) : p).filter(p => p);
+      }
+      parsedPurpose = purposes.filter(p => validPurposes.includes(p));
+    }
+    
     // Create gemstone with proper field mapping
     const gemstone = new Gemstone({
       name: {
@@ -311,12 +652,32 @@ export const handleAddGemstone = async (req, res) => {
         urdu: urduName || name  // Allow fallback to English if Urdu not provided
       },
       category,
+      customCategory: category === 'Other' ? customCategory : undefined,
       summary,
       description,
-      purpose: purpose ? purpose.split(',').map(p => p.trim()).filter(p => p) : [],
+      purpose: parsedPurpose,
       color: color || 'Not specified',
       images: imageUrls,
-      isTrending: isTrending === 'on',
+      trending: isTrending === 'on',
+      price: priceMin ? parseFloat(priceMin) : (price ? parseFloat(price) : undefined),
+      priceRange: (priceMin || priceMax) ? {
+        min: priceMin ? parseFloat(priceMin) : undefined,
+        max: priceMax ? parseFloat(priceMax) : undefined,
+        currency: 'INR'
+      } : undefined,
+      ratti: ratti ? parseFloat(ratti) : undefined,
+      letter: letter ? letter.toUpperCase().charAt(0) : undefined,
+      discount: {
+        percentage: discountPercentage ? parseInt(discountPercentage) : 0,
+        message: discountMessage || 'Special Offer!',
+        isActive: discountActive === 'on'
+      },
+      certification: {
+        certified: certified === 'on',
+        certificateNumber: certificateNumber || '',
+        certifyingBody: certifyingBody || '',
+        ...(certificationImage ? { certificationImage } : {})
+      },
       addedBy: req.session.user.id  // Add the required addedBy field
     });
     
@@ -326,7 +687,8 @@ export const handleAddGemstone = async (req, res) => {
     res.render('admin/add-gemstone', {
       title: 'Add Gemstone - Kohinoor Gemstone',
       user: req.session.user,
-      predefinedGemstones: categories,
+      categories: categories,
+      predefinedGemstones: PREDEFINED_GEMSTONES,
       error: null,
       success: 'Gemstone added successfully!'
     });
@@ -342,12 +704,27 @@ export const handleAddGemstone = async (req, res) => {
       });
     }
     
+    // Parse validation errors
+    let errorMessage = 'Failed to add gemstone';
+    if (error.name === 'ValidationError') {
+      const errorFields = Object.keys(error.errors);
+      const fieldMessages = errorFields.map(field => {
+        const err = error.errors[field];
+        const readableField = field.replace(/\./g, ' → ').replace(/([A-Z])/g, ' $1').trim();
+        return `• ${readableField}: ${err.message}`;
+      });
+      errorMessage = 'Please fix the following errors:\n' + fieldMessages.join('\n');
+    } else {
+      errorMessage = error.message || 'An unexpected error occurred';
+    }
+    
     const categories = await getCategories();
     res.render('admin/add-gemstone', {
       title: 'Add Gemstone - Kohinoor Gemstone',
       user: req.session.user,
-      predefinedGemstones: categories,
-      error: 'Failed to add gemstone: ' + error.message,
+      categories: categories,
+      predefinedGemstones: PREDEFINED_GEMSTONES,
+      error: errorMessage,
       success: null
     });
   }
@@ -372,8 +749,10 @@ export const showEditGemstone = async (req, res) => {
       title: 'Edit Gemstone - Kohinoor Gemstone',
       user: req.session.user,
       gemstone,
+      categories: categories,
       predefinedGemstones: categories,
       error: null,
+      fieldErrors: {},
       success: null
     });
   } catch (error) {
@@ -402,10 +781,11 @@ export const handleEditGemstone = async (req, res) => {
     // Extract and process form data
     const updateData = {
       name: {
-        english: req.body.name?.english || req.body['name[english]'] || '',
-        urdu: req.body.name?.urdu || req.body['name[urdu]'] || ''
+        english: req.body.name?.english || req.body['name[english]'] || req.body.name || '',
+        urdu: req.body.name?.urdu || req.body['name[urdu]'] || req.body.urduName || ''
       },
       category: req.body.category,
+      customCategory: req.body.category === 'Other' ? req.body.customCategory : undefined,
       color: req.body.color,
       summary: req.body.summary,
       description: req.body.description,
@@ -413,14 +793,51 @@ export const handleEditGemstone = async (req, res) => {
       astrologyBenefits: req.body.astrologyBenefits,
       uses: req.body.uses,
       availability: req.body.availability,
-      trending: req.body.trending === 'true',
-      featured: req.body.featured === 'true',
-      isActive: req.body.isActive === 'true'
+      trending: req.body.isTrending === 'on' || req.body.trending === 'on',
+      featured: req.body.isFeatured === 'on' || req.body.featured === 'on',
+      isActive: req.body.isActive === 'on' || req.body.isActive === 'true',
+      price: req.body.priceMin ? parseFloat(req.body.priceMin) : (req.body.price ? parseFloat(req.body.price) : undefined),
+      priceRange: (req.body.priceMin || req.body.priceMax) ? {
+        min: req.body.priceMin ? parseFloat(req.body.priceMin) : undefined,
+        max: req.body.priceMax ? parseFloat(req.body.priceMax) : undefined,
+        currency: 'INR'
+      } : undefined,
+      ratti: req.body.ratti ? parseFloat(req.body.ratti) : undefined,
+      letter: req.body.letter ? req.body.letter.toUpperCase().charAt(0) : undefined,
+      discount: {
+        percentage: req.body.discountPercentage ? parseInt(req.body.discountPercentage) : 0,
+        message: req.body.discountMessage || 'Special Offer!',
+        isActive: req.body.discountActive === 'on'
+      },
+      certification: {
+        certified: req.body.certified === 'on',
+        certificateNumber: req.body.certified === 'on' ? req.body.certificateNumber : '',
+        certifyingBody: req.body.certified === 'on' ? req.body.certifyingBody : '',
+        certificationImage: gemstone.certification?.certificationImage?.url 
+          ? gemstone.certification.certificationImage 
+          : null
+      }
     };
 
-    // Handle purpose array
+    // Handle purpose array - properly parse comma-separated or array values
     if (req.body.purpose) {
-      updateData.purpose = Array.isArray(req.body.purpose) ? req.body.purpose : [req.body.purpose];
+      let purposes = req.body.purpose;
+      
+      // If it's a string, split by comma
+      if (typeof purposes === 'string') {
+        purposes = purposes.split(',').map(p => p.trim()).filter(p => p);
+      }
+      
+      // If it's an array, flatten and clean
+      if (Array.isArray(purposes)) {
+        purposes = purposes.flatMap(p => 
+          typeof p === 'string' ? p.split(',').map(s => s.trim()) : p
+        ).filter(p => p);
+      }
+      
+      // Valid purpose values
+      const validPurposes = ['Love', 'Health', 'Wealth', 'Protection', 'Spiritual Growth', 'Success', 'Peace', 'Wisdom'];
+      updateData.purpose = purposes.filter(p => validPurposes.includes(p));
     }
 
     // Handle weight
@@ -441,12 +858,15 @@ export const handleEditGemstone = async (req, res) => {
       };
     }
 
-    // Handle certification
+    // Handle certification (preserve existing image)
     if (req.body.certification) {
       updateData.certification = {
         certified: req.body.certification?.certified === 'true' || req.body['certification[certified]'] === 'true',
         certificateNumber: req.body.certification?.certificateNumber || req.body['certification[certificateNumber]'] || '',
-        certifyingBody: req.body.certification?.certifyingBody || req.body['certification[certifyingBody]'] || ''
+        certifyingBody: req.body.certification?.certifyingBody || req.body['certification[certifyingBody]'] || '',
+        certificationImage: gemstone.certification?.certificationImage?.url 
+          ? gemstone.certification.certificationImage 
+          : null
       };
     }
 
@@ -493,21 +913,22 @@ export const handleEditGemstone = async (req, res) => {
           console.error('Failed to delete image from Cloudinary:', error);
         }
       }
+    } else {
+      // If no keepImages specified, keep all existing images
+      currentImages = gemstone.images || [];
     }
 
-    // Handle new image uploads
+    // Handle new image uploads (using upload.fields)
     const newImages = [];
-    if (req.files && req.files.length > 0) {
-      for (const file of req.files) {
+    const gemstoneImages = req.files?.images || [];
+    if (gemstoneImages.length > 0) {
+      for (const file of gemstoneImages) {
         try {
-          const b64 = Buffer.from(file.buffer).toString('base64');
-          const dataURI = `data:${file.mimetype};base64,${b64}`;
-
-          const result = await cloudinary.uploader.upload(dataURI, {
-            folder: `kohinoor-gemstones/${updateData.name.english.toLowerCase().replace(/[^a-zA-Z0-9]/g, '-')}`,
+          // Use file.path for disk storage (multer dest: 'uploads/')
+          const result = await cloudinary.uploader.upload(file.path, {
+            folder: 'kohinoor-gemstones',
             transformation: [
-              { quality: 'auto' },
-              { fetch_format: 'auto' }
+              { width: 800, height: 600, crop: 'fill', quality: 'auto' }
             ]
           });
 
@@ -517,15 +938,91 @@ export const handleEditGemstone = async (req, res) => {
             alt: `${updateData.name.english} image ${newImages.length + 1}`
           });
 
+          // Delete temp file
+          fs.unlinkSync(file.path);
+
           console.log('Uploaded new image:', result.public_id);
         } catch (error) {
           console.error('Failed to upload image:', error);
+          // Try to delete temp file even on error
+          try {
+            if (file.path) fs.unlinkSync(file.path);
+          } catch (e) {}
         }
       }
     }
 
     // Combine current and new images
     updateData.images = [...currentImages, ...newImages];
+    
+    // Handle certification image - all fields independent
+    const certImageFiles = req.files?.certificationImage || [];
+    const deleteCertImage = req.body.deleteCertImage === 'true';
+    
+    console.log('🔍 Certification image handling:', {
+      deleteCertImage,
+      deleteCertImageRaw: req.body.deleteCertImage,
+      hasCertImageFiles: certImageFiles.length > 0,
+      existingImage: gemstone.certification?.certificationImage?.publicId
+    });
+    
+    // Initialize certification if not set
+    if (!updateData.certification) {
+      updateData.certification = {};
+    }
+    
+    // Handle explicit delete request
+    if (deleteCertImage) {
+      console.log('🗑️ Delete flag is true, checking for existing image...');
+      if (gemstone.certification?.certificationImage?.publicId) {
+        try {
+          await cloudinary.uploader.destroy(gemstone.certification.certificationImage.publicId);
+          console.log('✅ Deleted certification image from Cloudinary:', gemstone.certification.certificationImage.publicId);
+        } catch (e) {
+          console.error('Failed to delete certification image from Cloudinary:', e);
+        }
+      }
+      // Set to null to properly remove from MongoDB
+      updateData.certification.certificationImage = null;
+      // Also directly unset on the gemstone object
+      gemstone.certification.certificationImage = undefined;
+    }
+    // Handle new upload (replaces existing if any)
+    else if (certImageFiles.length > 0) {
+      try {
+        const certFile = certImageFiles[0];
+        
+        // Delete old certification image if exists
+        if (gemstone.certification?.certificationImage?.publicId) {
+          try {
+            await cloudinary.uploader.destroy(gemstone.certification.certificationImage.publicId);
+          } catch (e) {
+            console.error('Failed to delete old certification image:', e);
+          }
+        }
+        
+        const certResult = await cloudinary.uploader.upload(certFile.path, {
+          folder: 'kohinoor-certifications',
+          transformation: [
+            { width: 800, height: 600, crop: 'limit', quality: 'auto' }
+          ]
+        });
+        
+        updateData.certification.certificationImage = {
+          url: certResult.secure_url,
+          publicId: certResult.public_id
+        };
+        
+        fs.unlinkSync(certFile.path);
+        console.log('Uploaded certification image:', certResult.public_id);
+      } catch (error) {
+        console.error('Failed to upload certification image:', error.message || 'Upload error');
+      }
+    }
+    // Keep existing certification image if no new upload and no delete
+    else if (gemstone.certification?.certificationImage) {
+      updateData.certification.certificationImage = gemstone.certification.certificationImage;
+    }
 
     // Update the gemstone
     Object.assign(gemstone, updateData);
@@ -538,13 +1035,33 @@ export const handleEditGemstone = async (req, res) => {
       title: 'Edit Gemstone - Kohinoor Gemstone',
       user: req.session.user,
       gemstone,
-      predefinedGemstones: categories,
+      categories: categories,
       error: null,
+      fieldErrors: {},
       success: 'Gemstone updated successfully!'
     });
 
   } catch (error) {
     console.error('Update gemstone error:', error);
+    
+    // Parse validation errors to provide better messages
+    let errorMessage = 'Failed to update gemstone';
+    let fieldErrors = {};
+    
+    if (error.name === 'ValidationError') {
+      const errorFields = Object.keys(error.errors);
+      const fieldMessages = errorFields.map(field => {
+        const err = error.errors[field];
+        fieldErrors[field] = err.message;
+        
+        // Make field name more readable
+        const readableField = field.replace(/\./g, ' → ').replace(/([A-Z])/g, ' $1').trim();
+        return `• ${readableField}: ${err.message}`;
+      });
+      errorMessage = 'Please fix the following errors:\n' + fieldMessages.join('\n');
+    } else {
+      errorMessage = error.message || 'An unexpected error occurred';
+    }
     
     try {
       const [gemstone, categories] = await Promise.all([
@@ -555,8 +1072,9 @@ export const handleEditGemstone = async (req, res) => {
         title: 'Edit Gemstone - Kohinoor Gemstone',
         user: req.session.user,
         gemstone,
-        predefinedGemstones: categories,
-        error: 'Failed to update gemstone: ' + error.message,
+        categories: categories,
+        error: errorMessage,
+        fieldErrors: fieldErrors,
         success: null
       });
     } catch (renderError) {
@@ -573,9 +1091,15 @@ export const handleEditGemstone = async (req, res) => {
 export const handleDeleteGemstone = async (req, res) => {
   try {
     const gemstone = await Gemstone.findById(req.params.id);
+    
+    // Check if AJAX request
+    const isAjax = req.xhr || 
+      (req.headers.accept && req.headers.accept.includes('application/json')) ||
+      (req.headers['content-type'] && req.headers['content-type'].includes('application/json'));
+    
     if (!gemstone) {
-      if (req.headers['content-type'] === 'application/json' || req.xhr) {
-        return res.status(404).json({ error: 'Gemstone not found' });
+      if (isAjax) {
+        return res.status(404).json({ success: false, error: 'Gemstone not found' });
       } else {
         return res.redirect('/admin/gemstones?error=' + encodeURIComponent('Gemstone not found'));
       }
@@ -584,7 +1108,9 @@ export const handleDeleteGemstone = async (req, res) => {
     // Delete images from Cloudinary
     for (const image of gemstone.images) {
       try {
-        await cloudinary.uploader.destroy(image.publicId);
+        if (image.publicId) {
+          await cloudinary.uploader.destroy(image.publicId);
+        }
       } catch (e) {
         console.error('Failed to delete image:', e);
       }
@@ -592,16 +1118,22 @@ export const handleDeleteGemstone = async (req, res) => {
     
     await Gemstone.findByIdAndDelete(req.params.id);
     
+    console.log('Gemstone deleted successfully:', req.params.id);
+    
     // Return JSON for AJAX requests, redirect for form submissions
-    if (req.headers['content-type'] === 'application/json' || req.xhr) {
+    if (isAjax) {
       res.json({ success: true, message: 'Gemstone deleted successfully' });
     } else {
       res.redirect('/admin/gemstones?success=' + encodeURIComponent('Gemstone deleted successfully'));
     }
   } catch (error) {
     console.error('Delete gemstone error:', error);
-    if (req.headers['content-type'] === 'application/json' || req.xhr) {
-      res.status(500).json({ error: 'Failed to delete gemstone' });
+    const isAjax = req.xhr || 
+      (req.headers.accept && req.headers.accept.includes('application/json')) ||
+      (req.headers['content-type'] && req.headers['content-type'].includes('application/json'));
+      
+    if (isAjax) {
+      res.status(500).json({ success: false, error: 'Failed to delete gemstone' });
     } else {
       res.redirect('/admin/gemstones?error=' + encodeURIComponent('Failed to delete gemstone'));
     }
@@ -620,18 +1152,18 @@ export const handleToggleTrending = async (req, res) => {
       }
     }
     
-    const wasTrending = gemstone.isTrending;
-    gemstone.isTrending = !gemstone.isTrending;
+    const wasTrending = gemstone.trending;
+    gemstone.trending = !gemstone.trending;
     await gemstone.save();
     
-    const message = `Gemstone ${gemstone.isTrending ? 'marked as trending' : 'removed from trending'}`;
+    const message = `Gemstone ${gemstone.trending ? 'marked as trending' : 'removed from trending'}`;
     
     // Return JSON for AJAX requests, redirect for form submissions
     if (req.headers['content-type'] === 'application/json' || req.xhr) {
       res.json({ 
         success: true, 
         message,
-        isTrending: gemstone.isTrending 
+        trending: gemstone.trending 
       });
     } else {
       res.redirect('/admin/gemstones?success=' + encodeURIComponent(message));
@@ -665,7 +1197,7 @@ export const handleBulkOperations = async (req, res) => {
       case 'trending':
         result = await Gemstone.updateMany(
           { _id: { $in: gemstoneIds } },
-          { $set: { isTrending: updateData.trending === 'true' } }
+          { $set: { trending: updateData.trending === 'true' } }
         );
         message = `Updated trending status for ${result.modifiedCount} gemstones`;
         break;
@@ -939,23 +1471,27 @@ export const handleUpdateBusinessInfo = async (req, res) => {
 
     // Business hours from either nested hours object or bracketed inputs
     const days = ['monday','tuesday','wednesday','thursday','friday','saturday','sunday'];
-    const hasNestedHours = nestedHours && typeof nestedHours === 'object';
-    const hasBracketHours = Object.keys(formData).some(k => k.startsWith('hours['));
+    const nestedBusinessHours = formData.businessHours || nestedHours;
+    const hasNestedHours = nestedBusinessHours && typeof nestedBusinessHours === 'object';
+    const hasBracketHours = Object.keys(formData).some(k => k.startsWith('hours[') || k.startsWith('businessHours['));
     if (hasNestedHours || hasBracketHours) {
       businessInfo.businessHours = businessInfo.businessHours || {};
 
       days.forEach(day => {
         let open;
         let close;
+        let closed;
         if (hasNestedHours) {
-          open = nestedHours?.[day]?.open;
-          close = nestedHours?.[day]?.close;
+          open = nestedBusinessHours?.[day]?.open;
+          close = nestedBusinessHours?.[day]?.close;
+          closed = nestedBusinessHours?.[day]?.closed;
         } else {
-          open = formData[`hours[${day}][open]`];
-          close = formData[`hours[${day}][close]`];
+          open = formData[`businessHours[${day}][open]`] || formData[`hours[${day}][open]`];
+          close = formData[`businessHours[${day}][close]`] || formData[`hours[${day}][close]`];
+          closed = formData[`businessHours[${day}][closed]`] || formData[`hours[${day}][closed]`];
         }
 
-        const isClosed = !(open && close);
+        const isClosed = closed === 'on' || closed === true || !(open && close);
         if (open || close || businessInfo.businessHours[day]) {
           businessInfo.businessHours[day] = {
             open: open || businessInfo.businessHours[day]?.open || undefined,
@@ -966,22 +1502,90 @@ export const handleUpdateBusinessInfo = async (req, res) => {
       });
     }
 
-    // Heritage info
-    const foundedYear = formData.foundedYear ? parseInt(formData.foundedYear) : undefined;
-    const story = formData.story;
-    const specialtiesStr = formData.specialties; // comma-separated
+    // Heritage info (support both nested and bracket notation)
+    const heritage = formData.heritage || {};
+    const foundedYearRaw = formData['heritage[foundedYear]'] ?? heritage.foundedYear ?? formData.foundedYear;
+    const foundedYear = foundedYearRaw ? parseInt(foundedYearRaw) : undefined;
+    const story = formData['heritage[story]'] ?? heritage.story ?? formData.story;
+    const specialtiesStr = formData['heritage[specialties]'] ?? heritage.specialties ?? formData.specialties;
+    
     if (foundedYear || story || specialtiesStr) {
       businessInfo.heritage = businessInfo.heritage || {};
-      if (!Number.isNaN(foundedYear)) {
-        setIfProvided(businessInfo.heritage, 'foundedYear', foundedYear);
+      if (foundedYear && !Number.isNaN(foundedYear)) {
+        businessInfo.heritage.foundedYear = foundedYear;
       }
-      setIfProvided(businessInfo.heritage, 'story', story);
+      if (story !== undefined) businessInfo.heritage.story = story;
       if (specialtiesStr !== undefined) {
         const arr = String(specialtiesStr)
           .split(',')
           .map(s => s.trim())
           .filter(Boolean);
         businessInfo.heritage.specialties = arr;
+      }
+    }
+
+    // Policies
+    const returnPolicy = formData['policies[returnPolicy]'] ?? formData.policies?.returnPolicy;
+    const shippingPolicy = formData['policies[shippingPolicy]'] ?? formData.policies?.shippingPolicy;
+    if (returnPolicy || shippingPolicy) {
+      businessInfo.policies = businessInfo.policies || {};
+      if (returnPolicy !== undefined) businessInfo.policies.returnPolicy = returnPolicy;
+      if (shippingPolicy !== undefined) businessInfo.policies.shippingPolicy = shippingPolicy;
+    }
+
+    // Store Certification (JG Gems Testing Lab, etc.)
+    const storeCert = formData.storeCertification || {};
+    const certEnabled = formData['storeCertification[enabled]'] || storeCert.enabled;
+    const certLabName = formData['storeCertification[labName]'] ?? storeCert.labName;
+    const certLabAddress = formData['storeCertification[labAddress]'] ?? storeCert.labAddress;
+    const certLabWebsite = formData['storeCertification[labWebsite]'] ?? storeCert.labWebsite;
+    const certTagline = formData['storeCertification[tagline]'] ?? storeCert.tagline;
+    const certDescription = formData['storeCertification[description]'] ?? storeCert.description;
+
+    businessInfo.storeCertification = businessInfo.storeCertification || {};
+    businessInfo.storeCertification.enabled = certEnabled === 'on' || certEnabled === true || certEnabled === 'true';
+    if (certLabName) businessInfo.storeCertification.labName = certLabName;
+    if (certLabAddress !== undefined) businessInfo.storeCertification.labAddress = certLabAddress;
+    if (certLabWebsite !== undefined) businessInfo.storeCertification.labWebsite = certLabWebsite;
+    if (certTagline !== undefined) businessInfo.storeCertification.tagline = certTagline;
+    if (certDescription !== undefined) businessInfo.storeCertification.description = certDescription;
+
+    // Handle certification image upload
+    if (req.file) {
+      try {
+        const result = await cloudinary.uploader.upload(req.file.path, {
+          folder: 'kohinoor-certifications',
+          transformation: [
+            { width: 800, height: 600, crop: 'limit', quality: 'auto' }
+          ]
+        });
+        businessInfo.storeCertification.certificationImage = result.secure_url;
+        
+        // Clean up temp file
+        fs.unlink(req.file.path, (err) => {
+          if (err) console.error('Failed to delete temp file:', err);
+        });
+      } catch (uploadError) {
+        console.error('Failed to upload certification image:', uploadError.message || 'Upload error');
+      }
+    }
+
+    // SEO Settings
+    const seoSettings = formData.seoSettings || {};
+    const metaTitle = formData['seoSettings[metaTitle]'] ?? seoSettings.metaTitle;
+    const metaDescription = formData['seoSettings[metaDescription]'] ?? seoSettings.metaDescription;
+    const keywordsStr = formData['seoSettings[keywords]'] ?? seoSettings.keywords;
+    
+    if (metaTitle || metaDescription || keywordsStr) {
+      businessInfo.seoSettings = businessInfo.seoSettings || {};
+      if (metaTitle !== undefined) businessInfo.seoSettings.metaTitle = metaTitle;
+      if (metaDescription !== undefined) businessInfo.seoSettings.metaDescription = metaDescription;
+      if (keywordsStr !== undefined) {
+        const keywords = String(keywordsStr)
+          .split(',')
+          .map(s => s.trim().toLowerCase())
+          .filter(Boolean);
+        businessInfo.seoSettings.keywords = keywords;
       }
     }
 

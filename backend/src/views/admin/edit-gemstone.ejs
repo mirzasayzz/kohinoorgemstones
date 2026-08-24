@@ -4,666 +4,416 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><%= title %></title>
-    
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: {
-                            50: '#f8fafc',
-                            500: '#0f172a',
-                            600: '#0f172a',
-                            700: '#020617'
-                        },
-                        ruby: '#b91c1c',
-                        emerald: '#047857',
-                        golden: '#facc15'
-                    }
-                }
-            }
-        }
-    </script>
-    
-    <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
-    
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="/admin/assets/css/admin.css">
-    
     <style>
-        .gradient-bg {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-        .gemstone-gradient {
-            background: linear-gradient(135deg, #e53e3e 0%, #dd6b20 25%, #38a169 50%, #3182ce 75%, #805ad5 100%);
-        }
-        .form-section {
-            transition: all 0.3s ease;
-        }
-        .form-section:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-        }
-        .input-group {
-            position: relative;
-        }
-        .form-input {
-            transition: all 0.3s ease;
-        }
-        .form-input:focus {
-            transform: translateY(-1px);
-        }
-        .image-preview {
-            max-width: 100px;
-            max-height: 100px;
-            object-fit: cover;
-            border-radius: 8px;
-            border: 2px solid #e5e7eb;
-        }
-        .remove-image {
-            position: absolute;
-            top: -8px;
-            right: -8px;
-            background: #ef4444;
-            color: white;
-            border-radius: 50%;
-            width: 24px;
-            height: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            font-size: 14px;
-        }
+        * { font-family: 'Segoe UI', system-ui, sans-serif; }
+        body { background: linear-gradient(135deg, #0f2027, #203a43, #2c5364); }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #0f2027; }
+        ::-webkit-scrollbar-thumb { background: #d4af37; border-radius: 3px; }
+        .sidebar { background: linear-gradient(180deg, #0f2027, #0a1a1f); }
+        .nav-link { transition: all 0.2s ease; border-left: 3px solid transparent; }
+        .nav-link:hover, .nav-link.active { background: rgba(212, 175, 55, 0.1); border-left-color: #d4af37; }
+        .card { background: rgba(15, 32, 39, 0.8); border: 1px solid rgba(212, 175, 55, 0.15); border-radius: 12px; }
+        .text-gold { color: #d4af37; }
+        .border-gold { border-color: rgba(212, 175, 55, 0.3); }
+        .btn-gold { background: linear-gradient(135deg, #d4af37, #c9a227); color: #0f2027; }
+        .btn-gold:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(212, 175, 55, 0.3); }
+        .input-glow { background: rgba(32, 58, 67, 0.6); border: 1px solid rgba(212, 175, 55, 0.2); color: #fff; transition: all 0.3s ease; }
+        .input-glow:hover { border-color: rgba(212, 175, 55, 0.5); box-shadow: 0 0 15px rgba(212, 175, 55, 0.2); }
+        .input-glow:focus { outline: none; border-color: #d4af37; box-shadow: 0 0 20px rgba(212, 175, 55, 0.4); }
+        .kingdom-title { background: linear-gradient(90deg, #d4af37, #f4d03f, #d4af37); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; animation: shimmer 3s infinite; background-size: 200% auto; }
+        @keyframes shimmer { 0%,100% { background-position: 0% center; } 50% { background-position: 200% center; } }
+        .section-title { color: #d4af37; font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; display: flex; align-items: center; gap: 10px; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid rgba(212, 175, 55, 0.2); }
+        .upload-zone { border: 2px dashed rgba(212, 175, 55, 0.3); transition: all 0.3s ease; }
+        .upload-zone:hover { border-color: #d4af37; background: rgba(212, 175, 55, 0.05); }
+        .image-checkbox { appearance: none; width: 24px; height: 24px; border: 2px solid #d4af37; border-radius: 6px; cursor: pointer; position: relative; }
+        .image-checkbox:checked { background: #d4af37; }
+        .image-checkbox:checked::after { content: '✓'; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #0f2027; font-weight: bold; }
     </style>
 </head>
-<body class="bg-gray-50">
-    
-    <!-- Navigation -->
-    <nav class="bg-white shadow-lg border-b border-gray-200">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16">
-                <div class="flex items-center">
-                    <a href="/admin/dashboard" class="flex items-center space-x-3">
-                        <div class="w-8 h-8 gemstone-gradient rounded-lg flex items-center justify-center">
-                            <i data-lucide="gem" class="w-5 h-5 text-white"></i>
-                        </div>
-                        <span class="text-xl font-bold text-gray-900">Kohinoor Admin</span>
+<body class="text-white min-h-screen">
+    <% const activePage = 'edit-gemstone'; %>
+    <%- include('partials/sidebar') %>
+
+    <div class="lg:ml-64 min-h-screen">
+        <header class="sticky top-0 z-30 h-16 bg-[#0f2027]/95 backdrop-blur border-b border-gold px-4">
+            <div class="h-full flex items-center justify-between">
+                <div class="flex items-center space-x-2 sm:space-x-4 min-w-0">
+                    <button onclick="toggleSidebar()" class="lg:hidden p-2 hover:bg-white/10 rounded flex-shrink-0">
+                        <i data-lucide="menu" class="w-5 h-5"></i>
+                    </button>
+                    <a href="/admin/gemstones" class="p-2 hover:bg-gold/20 rounded-lg text-gold flex-shrink-0">
+                        <i data-lucide="arrow-left" class="w-5 h-5"></i>
                     </a>
+                    <h1 class="text-base sm:text-lg font-semibold truncate">Edit Gemstone</h1>
                 </div>
-                
-                <div class="flex items-center space-x-4">
-                    <span class="text-gray-700">Welcome, <%= user.name %></span>
-                    <a href="/admin/logout" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium transition duration-200">
-                        <i data-lucide="log-out" class="w-4 h-4 inline mr-1"></i>
-                        Logout
-                    </a>
+                <button type="submit" form="gemstoneForm" class="btn-gold flex items-center px-3 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all flex-shrink-0">
+                    <i data-lucide="save" class="w-4 h-4 sm:mr-1"></i><span class="hidden sm:inline">Save</span>
+                </button>
+            </div>
+        </header>
+
+        <main class="p-4 lg:p-6">
+            <% if (typeof error !== 'undefined' && error) { %>
+            <div class="mb-6 p-4 bg-red-500/10 border border-red-500/30 rounded-lg">
+                <div class="flex items-start">
+                    <i data-lucide="alert-circle" class="w-5 h-5 text-red-400 mr-3 mt-0.5 flex-shrink-0"></i>
+                    <div class="text-red-400 text-sm whitespace-pre-line"><%= error %></div>
                 </div>
-            </div>
-        </div>
-    </nav>
-
-    <!-- Main Content -->
-    <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        <!-- Header -->
-        <div class="bg-white rounded-lg shadow-sm mb-6 p-6">
-            <div class="flex items-center justify-between">
-                <div>
-                    <h1 class="text-3xl font-bold text-gray-900 flex items-center">
-                        <i data-lucide="edit-3" class="w-8 h-8 mr-3 text-blue-600"></i>
-                        Edit Gemstone
-                    </h1>
-                    <p class="mt-2 text-gray-600">Update gemstone information and details</p>
-                </div>
-                <a href="/admin/gemstones" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition duration-200">
-                    <i data-lucide="arrow-left" class="w-4 h-4 inline mr-1"></i>
-                    Back to Gemstones
-                </a>
-            </div>
-        </div>
-
-        <!-- Success/Error Messages -->
-        <% if (error) { %>
-            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6" role="alert">
-                <strong class="font-bold">Error!</strong>
-                <span class="block sm:inline ml-2"><%= error %></span>
-            </div>
-        <% } %>
-        
-        <% if (success) { %>
-            <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-6" role="alert">
-                <strong class="font-bold">Success!</strong>
-                <span class="block sm:inline ml-2"><%= success %></span>
-            </div>
-        <% } %>
-
-        <!-- Form -->
-        <form action="/admin/gemstones/edit/<%= gemstone._id %>" method="POST" enctype="multipart/form-data" class="space-y-6">
-            
-            <!-- Basic Information Section -->
-            <div class="form-section bg-white rounded-lg shadow-sm p-6">
-                <h2 class="text-xl font-semibold text-gray-900 mb-4 flex items-center">
-                    <i data-lucide="info" class="w-5 h-5 mr-2 text-blue-600"></i>
-                    Basic Information
-                </h2>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- English Name -->
-                    <div class="input-group">
-                        <label for="name_english" class="block text-sm font-medium text-gray-700 mb-2">
-                            English Name *
-                        </label>
-                        <input type="text" id="name_english" name="name[english]" required
-                               class="form-input w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                               value="<%= gemstone.name.english %>"
-                               placeholder="Enter gemstone name in English">
-                    </div>
-
-                    <!-- Urdu Name -->
-                    <div class="input-group">
-                        <label for="name_urdu" class="block text-sm font-medium text-gray-700 mb-2">
-                            Urdu Name
-                        </label>
-                        <input type="text" id="name_urdu" name="name[urdu]"
-                               class="form-input w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                               value="<%= gemstone.name.urdu || '' %>"
-                               placeholder="Enter gemstone name in Urdu">
-                    </div>
-
-                    <!-- Category -->
-                    <div class="input-group">
-                        <label for="category" class="block text-sm font-medium text-gray-700 mb-2">
-                            Category *
-                        </label>
-                        <select id="category" name="category" required
-                                class="form-input w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                            <option value="">Select Category</option>
-                            <% predefinedGemstones.forEach(cat => { %>
-                                <option value="<%= cat.value %>" <%= gemstone.category === cat.value ? 'selected' : '' %>><%= cat.label %></option>
-                            <% }); %>
-                        </select>
-                    </div>
-
-                    <!-- Color -->
-                    <div class="input-group">
-                        <label for="color" class="block text-sm font-medium text-gray-700 mb-2">
-                            Color *
-                        </label>
-                        <input type="text" id="color" name="color" required
-                               class="form-input w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                               value="<%= gemstone.color %>"
-                               placeholder="e.g., Deep Blue, Royal Red">
-                    </div>
-                </div>
-
-                <!-- Purpose -->
-                <div class="mt-6">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                        Purpose (Select multiple)
-                    </label>
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                        <% const purposes = ['Love', 'Health', 'Wealth', 'Protection', 'Spiritual Growth', 'Success', 'Peace', 'Wisdom']; %>
-                        <% purposes.forEach(purpose => { %>
-                            <label class="flex items-center space-x-2 p-2 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer">
-                                <input type="checkbox" name="purpose" value="<%= purpose %>" 
-                                       <%= gemstone.purpose && gemstone.purpose.includes(purpose) ? 'checked' : '' %>
-                                       class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-                                <span class="text-sm text-gray-700"><%= purpose %></span>
-                            </label>
+                <% if (typeof fieldErrors !== 'undefined' && Object.keys(fieldErrors).length > 0) { %>
+                <div class="mt-3 pt-3 border-t border-red-500/20">
+                    <p class="text-red-300 text-xs font-medium mb-2">Fields with errors:</p>
+                    <div class="flex flex-wrap gap-2">
+                        <% Object.keys(fieldErrors).forEach(field => { %>
+                        <span class="px-2 py-1 bg-red-500/20 text-red-300 text-xs rounded"><%= field %></span>
                         <% }); %>
                     </div>
                 </div>
+                <% } %>
             </div>
-
-            <!-- Description Section -->
-            <div class="form-section bg-white rounded-lg shadow-sm p-6">
-                <h2 class="text-xl font-semibold text-gray-900 mb-4 flex items-center">
-                    <i data-lucide="file-text" class="w-5 h-5 mr-2 text-green-600"></i>
-                    Description & Details
-                </h2>
-                
-                <div class="space-y-6">
-                    <!-- Summary -->
-                    <div class="input-group">
-                        <label for="summary" class="block text-sm font-medium text-gray-700 mb-2">
-                            Summary * (Max 200 characters)
-                        </label>
-                        <textarea id="summary" name="summary" required maxlength="200" rows="3"
-                                  class="form-input w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                  placeholder="Brief description of the gemstone"><%= gemstone.summary %></textarea>
-                        <div class="text-right text-sm text-gray-500 mt-1" id="summary-count">0/200</div>
-                    </div>
-
-                    <!-- Description -->
-                    <div class="input-group">
-                        <label for="description" class="block text-sm font-medium text-gray-700 mb-2">
-                            Detailed Description * (Max 2000 characters)
-                        </label>
-                        <textarea id="description" name="description" required maxlength="2000" rows="6"
-                                  class="form-input w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                  placeholder="Detailed description of the gemstone, its properties, and significance"><%= gemstone.description %></textarea>
-                        <div class="text-right text-sm text-gray-500 mt-1" id="description-count">0/2000</div>
-                    </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <!-- Origin -->
-                        <div class="input-group">
-                            <label for="origin" class="block text-sm font-medium text-gray-700 mb-2">
-                                Origin
-                            </label>
-                            <input type="text" id="origin" name="origin"
-                                   class="form-input w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                   value="<%= gemstone.origin || '' %>"
-                                   placeholder="e.g., Kashmir, Myanmar, Sri Lanka">
-                        </div>
-
-                        <!-- Availability -->
-                        <div class="input-group">
-                            <label for="availability" class="block text-sm font-medium text-gray-700 mb-2">
-                                Availability
-                            </label>
-                            <select id="availability" name="availability"
-                                    class="form-input w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                                <option value="In Stock" <%= gemstone.availability === 'In Stock' ? 'selected' : '' %>>In Stock</option>
-                                <option value="Out of Stock" <%= gemstone.availability === 'Out of Stock' ? 'selected' : '' %>>Out of Stock</option>
-                                <option value="Made to Order" <%= gemstone.availability === 'Made to Order' ? 'selected' : '' %>>Made to Order</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <!-- Astrology Benefits -->
-                    <div class="input-group">
-                        <label for="astrologyBenefits" class="block text-sm font-medium text-gray-700 mb-2">
-                            Astrology Benefits
-                        </label>
-                        <textarea id="astrologyBenefits" name="astrologyBenefits" rows="3"
-                                  class="form-input w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                  placeholder="Astrological benefits and planetary associations"><%= gemstone.astrologyBenefits || '' %></textarea>
-                    </div>
-
-                    <!-- Uses -->
-                    <div class="input-group">
-                        <label for="uses" class="block text-sm font-medium text-gray-700 mb-2">
-                            Usage Instructions
-                        </label>
-                        <textarea id="uses" name="uses" rows="3"
-                                  class="form-input w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                  placeholder="How to wear and use this gemstone"><%= gemstone.uses || '' %></textarea>
-                    </div>
-                </div>
+            <% } %>
+            <% if (typeof success !== 'undefined' && success) { %>
+            <div class="mb-6 p-4 bg-green-500/10 border border-green-500/30 rounded-lg flex items-center">
+                <i data-lucide="check-circle" class="w-5 h-5 text-green-400 mr-3"></i>
+                <span class="text-green-400"><%= success %></span>
             </div>
+            <% } %>
 
-            <!-- Technical Details Section -->
-            <div class="form-section bg-white rounded-lg shadow-sm p-6">
-                <h2 class="text-xl font-semibold text-gray-900 mb-4 flex items-center">
-                    <i data-lucide="settings" class="w-5 h-5 mr-2 text-purple-600"></i>
-                    Technical Details
-                </h2>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <!-- Weight -->
-                    <div class="input-group">
-                        <label for="weight_value" class="block text-sm font-medium text-gray-700 mb-2">
-                            Weight
-                        </label>
-                        <div class="flex space-x-2">
-                            <input type="number" id="weight_value" name="weight[value]" step="0.01"
-                                   class="form-input flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                   value="<%= gemstone.weight && gemstone.weight.value ? gemstone.weight.value : '' %>"
-                                   placeholder="0.00">
-                            <select name="weight[unit]" class="form-input px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                                <option value="carats" <%= gemstone.weight && gemstone.weight.unit === 'carats' ? 'selected' : '' %>>Carats</option>
-                                <option value="grams" <%= gemstone.weight && gemstone.weight.unit === 'grams' ? 'selected' : '' %>>Grams</option>
-                                <option value="ratti" <%= gemstone.weight && gemstone.weight.unit === 'ratti' ? 'selected' : '' %>>Ratti</option>
+            <form method="POST" action="/admin/gemstones/edit/<%= gemstone._id %>" enctype="multipart/form-data" id="gemstoneForm" class="max-w-4xl space-y-6">
+
+                <!-- Basic Info -->
+                <div class="card p-6">
+                    <div class="section-title"><i data-lucide="info" class="w-4 h-4"></i>Basic Information</div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm text-gray-300 mb-2">Name (English) *</label>
+                            <input type="text" name="name" value="<%= gemstone.name?.english || '' %>" required class="input-glow w-full px-4 py-3 rounded-lg text-sm" placeholder="e.g. Ruby">
+                        </div>
+                        <div>
+                            <label class="block text-sm text-gray-300 mb-2">Name (Urdu)</label>
+                            <input type="text" name="urduName" value="<%= gemstone.name?.urdu || '' %>" class="input-glow w-full px-4 py-3 rounded-lg text-sm" placeholder="e.g. یاقوت">
+                        </div>
+                        <div>
+                            <label class="block text-sm text-gray-300 mb-2">Category *</label>
+                            <select name="category" required onchange="toggleCustomCategory(this)" class="input-glow w-full px-4 py-3 rounded-lg text-sm">
+                                <option value="">Select Category</option>
+                                <% categories.forEach(cat => { %>
+                                <option value="<%= cat.value %>" <%= gemstone.category === cat.value ? 'selected' : '' %>><%= cat.label %></option>
+                                <% }); %>
                             </select>
                         </div>
-                    </div>
-
-                    <!-- Dimensions -->
-                    <div class="input-group col-span-1 md:col-span-2">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">
-                            Dimensions (L × W × H)
-                        </label>
-                        <div class="flex space-x-2">
-                            <input type="number" name="dimensions[length]" step="0.1"
-                                   class="form-input flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                   value="<%= gemstone.dimensions && gemstone.dimensions.length ? gemstone.dimensions.length : '' %>"
-                                   placeholder="Length">
-                            <span class="self-center text-gray-500">×</span>
-                            <input type="number" name="dimensions[width]" step="0.1"
-                                   class="form-input flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                   value="<%= gemstone.dimensions && gemstone.dimensions.width ? gemstone.dimensions.width : '' %>"
-                                   placeholder="Width">
-                            <span class="self-center text-gray-500">×</span>
-                            <input type="number" name="dimensions[height]" step="0.1"
-                                   class="form-input flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                   value="<%= gemstone.dimensions && gemstone.dimensions.height ? gemstone.dimensions.height : '' %>"
-                                   placeholder="Height">
-                            <select name="dimensions[unit]" class="form-input px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                                <option value="mm" <%= gemstone.dimensions && gemstone.dimensions.unit === 'mm' ? 'selected' : '' %>>mm</option>
-                                <option value="cm" <%= gemstone.dimensions && gemstone.dimensions.unit === 'cm' ? 'selected' : '' %>>cm</option>
-                            </select>
+                        <div id="customCategoryDiv" class="<%= gemstone.category === 'Other' ? '' : 'hidden' %>">
+                            <label class="block text-sm text-gray-300 mb-2">Custom Category</label>
+                            <input type="text" name="customCategory" value="<%= gemstone.customCategory || '' %>" class="input-glow w-full px-4 py-3 rounded-lg text-sm" placeholder="Enter type">
+                        </div>
+                        <div>
+                            <label class="block text-sm text-gray-300 mb-2">Color *</label>
+                            <input type="text" name="color" value="<%= gemstone.color || '' %>" required class="input-glow w-full px-4 py-3 rounded-lg text-sm" placeholder="e.g. Deep Red">
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Certification Section -->
-            <div class="form-section bg-white rounded-lg shadow-sm p-6">
-                <h2 class="text-xl font-semibold text-gray-900 mb-4 flex items-center">
-                    <i data-lucide="award" class="w-5 h-5 mr-2 text-yellow-600"></i>
-                    Certification Details
-                </h2>
-                
-                <div class="space-y-4">
-                    <div class="flex items-center space-x-2">
-                        <input type="checkbox" id="certified" name="certification[certified]" value="true"
-                               <%= gemstone.certification && gemstone.certification.certified ? 'checked' : '' %>
-                               class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-                        <label for="certified" class="text-sm font-medium text-gray-700">
-                            This gemstone is certified
-                        </label>
+                <!-- Price & Weight -->
+                <div class="card p-6">
+                    <div class="section-title"><i data-lucide="indian-rupee" class="w-4 h-4"></i>Price & Weight</div>
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div>
+                            <label class="block text-sm text-gray-300 mb-2">Min Price (₹)</label>
+                            <input type="number" name="priceMin" value="<%= gemstone.priceRange?.min || gemstone.price || '' %>" class="input-glow w-full px-4 py-3 rounded-lg text-sm" placeholder="e.g. 5000">
+                        </div>
+                        <div>
+                            <label class="block text-sm text-gray-300 mb-2">Max Price (₹)</label>
+                            <input type="number" name="priceMax" value="<%= gemstone.priceRange?.max || '' %>" class="input-glow w-full px-4 py-3 rounded-lg text-sm" placeholder="e.g. 15000">
+                        </div>
+                        <div>
+                            <label class="block text-sm text-gray-300 mb-2">Weight (Ratti)</label>
+                            <input type="number" step="0.01" name="ratti" value="<%= gemstone.ratti || '' %>" class="input-glow w-full px-4 py-3 rounded-lg text-sm" placeholder="e.g. 5.25">
+                        </div>
+                        <div>
+                            <label class="block text-sm text-gray-300 mb-2">Letter (A-Z)</label>
+                            <input type="text" name="letter" value="<%= gemstone.letter || '' %>" maxlength="1" class="input-glow w-full px-4 py-3 rounded-lg text-sm uppercase" placeholder="e.g. A">
+                            <p class="text-xs text-gray-500 mt-1">For alphabetical search</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Discount / Offer Price -->
+                <div class="card p-6">
+                    <div class="section-title"><i data-lucide="percent" class="w-4 h-4"></i>Offer Price / Discount</div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-sm text-gray-300 mb-2">Discount %</label>
+                            <input type="number" name="discountPercentage" value="<%= gemstone.discount?.percentage || 0 %>" min="0" max="100" class="input-glow w-full px-4 py-3 rounded-lg text-sm" placeholder="e.g. 10">
+                        </div>
+                        <div>
+                            <label class="block text-sm text-gray-300 mb-2">Offer Message</label>
+                            <input type="text" name="discountMessage" value="<%= gemstone.discount?.message || 'Special Offer!' %>" class="input-glow w-full px-4 py-3 rounded-lg text-sm" placeholder="e.g. Limited Time Offer!">
+                        </div>
+                        <div class="flex items-end">
+                            <label class="flex items-center space-x-3 cursor-pointer p-3 hover:bg-gold/5 rounded-lg transition-colors">
+                                <input type="checkbox" name="discountActive" <%= gemstone.discount?.isActive ? 'checked' : '' %> class="w-5 h-5 rounded accent-yellow-500">
+                                <span class="text-sm">Show Offer Badge</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Certification (Optional) -->
+                <div class="card p-6">
+                    <div class="section-title"><i data-lucide="award" class="w-4 h-4"></i>Certification (Optional)</div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="flex items-center">
+                            <label class="flex items-center space-x-3 cursor-pointer p-3 hover:bg-gold/5 rounded-lg transition-colors">
+                                <input type="checkbox" name="certified" id="certifiedCheckbox" <%= gemstone.certification?.certified ? 'checked' : '' %> class="w-5 h-5 rounded accent-yellow-500" onchange="toggleCertFields()">
+                                <span class="text-sm">Is Certified?</span>
+                            </label>
+                        </div>
+                        <div id="certNumberField">
+                            <label class="block text-sm text-gray-300 mb-2">Certificate Number</label>
+                            <input type="text" name="certificateNumber" value="<%= gemstone.certification?.certificateNumber || '' %>" class="input-glow w-full px-4 py-3 rounded-lg text-sm" placeholder="e.g. JGGTL308258">
+                        </div>
+                        <div id="certBodyField">
+                            <label class="block text-sm text-gray-300 mb-2">Certifying Body</label>
+                            <input type="text" name="certifyingBody" value="<%= gemstone.certification?.certifyingBody || '' %>" class="input-glow w-full px-4 py-3 rounded-lg text-sm" placeholder="e.g. JG Gems Testing Lab">
+                        </div>
                     </div>
                     
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <!-- Certificate Number -->
-                        <div class="input-group">
-                            <label for="certificateNumber" class="block text-sm font-medium text-gray-700 mb-2">
-                                Certificate Number
-                            </label>
-                            <input type="text" id="certificateNumber" name="certification[certificateNumber]"
-                                   class="form-input w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                   value="<%= gemstone.certification && gemstone.certification.certificateNumber ? gemstone.certification.certificateNumber : '' %>"
-                                   placeholder="Certificate number">
+                    <!-- Certificate Image Upload -->
+                    <div id="certImageField" class="mt-4">
+                        <label class="block text-sm text-gray-300 mb-2">Certificate Image (Optional)</label>
+                        <!-- Hidden input for delete flag - must be outside conditional -->
+                        <input type="hidden" name="deleteCertImage" id="deleteCertImageInput" value="">
+                        <div class="flex items-start gap-4">
+                            <% if (gemstone.certification?.certificationImage?.url) { %>
+                            <div id="currentCertImage" style="position: relative;">
+                                <img src="<%= gemstone.certification.certificationImage.url %>" alt="Current Certificate" style="width: 128px; height: 96px; object-fit: cover; border-radius: 8px; border: 1px solid rgba(212,175,55,0.3);">
+                                <div id="certImageOverlay" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;">
+                                    <span style="color: white; font-size: 11px;">Current</span>
+                                    <span id="deleteBtn" style="background: #ef4444; color: white; font-size: 11px; padding: 4px 8px; border-radius: 4px; cursor: pointer;" onclick="document.getElementById('deleteCertImageInput').value='true'; this.innerText='MARKED FOR DELETE'; this.style.background='#991b1b'; alert('Will be deleted on save!');">
+                                        🗑️ Delete
+                                    </span>
+                                </div>
+                            </div>
+                            <% } %>
+                            <div class="flex-1">
+                                <div class="upload-zone rounded-xl p-4 text-center cursor-pointer border-2 border-dashed border-gold/30 hover:border-gold/60 transition-colors" onclick="document.getElementById('certificationImage').click()">
+                                    <input type="file" id="certificationImage" name="certificationImage" accept="image/*" class="hidden" onchange="previewCertImage(this)">
+                                    <i data-lucide="upload-cloud" class="w-6 h-6 text-gold mx-auto mb-2"></i>
+                                    <p class="text-gray-300 text-xs mb-1"><%= gemstone.certification?.certificationImage?.url ? 'Replace certificate' : 'Upload certificate' %></p>
+                                    <p class="text-xs text-gray-500">PNG, JPG up to 10MB</p>
+                                </div>
+                            </div>
+                            <div id="certImagePreview" class="hidden">
+                                <img id="certPreviewImg" src="" alt="Preview" class="w-32 h-24 object-cover rounded-lg border border-gold/30">
+                            </div>
                         </div>
+                    </div>
+                    
+                    <p class="text-xs text-gray-500 mt-3">Leave unchecked if gemstone is not certified. Certificate details are optional.</p>
+                </div>
 
-                        <!-- Certifying Body -->
-                        <div class="input-group">
-                            <label for="certifyingBody" class="block text-sm font-medium text-gray-700 mb-2">
-                                Certifying Body
-                            </label>
-                            <input type="text" id="certifyingBody" name="certification[certifyingBody]"
-                                   class="form-input w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                   value="<%= gemstone.certification && gemstone.certification.certifyingBody ? gemstone.certification.certifyingBody : '' %>"
-                                   placeholder="e.g., GIA, Gübelin, SSEF">
+                <!-- Description -->
+                <div class="card p-6">
+                    <div class="section-title"><i data-lucide="file-text" class="w-4 h-4"></i>Description</div>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm text-gray-300 mb-2">Summary *</label>
+                            <textarea name="summary" required rows="2" class="input-glow w-full px-4 py-3 rounded-lg text-sm" placeholder="Short description..."><%= gemstone.summary || '' %></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-sm text-gray-300 mb-2">Full Description *</label>
+                            <textarea name="description" required rows="4" class="input-glow w-full px-4 py-3 rounded-lg text-sm" placeholder="Detailed description..."><%= gemstone.description || '' %></textarea>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Pricing Section -->
-            <div class="form-section bg-white rounded-lg shadow-sm p-6">
-                <h2 class="text-xl font-semibold text-gray-900 mb-4 flex items-center">
-                    <i data-lucide="dollar-sign" class="w-5 h-5 mr-2 text-green-600"></i>
-                    Pricing Information
-                </h2>
-                
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <!-- Min Price -->
-                    <div class="input-group">
-                        <label for="price_min" class="block text-sm font-medium text-gray-700 mb-2">
-                            Minimum Price
-                        </label>
-                        <input type="number" id="price_min" name="priceRange[min]" min="0"
-                               class="form-input w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                               value="<%= gemstone.priceRange && gemstone.priceRange.min ? gemstone.priceRange.min : '' %>"
-                               placeholder="0">
-                    </div>
-
-                    <!-- Max Price -->
-                    <div class="input-group">
-                        <label for="price_max" class="block text-sm font-medium text-gray-700 mb-2">
-                            Maximum Price
-                        </label>
-                        <input type="number" id="price_max" name="priceRange[max]" min="0"
-                               class="form-input w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                               value="<%= gemstone.priceRange && gemstone.priceRange.max ? gemstone.priceRange.max : '' %>"
-                               placeholder="0">
-                    </div>
-
-                    <!-- Currency -->
-                    <div class="input-group">
-                        <label for="currency" class="block text-sm font-medium text-gray-700 mb-2">
-                            Currency
-                        </label>
-                        <select id="currency" name="priceRange[currency]"
-                                class="form-input w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                            <option value="INR" <%= gemstone.priceRange && gemstone.priceRange.currency === 'INR' ? 'selected' : '' %>>INR (₹)</option>
-                            <option value="USD" <%= gemstone.priceRange && gemstone.priceRange.currency === 'USD' ? 'selected' : '' %>>USD ($)</option>
-                            <option value="EUR" <%= gemstone.priceRange && gemstone.priceRange.currency === 'EUR' ? 'selected' : '' %>>EUR (€)</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Images Section -->
-            <div class="form-section bg-white rounded-lg shadow-sm p-6">
-                <h2 class="text-xl font-semibold text-gray-900 mb-4 flex items-center">
-                    <i data-lucide="image" class="w-5 h-5 mr-2 text-indigo-600"></i>
-                    Images
-                </h2>
-                
                 <!-- Current Images -->
                 <% if (gemstone.images && gemstone.images.length > 0) { %>
-                    <div class="mb-6">
-                        <h3 class="text-lg font-medium text-gray-800 mb-3">Current Images</h3>
-                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                            <% gemstone.images.forEach((image, index) => { %>
-                                <div class="relative">
-                                    <img src="<%= image.url %>" alt="<%= image.alt || 'Gemstone image' %>" class="image-preview w-full h-24 object-cover rounded-lg">
-                                    <button type="button" class="remove-image" onclick="removeCurrentImage('<%= image.publicId %>', this)" title="Remove image">
-                                        ×
-                                    </button>
-                                    <input type="hidden" name="keepImages[]" value="<%= image.publicId %>">
-                                </div>
-                            <% }); %>
+                <div class="card p-6">
+                    <div class="section-title"><i data-lucide="images" class="w-4 h-4"></i>Current Images</div>
+                    <p class="text-sm text-gray-400 mb-4">Click <span class="text-red-400">✕ Delete</span> button to remove image</p>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4" id="currentImagesGrid">
+                        <% gemstone.images.forEach((img, i) => { %>
+                        <div class="relative group image-item" id="image-<%= i %>">
+                            <div class="aspect-square rounded-xl overflow-hidden bg-[#1a3a47] border-2 border-gold/20 transition-all">
+                                <img src="<%= img.url %>" class="w-full h-full object-cover">
+                            </div>
+                            <!-- Hidden checkbox to track kept images -->
+                            <input type="checkbox" name="keepImages" value="<%= img.publicId %>" checked class="hidden image-keep-checkbox" id="keep-<%= i %>">
+                            <!-- Delete button -->
+                            <button type="button" onclick="toggleImageDelete(<%= i %>)" class="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded-lg text-xs font-medium flex items-center gap-1 transition-all delete-btn">
+                                <i data-lucide="x" class="w-3 h-3"></i>
+                                <span>Delete</span>
+                            </button>
+                            <!-- Restore button (hidden initially) -->
+                            <button type="button" onclick="toggleImageDelete(<%= i %>)" class="absolute top-2 right-2 bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded-lg text-xs font-medium flex items-center gap-1 transition-all restore-btn hidden">
+                                <i data-lucide="undo" class="w-3 h-3"></i>
+                                <span>Restore</span>
+                            </button>
+                            <div class="absolute bottom-2 left-2 px-2 py-1 bg-black/70 rounded text-xs text-gold">
+                                Image <%= i + 1 %>
+                            </div>
+                            <!-- Deleted overlay -->
+                            <div class="absolute inset-0 bg-red-900/80 rounded-xl flex items-center justify-center deleted-overlay hidden">
+                                <span class="text-white font-bold text-sm">WILL BE DELETED</span>
+                            </div>
                         </div>
+                        <% }); %>
                     </div>
+                </div>
                 <% } %>
-                
+
                 <!-- Upload New Images -->
-                <div class="input-group">
-                    <label for="images" class="block text-sm font-medium text-gray-700 mb-2">
-                        Add New Images (Max 10 images, 10MB each)
-                    </label>
-                    <input type="file" id="images" name="images" multiple accept="image/*"
-                           class="form-input w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                    <p class="text-xs text-gray-500 mt-1">Supported formats: JPG, PNG, WEBP</p>
+                <div class="card p-6">
+                    <div class="section-title"><i data-lucide="upload" class="w-4 h-4"></i>Add New Images</div>
+                    <div class="upload-zone rounded-xl p-8 text-center cursor-pointer" onclick="document.getElementById('images').click()">
+                        <input type="file" id="images" name="images" multiple accept="image/*" class="hidden" onchange="previewImages(this)">
+                        <i data-lucide="upload-cloud" class="w-12 h-12 text-gold mx-auto mb-3"></i>
+                        <p class="text-gray-300 mb-1">Click to upload</p>
+                        <p class="text-xs text-gray-500">PNG, JPG up to 10MB</p>
+                    </div>
+                    <div id="previewContainer" class="mt-4 grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-3"></div>
                 </div>
-                
-                <!-- Image Preview Container -->
-                <div id="imagePreview" class="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4 hidden"></div>
-            </div>
 
-            <!-- SEO Section -->
-            <div class="form-section bg-white rounded-lg shadow-sm p-6">
-                <h2 class="text-xl font-semibold text-gray-900 mb-4 flex items-center">
-                    <i data-lucide="search" class="w-5 h-5 mr-2 text-purple-600"></i>
-                    SEO Information
-                </h2>
-                
-                <div class="space-y-4">
-                    <!-- SEO Title -->
-                    <div class="input-group">
-                        <label for="seo_title" class="block text-sm font-medium text-gray-700 mb-2">
-                            SEO Title (Max 60 characters)
+                <!-- Settings -->
+                <div class="card p-6">
+                    <div class="section-title"><i data-lucide="settings" class="w-4 h-4"></i>Settings</div>
+                    <div class="space-y-3">
+                        <label class="flex items-center space-x-3 cursor-pointer p-3 hover:bg-gold/5 rounded-lg transition-colors">
+                            <input type="checkbox" name="isTrending" <%= gemstone.trending ? 'checked' : '' %> class="w-5 h-5 rounded accent-yellow-500">
+                            <span class="text-sm">Mark as Trending</span>
                         </label>
-                        <input type="text" id="seo_title" name="seoMeta[title]" maxlength="60"
-                               class="form-input w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                               value="<%= gemstone.seoMeta && gemstone.seoMeta.title ? gemstone.seoMeta.title : '' %>"
-                               placeholder="SEO-friendly title for search engines">
-                        <div class="text-right text-sm text-gray-500 mt-1" id="seo-title-count">0/60</div>
-                    </div>
-
-                    <!-- SEO Description -->
-                    <div class="input-group">
-                        <label for="seo_description" class="block text-sm font-medium text-gray-700 mb-2">
-                            SEO Description (Max 160 characters)
-                        </label>
-                        <textarea id="seo_description" name="seoMeta[description]" maxlength="160" rows="3"
-                                  class="form-input w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                  placeholder="Brief description for search engine results"><%= gemstone.seoMeta && gemstone.seoMeta.description ? gemstone.seoMeta.description : '' %></textarea>
-                        <div class="text-right text-sm text-gray-500 mt-1" id="seo-description-count">0/160</div>
-                    </div>
-
-                    <!-- Tags -->
-                    <div class="input-group">
-                        <label for="tags" class="block text-sm font-medium text-gray-700 mb-2">
-                            Tags (Comma-separated)
-                        </label>
-                        <input type="text" id="tags" name="tags"
-                               class="form-input w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                               value="<%= gemstone.tags ? gemstone.tags.join(', ') : '' %>"
-                               placeholder="natural, certified, premium, healing">
-                    </div>
-                </div>
-            </div>
-
-            <!-- Flags Section -->
-            <div class="form-section bg-white rounded-lg shadow-sm p-6">
-                <h2 class="text-xl font-semibold text-gray-900 mb-4 flex items-center">
-                    <i data-lucide="flag" class="w-5 h-5 mr-2 text-red-600"></i>
-                    Status Flags
-                </h2>
-                
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <!-- Trending -->
-                    <div class="flex items-center space-x-2">
-                        <input type="checkbox" id="trending" name="trending" value="true"
-                               <%= gemstone.trending ? 'checked' : '' %>
-                               class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-                        <label for="trending" class="text-sm font-medium text-gray-700">
-                            Mark as Trending
-                        </label>
-                    </div>
-
-                    <!-- Featured -->
-                    <div class="flex items-center space-x-2">
-                        <input type="checkbox" id="featured" name="featured" value="true"
-                               <%= gemstone.featured ? 'checked' : '' %>
-                               class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-                        <label for="featured" class="text-sm font-medium text-gray-700">
-                            Mark as Featured
-                        </label>
-                    </div>
-
-                    <!-- Active -->
-                    <div class="flex items-center space-x-2">
-                        <input type="checkbox" id="isActive" name="isActive" value="true"
-                               <%= gemstone.isActive ? 'checked' : '' %>
-                               class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-                        <label for="isActive" class="text-sm font-medium text-gray-700">
-                            Active (Visible on website)
+                        <label class="flex items-center space-x-3 cursor-pointer p-3 hover:bg-gold/5 rounded-lg transition-colors">
+                            <input type="checkbox" name="isActive" <%= gemstone.isActive !== false ? 'checked' : '' %> class="w-5 h-5 rounded accent-yellow-500">
+                            <span class="text-sm">Active (visible on website)</span>
                         </label>
                     </div>
                 </div>
-            </div>
 
-            <!-- Submit Buttons -->
-            <div class="flex justify-end space-x-4 pt-6">
-                <a href="/admin/gemstones" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-lg font-medium transition duration-200">
-                    Cancel
-                </a>
-                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition duration-200">
-                    <i data-lucide="save" class="w-4 h-4 inline mr-2"></i>
-                    Update Gemstone
-                </button>
-            </div>
-        </form>
+                <!-- Submit -->
+                <div class="flex gap-3">
+                    <a href="/admin/gemstones" class="flex-1 px-6 py-3 bg-white/10 hover:bg-white/20 rounded-lg text-center text-sm transition-colors">Cancel</a>
+                    <button type="submit" class="btn-gold flex-1 px-6 py-3 rounded-lg font-medium text-sm transition-all flex items-center justify-center">
+                        <i data-lucide="save" class="w-4 h-4 mr-2"></i>Update Gemstone
+                    </button>
+                </div>
+            </form>
+        </main>
     </div>
 
-    <!-- Custom JavaScript -->
-    <script src="/admin/assets/js/admin.js"></script>
-    
     <script>
-        // Character count for text areas
-        function updateCharCount(inputId, countId, max) {
-            const input = document.getElementById(inputId);
-            const count = document.getElementById(countId);
-            
-            function update() {
-                const current = input.value.length;
-                count.textContent = current + '/' + max;
-                count.className = current > max * 0.9 ? 'text-right text-sm text-red-500 mt-1' : 'text-right text-sm text-gray-500 mt-1';
-            }
-            
-            input.addEventListener('input', update);
-            update(); // Initial count
+        lucide.createIcons();
+        
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('-translate-x-full');
+            document.getElementById('overlay').classList.toggle('hidden');
         }
 
-        // Initialize character counters
-        updateCharCount('summary', 'summary-count', 200);
-        updateCharCount('description', 'description-count', 2000);
-        updateCharCount('seo_title', 'seo-title-count', 60);
-        updateCharCount('seo_description', 'seo-description-count', 160);
+        function toggleCustomCategory(select) {
+            const div = document.getElementById('customCategoryDiv');
+            if (select.value === 'Other') {
+                div.classList.remove('hidden');
+            } else {
+                div.classList.add('hidden');
+            }
+        }
 
-        // Image preview functionality
-        document.getElementById('images').addEventListener('change', function(e) {
-            const preview = document.getElementById('imagePreview');
-            preview.innerHTML = '';
+        function previewImages(input) {
+            const container = document.getElementById('previewContainer');
+            container.innerHTML = '';
             
-            if (e.target.files.length > 0) {
-                preview.classList.remove('hidden');
-                
-                Array.from(e.target.files).forEach((file, index) => {
-                    if (file.type.startsWith('image/')) {
-                        const reader = new FileReader();
-                        reader.onload = function(e) {
-                            const div = document.createElement('div');
-                            div.className = 'relative';
-                            div.innerHTML = `
-                                <img src="${e.target.result}" class="image-preview w-full h-24 object-cover rounded-lg">
-                                <button type="button" class="remove-image" onclick="removePreviewImage(${index})" title="Remove image">×</button>
-                            `;
-                            preview.appendChild(div);
-                        };
-                        reader.readAsDataURL(file);
-                    }
+            if (input.files) {
+                Array.from(input.files).forEach((file, i) => {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const div = document.createElement('div');
+                        div.className = 'relative aspect-square rounded-lg overflow-hidden bg-[#1a3a47] border border-gold/30';
+                        div.innerHTML = '<img src="' + e.target.result + '" class="w-full h-full object-cover"><div class="absolute bottom-1 left-1 px-1.5 py-0.5 bg-black/70 rounded text-xs text-gold">New ' + (i+1) + '</div>';
+                        container.appendChild(div);
+                    };
+                    reader.readAsDataURL(file);
                 });
+            }
+        }
+
+        function toggleCertFields() {
+            // All certification fields are now always visible (independent)
+            // This function kept for compatibility but no longer hides fields
+        }
+        
+        function previewCertImage(input) {
+            const preview = document.getElementById('certImagePreview');
+            const previewImg = document.getElementById('certPreviewImg');
+            
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    previewImg.src = e.target.result;
+                    preview.classList.remove('hidden');
+                };
+                reader.readAsDataURL(input.files[0]);
             } else {
                 preview.classList.add('hidden');
             }
-        });
-
-        // Remove current image
-        function removeCurrentImage(publicId, button) {
-            const imageContainer = button.parentElement;
-            const hiddenInput = imageContainer.querySelector('input[name="keepImages[]"]');
+        }
+        
+        function deleteCertImage() {
+            console.log('Delete button clicked!');
             
-            imageContainer.style.display = 'none';
-            if (hiddenInput) {
-                hiddenInput.remove();
+            var deleteInput = document.getElementById('deleteCertImageInput');
+            var currentImg = document.getElementById('currentCertImage');
+            var overlay = document.getElementById('certImageOverlay');
+            
+            if (deleteInput) {
+                deleteInput.value = 'true';
+                console.log('Delete flag set to: true');
+            } else {
+                console.error('Delete input not found!');
+                return;
             }
+            
+            if (currentImg) {
+                currentImg.style.opacity = '0.3';
+                currentImg.style.border = '2px solid red';
+            }
+            
+            if (overlay) {
+                overlay.innerHTML = '<span class="text-red-500 text-sm font-bold">⚠️ WILL BE DELETED</span><br><span class="text-xs text-gray-300">Save to confirm</span>';
+                overlay.style.background = 'rgba(0,0,0,0.8)';
+            }
+            
+            alert('Certificate image marked for deletion. Click SAVE to confirm.');
         }
 
-        // Remove preview image
-        function removePreviewImage(index) {
-            const preview = document.getElementById('imagePreview');
-            const children = Array.from(preview.children);
-            if (children[index]) {
-                children[index].remove();
+        // Toggle image delete state
+        function toggleImageDelete(index) {
+            const imageItem = document.getElementById('image-' + index);
+            const keepCheckbox = document.getElementById('keep-' + index);
+            const deleteBtn = imageItem.querySelector('.delete-btn');
+            const restoreBtn = imageItem.querySelector('.restore-btn');
+            const overlay = imageItem.querySelector('.deleted-overlay');
+            
+            if (keepCheckbox.checked) {
+                // Mark for deletion
+                keepCheckbox.checked = false;
+                deleteBtn.classList.add('hidden');
+                restoreBtn.classList.remove('hidden');
+                overlay.classList.remove('hidden');
+                imageItem.querySelector('.aspect-square').classList.add('opacity-50');
+            } else {
+                // Restore image
+                keepCheckbox.checked = true;
+                deleteBtn.classList.remove('hidden');
+                restoreBtn.classList.add('hidden');
+                overlay.classList.add('hidden');
+                imageItem.querySelector('.aspect-square').classList.remove('opacity-50');
             }
             
-            // Update file input
-            const fileInput = document.getElementById('images');
-            const dt = new DataTransfer();
-            Array.from(fileInput.files).forEach((file, i) => {
-                if (i !== index) {
-                    dt.items.add(file);
-                }
-            });
-            fileInput.files = dt.files;
-            
-            if (preview.children.length === 0) {
-                preview.classList.add('hidden');
-            }
+            // Re-initialize lucide icons
+            lucide.createIcons();
         }
-
-        // Initialize Lucide icons
-        lucide.createIcons();
     </script>
 </body>
-</html> 
+</html>

@@ -1,0 +1,9 @@
+# Heroku Docker Deployment Configuration
+# =======================================
+
+build:
+  docker:
+    web: Dockerfile
+
+run:
+  web: node src/server.js

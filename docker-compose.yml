@@ -1,0 +1,29 @@
+# Docker Compose for Local Development
+# =====================================
+# Usage: docker-compose up --build
+
+version: '3.8'
+
+services:
+  kohinoor:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      # Add your environment variables here or use .env file
+      # - MONGODB_URI=your_mongodb_uri
+      # - JWT_SECRET=your_jwt_secret
+      # - GEMINI_API_KEY=your_gemini_key
+    env_file:
+      - ./backend/.env
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3001/api/health', (r) => process.exit(r.statusCode === 200 ? 0 : 1))"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s

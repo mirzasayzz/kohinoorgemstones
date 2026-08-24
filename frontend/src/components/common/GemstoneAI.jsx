@@ -1,68 +1,219 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, Send, X, MessageCircle, Gem, Shield, Clock, ExternalLink } from 'lucide-react';
+import { Send, X, RotateCcw, ExternalLink, Sparkles } from 'lucide-react';
 import Toast from './Toast';
 import { aiService } from '../../services/api';
 
-// Component to render suggested gemstone cards
-const GemstoneCard = ({ gemstone }) => {
-  const handleViewGemstone = () => {
-    const url = `/gemstone/${gemstone.slug || gemstone._id}`;
-    window.open(url, '_blank');
+// Modern AI Logo Component - Golden Theme
+const KohinoorAILogo = ({ size = 'md', animated = false }) => {
+  const sizeClasses = {
+    sm: 'w-8 h-8',
+    md: 'w-10 h-10',
+    lg: 'w-12 h-12'
   };
-
+  
   return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.9 }}
-      animate={{ opacity: 1, scale: 1 }}
-      className="bg-white dark:bg-luxury-charcoal border border-luxury-platinum/30 dark:border-luxury-charcoal/30 rounded-xl p-3 hover:shadow-md transition-all duration-200 cursor-pointer"
-      onClick={handleViewGemstone}
-    >
-      <div className="flex items-center space-x-3">
-        {/* Gemstone image or placeholder */}
-        <div className="w-12 h-12 bg-luxury-gold/20 rounded-lg flex items-center justify-center flex-shrink-0">
-          {gemstone.images && gemstone.images.length > 0 ? (
-            <img 
-              src={gemstone.images[0]} 
-              alt={gemstone.name.english}
-              className="w-full h-full object-cover rounded-lg"
-            />
-          ) : (
-            <Gem className="w-6 h-6 text-luxury-gold" />
-          )}
-        </div>
-        
-        {/* Gemstone details */}
-        <div className="flex-1 min-w-0">
-          <div className="font-medium text-sm text-luxury-charcoal dark:text-luxury-pearl truncate">
-            {gemstone.name.english}
-          </div>
-          <div className="text-xs text-neutral-warm-600 dark:text-neutral-warm-400">
-            {gemstone.category}
-          </div>
-          <div className="text-sm font-bold text-emerald-600 dark:text-emerald-400">
-            {gemstone.priceRange?.min || gemstone.priceRange?.max ? (
-              <>
-                <span className="text-emerald-500">₹</span>
-                {gemstone.priceRange.min && gemstone.priceRange.max ? 
-                  `${gemstone.priceRange.min.toLocaleString('en-IN')} - ₹${gemstone.priceRange.max.toLocaleString('en-IN')}` :
-                  gemstone.priceRange.min ? 
-                    `${gemstone.priceRange.min.toLocaleString('en-IN')}+` :
-                    `Up to ₹${gemstone.priceRange.max.toLocaleString('en-IN')}`
-                }
-              </>
-            ) : (
-              'Price on request'
-            )}
-          </div>
-        </div>
-        
-        {/* View button */}
-        <ExternalLink className="w-4 h-4 text-luxury-gold flex-shrink-0" />
+    <div className={`${sizeClasses[size]} relative`}>
+      {/* Outer glow */}
+      <div className="absolute inset-0 bg-gradient-to-br from-amber-400 via-yellow-500 to-orange-500 rounded-xl blur-sm opacity-60"></div>
+      
+      {/* Main container */}
+      <div className="relative w-full h-full bg-gradient-to-br from-amber-400 via-yellow-500 to-orange-500 rounded-xl flex items-center justify-center shadow-lg">
+        {/* AI Brain/Neural Icon */}
+        <svg viewBox="0 0 24 24" className={`w-2/3 h-2/3 text-white ${animated ? 'animate-pulse' : ''}`} fill="none" stroke="currentColor" strokeWidth="1.5">
+          {/* Central node */}
+          <circle cx="12" cy="12" r="3" fill="currentColor" opacity="0.9"/>
+          {/* Neural connections */}
+          <path d="M12 9V4M12 15v5M9 12H4M15 12h5" strokeLinecap="round"/>
+          <path d="M9.5 9.5L6 6M14.5 9.5L18 6M9.5 14.5L6 18M14.5 14.5L18 18" strokeLinecap="round" opacity="0.7"/>
+          {/* Outer dots */}
+          <circle cx="12" cy="4" r="1.5" fill="currentColor"/>
+          <circle cx="12" cy="20" r="1.5" fill="currentColor"/>
+          <circle cx="4" cy="12" r="1.5" fill="currentColor"/>
+          <circle cx="20" cy="12" r="1.5" fill="currentColor"/>
+          <circle cx="6" cy="6" r="1" fill="currentColor" opacity="0.7"/>
+          <circle cx="18" cy="6" r="1" fill="currentColor" opacity="0.7"/>
+          <circle cx="6" cy="18" r="1" fill="currentColor" opacity="0.7"/>
+          <circle cx="18" cy="18" r="1" fill="currentColor" opacity="0.7"/>
+        </svg>
       </div>
-    </motion.div>
+      
+      {/* Sparkle accent */}
+      {animated && (
+        <motion.div 
+          className="absolute -top-1 -right-1"
+          animate={{ scale: [1, 1.2, 1], opacity: [1, 0.8, 1] }}
+          transition={{ duration: 2, repeat: Infinity }}
+        >
+          <Sparkles className="w-3 h-3 text-yellow-400" />
+        </motion.div>
+      )}
+    </div>
   );
 };
+
+// Floating AI Button - Modern with Name
+const AIFloatingButton = ({ onClick }) => (
+  <motion.button
+    onClick={onClick}
+    className="fixed right-3 sm:right-4 bottom-6 z-40 group"
+    initial={{ scale: 0, opacity: 0, x: 100 }}
+    animate={{ scale: 1, opacity: 1, x: 0 }}
+    transition={{ delay: 0.5, type: "spring", stiffness: 200 }}
+    whileHover={{ scale: 1.05 }}
+    whileTap={{ scale: 0.95 }}
+  >
+    {/* Outer glow */}
+    <div className="absolute inset-0 bg-gradient-to-r from-amber-400 via-yellow-400 to-orange-500 rounded-2xl blur-xl opacity-50 group-hover:opacity-70 transition-opacity animate-pulse"></div>
+    
+    {/* Main Button */}
+    <div className="relative flex items-center gap-2 pl-1.5 pr-3 py-1.5 bg-gradient-to-r from-amber-400 via-yellow-500 to-orange-500 rounded-2xl shadow-2xl shadow-amber-500/50 overflow-hidden border border-yellow-300/30">
+      {/* Shimmer effect */}
+      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+      
+      {/* Beautiful AI Logo */}
+      <div className="relative w-10 h-10 bg-gradient-to-br from-neutral-900 via-neutral-800 to-neutral-900 rounded-xl flex items-center justify-center shadow-inner overflow-hidden">
+        {/* Inner glow */}
+        <div className="absolute inset-0 bg-gradient-to-br from-amber-500/20 via-transparent to-orange-500/20"></div>
+        {/* Diamond icon */}
+        <motion.div
+          animate={{ rotate: [0, 5, -5, 0] }}
+          transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+        >
+          <svg viewBox="0 0 24 24" className="w-5 h-5 text-amber-400 drop-shadow-lg" fill="currentColor">
+            <path d="M12 2L2 9l10 13 10-13-10-7zM12 4.5l6.5 4.5H5.5L12 4.5zM4.5 10.5h15L12 19.5l-7.5-9z"/>
+          </svg>
+        </motion.div>
+        {/* Sparkle */}
+        <motion.div 
+          className="absolute top-1 right-1"
+          animate={{ scale: [1, 1.3, 1], opacity: [0.7, 1, 0.7] }}
+          transition={{ duration: 1.5, repeat: Infinity }}
+        >
+          <Sparkles className="w-2 h-2 text-yellow-300" />
+        </motion.div>
+      </div>
+      
+      {/* Text - Kohinoor AI on all screens */}
+      <span className="relative font-bold text-neutral-900 tracking-tight text-xs sm:text-sm">
+        Kohinoor AI
+      </span>
+    </div>
+  </motion.button>
+);
+
+// Beautiful gemstone suggestion card - clickable
+const GemstoneCard = ({ gemstone }) => {
+  const getImageUrl = () => {
+    if (!gemstone.images || gemstone.images.length === 0) return null;
+    const firstImage = gemstone.images[0];
+    return typeof firstImage === 'string' ? firstImage : firstImage?.url;
+  };
+
+  const imageUrl = getImageUrl();
+  const gemstoneUrl = `/gemstone/${gemstone.slug || gemstone._id}`;
+
+  return (
+    <a
+      href={gemstoneUrl}
+      className="block bg-gradient-to-br from-amber-50 to-orange-50 dark:from-neutral-800 dark:to-neutral-700 rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-all hover:scale-[1.02] border border-amber-200 dark:border-amber-500/30"
+    >
+      {/* Image */}
+      <div className="h-24 overflow-hidden bg-neutral-200 dark:bg-neutral-600 relative">
+        {imageUrl ? (
+          <img 
+            src={imageUrl} 
+            alt={gemstone.name?.english || 'Gemstone'}
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-neutral-400">
+            <Sparkles className="w-8 h-8" />
+          </div>
+        )}
+        {/* Badge */}
+        {gemstone.certification?.certified && (
+          <div className="absolute top-2 right-2 bg-emerald-500 text-white text-[8px] px-1.5 py-0.5 rounded font-bold">
+            Certified
+          </div>
+        )}
+      </div>
+      
+      {/* Details */}
+      <div className="p-2.5">
+        <p className="font-semibold text-sm text-neutral-900 dark:text-white truncate">
+          {gemstone.name?.english || 'Gemstone'}
+        </p>
+        <p className="text-[10px] text-neutral-500 dark:text-neutral-400 mb-1">{gemstone.category}</p>
+        
+        {/* Purpose tags */}
+        {gemstone.purpose && gemstone.purpose.length > 0 && (
+          <div className="flex flex-wrap gap-1 mb-1.5">
+            {gemstone.purpose.slice(0, 2).map((p, i) => (
+              <span key={i} className="text-[9px] bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 px-1.5 py-0.5 rounded">
+                {p}
+              </span>
+            ))}
+          </div>
+        )}
+        
+        {/* Price */}
+        <div className="flex items-center justify-between">
+          <p className="text-sm font-bold text-emerald-600 dark:text-emerald-400">
+            ₹{(gemstone.price || gemstone.priceRange?.min || 0).toLocaleString('en-IN')}
+          </p>
+          <span className="text-[10px] text-amber-600 dark:text-amber-400 font-medium">View →</span>
+        </div>
+      </div>
+    </a>
+  );
+};
+
+// Quick suggestions - Conversational starters
+const QUICK_SUGGESTIONS = [
+  { text: "I'm looking for a gift", icon: '🎁' },
+  { text: 'Something for my wedding', icon: '💍' },
+  { text: "What's good for my zodiac?", icon: '✨' },
+  { text: 'Show me popular ones', icon: '🔥' },
+];
+
+// Purpose-based suggestions
+const PURPOSE_SUGGESTIONS = [
+  { text: 'For meditation & peace', icon: '🧘' },
+  { text: 'For love & relationships', icon: '💕' },
+  { text: 'For wealth & prosperity', icon: '💎' },
+  { text: 'For healing & health', icon: '🌿' },
+  { text: 'For protection & safety', icon: '🛡️' },
+  { text: 'For career & success', icon: '📈' },
+];
+
+// AI Typing Indicator
+const TypingIndicator = () => (
+  <div className="flex items-start gap-2.5">
+    <div className="w-8 h-8 bg-gradient-to-br from-amber-400 to-orange-500 rounded-xl flex items-center justify-center shadow-sm">
+      <span className="text-sm">💎</span>
+    </div>
+    <div className="bg-white dark:bg-neutral-800 px-4 py-3 rounded-2xl rounded-tl-md shadow-sm">
+      <div className="flex gap-1">
+        <motion.div 
+          className="w-2 h-2 bg-amber-500 rounded-full"
+          animate={{ y: [0, -5, 0] }}
+          transition={{ duration: 0.5, repeat: Infinity, delay: 0 }}
+        />
+        <motion.div 
+          className="w-2 h-2 bg-amber-500 rounded-full"
+          animate={{ y: [0, -5, 0] }}
+          transition={{ duration: 0.5, repeat: Infinity, delay: 0.12 }}
+        />
+        <motion.div 
+          className="w-2 h-2 bg-amber-500 rounded-full"
+          animate={{ y: [0, -5, 0] }}
+          transition={{ duration: 0.5, repeat: Infinity, delay: 0.24 }}
+        />
+      </div>
+    </div>
+  </div>
+);
 
 const GemstoneAI = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -72,8 +223,8 @@ const GemstoneAI = () => {
   const [rateLimitRemaining, setRateLimitRemaining] = useState(15);
   const [lastRequestTime, setLastRequestTime] = useState(null);
   const [toast, setToast] = useState(null);
+  const [showQuickActions, setShowQuickActions] = useState(true);
   const messagesEndRef = useRef(null);
-  const textareaRef = useRef(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -119,8 +270,8 @@ const GemstoneAI = () => {
     return true;
   };
 
-  const handleSend = async () => {
-    if (!inputValue.trim()) return;
+  const sendMessage = async (messageText) => {
+    if (!messageText.trim()) return;
     
     // Rate limiting check
     if (!checkRateLimit()) {
@@ -129,13 +280,14 @@ const GemstoneAI = () => {
     }
 
     // Validate for malicious content only
-    if (!validateGemstoneQuery(inputValue)) {
+    if (!validateGemstoneQuery(messageText)) {
       showToast('Message contains inappropriate content. Please keep your questions respectful.', 'warning');
       return;
     }
 
-    const userMessage = inputValue.trim();
+    const userMessage = messageText.trim();
     setInputValue('');
+    setShowQuickActions(false);
     setMessages(prev => [...prev, { type: 'user', content: userMessage }]);
     setIsLoading(true);
 
@@ -145,23 +297,58 @@ const GemstoneAI = () => {
       const newMessage = { 
         type: 'ai', 
         content: data.response,
-        gemstones: data.suggestedGemstones || []
+        gemstones: data.suggestedGemstones || [],
+        extractedParams: data.extractedParams || {}
       };
       
       setMessages(prev => [...prev, newMessage]);
-      setRateLimitRemaining(prev => prev - 1);
+      setRateLimitRemaining(data.rateLimitRemaining || rateLimitRemaining - 1);
       setLastRequestTime(Date.now());
       
     } catch (error) {
       console.error('Error:', error);
+      
+      // Beautiful fallback message with suggestions when API fails
+      const fallbackMessages = [
+        "Hey! 💎 I'm taking a quick break right now, but don't worry - I've got some amazing gems picked out for you! Check these beauties below 👇",
+        "Oops! My brain needs a little rest 😅 But here are some stunning gemstones I think you'll love! Take a look below ✨",
+        "I'm a bit busy right now, but I didn't want to leave you empty-handed! Here are some of our finest gems just for you 💎",
+        "Taking a quick breather! 🌟 Meanwhile, feast your eyes on these gorgeous gemstones I've selected for you below!"
+      ];
+      
+      const fallbackMessage = fallbackMessages[Math.floor(Math.random() * fallbackMessages.length)];
+      
+      // Try to fetch some trending gemstones as suggestions
+      let fallbackGemstones = [];
+      try {
+        const { gemstoneService } = await import('../../services/api');
+        const response = await gemstoneService.getTrendingGemstones();
+        if (response.success && response.data?.gemstones) {
+          fallbackGemstones = response.data.gemstones.slice(0, 4);
+        }
+      } catch (fetchError) {
+        console.log('Could not fetch fallback gemstones');
+      }
+      
       setMessages(prev => [...prev, { 
         type: 'ai', 
-        content: 'Sorry, I encountered an error. Please try again later.' 
+        content: fallbackMessage,
+        gemstones: fallbackGemstones,
+        isServiceDown: true
       }]);
-      showToast('Failed to get AI response. Please try again.', 'error');
+      
+      // Don't show error toast, we're handling it gracefully
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleSend = async () => {
+    await sendMessage(inputValue);
+  };
+
+  const handleQuickAction = async (action) => {
+    await sendMessage(action.message);
   };
 
   const handleKeyPress = (e) => {
@@ -174,71 +361,81 @@ const GemstoneAI = () => {
   const handleOpen = () => {
     setIsOpen(true);
     if (messages.length === 0) {
-      setMessages([{
-        type: 'ai',
-        content: "Hi! I'm Kohinoor AI. I'll help you find the perfect gemstone. What's your name and what occasion is this for?"
-      }]);
+      // Check for logged-in user
+      let userName = null;
+      try {
+        const storedUser = localStorage.getItem('kohinoor_user');
+        if (storedUser) {
+          const user = JSON.parse(storedUser);
+          userName = user.name;
+        }
+      } catch (e) {
+        console.log('Could not get user info');
+      }
+      
+      let welcomeMessage;
+      if (userName) {
+        // Personalized greeting for logged-in users
+        const personalizedMessages = [
+          `Hey ${userName}! 👋 Great to see you! I'm Kohinoor - your personal gemstone buddy. What can I help you find today?`,
+          `Hi ${userName}! 💎 Welcome back! Looking for something special? Tell me what's on your mind!`,
+          `Hey ${userName}! ✨ I remember you! Ready to find your perfect gemstone? What are you looking for?`
+        ];
+        welcomeMessage = personalizedMessages[Math.floor(Math.random() * personalizedMessages.length)];
+      } else {
+        // Generic greeting for guests
+        const guestMessages = [
+          "Hey there! 👋 I'm Kohinoor - your gemstone buddy. What brings you here today?",
+          "Hi! 💎 I'm Kohinoor. Looking for something special? Tell me what's on your mind!",
+          "Hey! Welcome to Kohinoor ✨ I'd love to help you find the perfect gem. What are you looking for?"
+        ];
+        welcomeMessage = guestMessages[Math.floor(Math.random() * guestMessages.length)];
+      }
+      
+      setMessages([{ type: 'ai', content: welcomeMessage }]);
+      setShowQuickActions(true);
     }
+  };
+
+  const handleReset = () => {
+    aiService.resetSession();
+    
+    // Check for logged-in user
+    let userName = null;
+    try {
+      const storedUser = localStorage.getItem('kohinoor_user');
+      if (storedUser) {
+        const user = JSON.parse(storedUser);
+        userName = user.name;
+      }
+    } catch (e) {}
+    
+    let resetMessage;
+    if (userName) {
+      const personalizedResets = [
+        `Fresh start, ${userName}! 😊 What can I help you find now?`,
+        `Alright ${userName}, let's start over! 💎 What are you looking for?`,
+        `New chat, ${userName}! ✨ Tell me what you need today?`
+      ];
+      resetMessage = personalizedResets[Math.floor(Math.random() * personalizedResets.length)];
+    } else {
+      const guestResets = [
+        "Fresh start! 😊 So, what can I help you find today?",
+        "Alright, let's start over! 💎 What are you looking for?",
+        "New chat! ✨ Tell me what brought you here today?"
+      ];
+      resetMessage = guestResets[Math.floor(Math.random() * guestResets.length)];
+    }
+    
+    setMessages([{ type: 'ai', content: resetMessage }]);
+    setShowQuickActions(true);
+    setInputValue('');
   };
 
   return (
     <>
-      {/* Floating AI Assistant Button */}
-      <motion.div
-        className="fixed right-4 bottom-20 md:bottom-6 z-50"
-        initial={{ scale: 0, opacity: 0, y: 50 }}
-        animate={{ scale: 1, opacity: 1, y: 0 }}
-        transition={{ delay: 1, duration: 0.6, type: "spring", stiffness: 200 }}
-      >
-        <motion.button
-          onClick={handleOpen}
-          className="relative group bg-gradient-to-r from-luxury-gold via-yellow-400 to-amber-500 hover:from-amber-500 hover:via-yellow-500 hover:to-luxury-gold rounded-2xl shadow-2xl hover:shadow-luxury transition-all duration-300 overflow-hidden border-2 border-white/20"
-          whileHover={{ scale: 1.05, rotate: 1 }}
-          whileTap={{ scale: 0.98 }}
-        >
-          {/* Animated background gradient */}
-          <div className="absolute inset-0 bg-gradient-to-r from-purple-500/30 via-pink-500/30 to-blue-500/30 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-          
-          {/* Sparkle animations */}
-          <div className="absolute inset-0 overflow-hidden">
-            <div className="absolute top-2 left-3 w-1 h-1 bg-white rounded-full animate-ping"></div>
-            <div className="absolute top-4 right-4 w-1.5 h-1.5 bg-white rounded-full animate-pulse" style={{ animationDelay: '0.5s' }}></div>
-            <div className="absolute bottom-3 left-2 w-1 h-1 bg-white rounded-full animate-ping" style={{ animationDelay: '1s' }}></div>
-            <div className="absolute bottom-2 right-2 w-0.5 h-0.5 bg-white rounded-full animate-pulse" style={{ animationDelay: '1.5s' }}></div>
-          </div>
-          
-          <div className="relative z-10 px-4 py-3 flex items-center space-x-2">
-            <div className="flex items-center">
-              <Gem className="w-5 h-5 text-white drop-shadow-lg group-hover:animate-bounce" />
-              <Sparkles className="w-4 h-4 text-white ml-1 animate-pulse" />
-            </div>
-            <div className="text-left">
-              <div className="text-white font-bold text-sm leading-tight drop-shadow-md">
-                Kohinoor AI
-              </div>
-              <div className="text-white/90 font-medium text-xs leading-tight drop-shadow-md">
-                Find Gemstones ✨
-              </div>
-            </div>
-          </div>
-          
-          {/* Pulse ring */}
-          <div className="absolute inset-0 rounded-2xl border-2 border-luxury-gold animate-ping opacity-30 group-hover:opacity-50"></div>
-          
-          {/* Glow effect */}
-          <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-luxury-gold to-amber-500 opacity-0 group-hover:opacity-20 transition-opacity duration-300 blur-xl scale-110"></div>
-        </motion.button>
-
-        {/* Floating notification badge */}
-        <motion.div
-          initial={{ scale: 0, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ delay: 2, duration: 0.4 }}
-          className="absolute -top-2 -right-2 bg-luxury-ruby text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center shadow-lg animate-pulse"
-        >
-          AI
-        </motion.div>
-      </motion.div>
+      {/* Modern AI Floating Button */}
+      <AIFloatingButton onClick={handleOpen} />
 
       {/* Chat Modal */}
       <AnimatePresence>
@@ -247,7 +444,7 @@ const GemstoneAI = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-end md:items-center justify-center p-4"
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-end md:items-center justify-center p-0 md:p-4"
             onClick={() => setIsOpen(false)}
           >
             <motion.div
@@ -255,139 +452,175 @@ const GemstoneAI = () => {
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: "100%", opacity: 0 }}
               transition={{ type: "spring", damping: 30, stiffness: 300 }}
-              className="w-full max-w-md bg-white dark:bg-luxury-charcoal rounded-t-3xl md:rounded-3xl shadow-2xl overflow-hidden"
+              className="w-full h-[85vh] sm:h-[70vh] lg:h-[75vh] max-w-[100%] sm:max-w-lg lg:max-w-xl xl:max-w-2xl bg-white dark:bg-neutral-900 rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col"
               onClick={(e) => e.stopPropagation()}
             >
-              {/* Header */}
-              <div className="bg-gradient-to-r from-luxury-gold via-yellow-400 to-amber-500 p-4 text-white relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-r from-purple-600/20 via-pink-600/20 to-blue-600/20"></div>
-                <div className="relative z-10 flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
-                      <Gem className="w-5 h-5" />
+              {/* Clean Modern Header - Fixed */}
+              <div className="relative flex-shrink-0">
+                {/* Gradient Background */}
+                <div className="absolute inset-0 bg-gradient-to-br from-neutral-900 via-neutral-800 to-neutral-900"></div>
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(251,191,36,0.15),transparent_50%)]"></div>
+                
+                <div className="relative px-4 py-3 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-11 h-11 bg-gradient-to-br from-amber-400 to-orange-500 rounded-2xl flex items-center justify-center shadow-lg shadow-amber-500/20">
+                      <span className="text-xl">💎</span>
                     </div>
                     <div>
-                      <h3 className="font-bold text-lg">Kohinoor AI</h3>
-                      <div className="flex items-center space-x-2 text-sm text-white/90">
-                        <Shield className="w-3 h-3" />
-                        <span>Secured & Rate Limited</span>
-                        <Clock className="w-3 h-3 ml-2" />
-                        <span>{rateLimitRemaining}/15 left</span>
+                      <h3 className="font-bold text-white text-lg">
+                        Kohinoor
+                      </h3>
+                      <div className="flex items-center gap-1.5 text-neutral-400 text-xs">
+                        <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full"></span>
+                        Your gemstone buddy
                       </div>
                     </div>
                   </div>
-                  <button
-                    onClick={() => setIsOpen(false)}
-                    className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30 transition-colors"
-                  >
-                    <X className="w-5 h-5" />
-                  </button>
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={handleReset}
+                      className="p-2.5 hover:bg-white/10 rounded-xl transition-colors group"
+                      title="Start fresh"
+                    >
+                      <RotateCcw className="w-4 h-4 text-neutral-400 group-hover:text-white transition-colors" />
+                    </button>
+                    <button
+                      onClick={() => setIsOpen(false)}
+                      className="p-2.5 hover:bg-white/10 rounded-xl transition-colors group"
+                    >
+                      <X className="w-5 h-5 text-neutral-400 group-hover:text-white transition-colors" />
+                    </button>
+                  </div>
                 </div>
               </div>
 
-              {/* Messages */}
-              <div className="h-96 overflow-y-auto p-4 space-y-4 scrollbar-thin scrollbar-thumb-luxury-gold/20">
+              {/* Messages Area */}
+              <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-neutral-50 dark:bg-neutral-950">
                 {messages.map((message, index) => (
-                  <motion.div
+                  <div
                     key={index}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.1 }}
                     className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
                   >
-                    <div className={`max-w-[80%] ${
-                      message.type === 'user' ? 'ml-auto' : 'mr-auto'
-                    }`}>
-                      {/* Main message bubble */}
-                      <div className={`p-3 rounded-2xl ${
-                        message.type === 'user'
-                          ? 'bg-luxury-gold text-white rounded-br-md'
-                          : 'bg-luxury-champagne dark:bg-luxury-charcoal/50 text-luxury-charcoal dark:text-luxury-pearl rounded-bl-md'
-                      }`}>
-                        <div className="flex items-start space-x-2">
-                          {message.type === 'ai' && (
-                            <Gem className="w-4 h-4 mt-0.5 text-luxury-gold flex-shrink-0" />
-                          )}
-                          <p className="text-sm leading-relaxed whitespace-pre-wrap">
-                            {message.content}
-                          </p>
+                    {message.type === 'ai' && (
+                      <div className="flex items-start gap-2.5">
+                        <div className="w-8 h-8 bg-gradient-to-br from-amber-400 to-orange-500 rounded-xl flex items-center justify-center shadow-sm flex-shrink-0">
+                          <span className="text-sm">💎</span>
                         </div>
-                      </div>
-                      
-                      {/* Suggested gemstones */}
-                      {message.type === 'ai' && message.gemstones && message.gemstones.length > 0 && (
-                        <div className="mt-3 space-y-2">
-                          <div className="text-xs text-neutral-warm-600 dark:text-neutral-warm-400 mb-2 flex items-center">
-                            <Sparkles className="w-3 h-3 mr-1" />
-                            Suggested by Kohinoor:
+                        <div className="max-w-[80%]">
+                          <div className={`px-4 py-3 rounded-2xl rounded-tl-md text-sm shadow-sm ${
+                            message.isError 
+                              ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
+                              : 'bg-white dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200'
+                          }`}>
+                            <p className="leading-relaxed whitespace-pre-wrap">{message.content}</p>
                           </div>
-                          {message.gemstones.map((gemstone, gemIndex) => (
-                            <GemstoneCard key={gemstone._id || gemIndex} gemstone={gemstone} />
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  </motion.div>
-                ))}
-                {isLoading && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="flex justify-start"
-                  >
-                    <div className="bg-luxury-champagne dark:bg-luxury-charcoal/50 p-3 rounded-2xl rounded-bl-md">
-                      <div className="flex items-center space-x-2">
-                        <Gem className="w-4 h-4 text-luxury-gold animate-pulse" />
-                        <div className="flex space-x-1">
-                          <div className="w-2 h-2 bg-luxury-gold rounded-full animate-bounce"></div>
-                          <div className="w-2 h-2 bg-luxury-gold rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                          <div className="w-2 h-2 bg-luxury-gold rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                          
+                          {/* Gemstone suggestions - Grid layout */}
+                          {message.gemstones && message.gemstones.length > 0 && (
+                            <div className="mt-3">
+                              <p className="text-xs text-neutral-500 px-1 flex items-center gap-1 mb-2">
+                                <Sparkles className="w-3 h-3 text-amber-500" />
+                                <span className="font-medium">Recommended for you:</span>
+                              </p>
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                {message.gemstones.slice(0, 4).map((gemstone, gemIndex) => (
+                                  <GemstoneCard key={gemstone._id || gemIndex} gemstone={gemstone} />
+                                ))}
+                              </div>
+                              {message.gemstones.length > 4 && (
+                                <a
+                                  href="/gemstones"
+                                  className="block text-center text-xs text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 py-2 font-medium mt-2"
+                                >
+                                  View all {message.gemstones.length} gemstones →
+                                </a>
+                              )}
+                            </div>
+                          )}
                         </div>
                       </div>
+                    )}
+                    
+                    {message.type === 'user' && (
+                      <div className="max-w-[75%]">
+                        <div className="px-4 py-3 rounded-2xl rounded-tr-md text-sm bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-md">
+                          <p className="leading-relaxed whitespace-pre-wrap">{message.content}</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+                
+                {/* Quick Suggestions */}
+                {showQuickActions && messages.length === 1 && !isLoading && (
+                  <div className="pt-2 space-y-4">
+                    {/* General suggestions */}
+                    <div>
+                      <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-2 px-1">🎯 Quick options:</p>
+                      <div className="grid grid-cols-2 gap-2">
+                        {QUICK_SUGGESTIONS.map((suggestion, idx) => (
+                          <motion.button
+                            key={idx}
+                            onClick={() => sendMessage(suggestion.text)}
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                            className="px-3 py-2 text-sm bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-neutral-700 dark:text-neutral-300 hover:border-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-all shadow-sm hover:shadow flex items-center gap-2"
+                          >
+                            <span className="text-base">{suggestion.icon}</span>
+                            <span className="text-left text-xs leading-tight">{suggestion.text}</span>
+                          </motion.button>
+                        ))}
+                      </div>
                     </div>
-                  </motion.div>
+                    
+                    {/* Purpose suggestions */}
+                    <div>
+                      <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-2 px-1">✨ Find by purpose:</p>
+                      <div className="grid grid-cols-2 gap-2">
+                        {PURPOSE_SUGGESTIONS.map((suggestion, idx) => (
+                          <motion.button
+                            key={idx}
+                            onClick={() => sendMessage(suggestion.text)}
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                            className="px-3 py-2 text-sm bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border border-purple-200 dark:border-purple-700 rounded-xl text-purple-700 dark:text-purple-300 hover:border-purple-400 hover:from-purple-100 hover:to-pink-100 dark:hover:from-purple-900/30 dark:hover:to-pink-900/30 transition-all shadow-sm hover:shadow flex items-center gap-2"
+                          >
+                            <span className="text-base">{suggestion.icon}</span>
+                            <span className="text-left text-xs leading-tight">{suggestion.text}</span>
+                          </motion.button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
                 )}
+                
+                {/* Loading indicator */}
+                {isLoading && <TypingIndicator />}
                 <div ref={messagesEndRef} />
               </div>
 
-              {/* Input */}
-              <div className="p-4 border-t border-luxury-platinum/20 dark:border-luxury-charcoal/20">
-                <div className="flex items-end space-x-2">
-                  <div className="flex-1 relative">
-                    <textarea
-                      ref={textareaRef}
-                      value={inputValue}
-                      onChange={(e) => setInputValue(e.target.value)}
-                      onKeyPress={handleKeyPress}
-                      placeholder="Ask Kohinoor AI..."
-                      className="w-full max-h-32 p-3 pr-12 border border-luxury-platinum/30 dark:border-luxury-charcoal/30 rounded-2xl bg-luxury-champagne/50 dark:bg-luxury-charcoal/30 text-luxury-charcoal dark:text-luxury-pearl placeholder-neutral-warm-500 dark:placeholder-neutral-warm-400 resize-none focus:outline-none focus:ring-2 focus:ring-luxury-gold/50 focus:border-luxury-gold transition-all duration-200"
-                      rows="1"
-                      disabled={isLoading || rateLimitRemaining === 0}
-                    />
-                    <div className="absolute right-3 bottom-3 text-xs text-neutral-warm-400">
-                      {inputValue.length}/100
-                    </div>
-                  </div>
-                  <button
+              {/* Clean Input Area - Fixed at bottom */}
+              <div className="flex-shrink-0 p-4 border-t border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900">
+                <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    value={inputValue}
+                    onChange={(e) => setInputValue(e.target.value)}
+                    onKeyPress={handleKeyPress}
+                    placeholder="Type a message..."
+                    className="flex-1 px-4 py-3 bg-neutral-100 dark:bg-neutral-800 rounded-2xl text-sm text-neutral-900 dark:text-white placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-amber-500/30 transition-all"
+                    disabled={isLoading}
+                  />
+                  <motion.button
                     onClick={handleSend}
-                    disabled={!inputValue.trim() || isLoading || rateLimitRemaining === 0}
-                    className="w-12 h-12 bg-luxury-gold hover:bg-luxury-gold/90 disabled:bg-neutral-warm-300 disabled:cursor-not-allowed text-white rounded-2xl flex items-center justify-center transition-all duration-200 shadow-lg hover:shadow-xl"
+                    disabled={!inputValue.trim() || isLoading}
+                    className="w-11 h-11 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-2xl flex items-center justify-center shadow-lg shadow-amber-500/20 hover:shadow-xl transition-all"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
                   >
                     <Send className="w-5 h-5" />
-                  </button>
+                  </motion.button>
                 </div>
-                
-                {rateLimitRemaining <= 1 && (
-                  <div className="mt-2 text-xs text-amber-600 dark:text-amber-400 flex items-center space-x-1">
-                    <Clock className="w-3 h-3" />
-                    <span>
-                      {rateLimitRemaining === 0 
-                        ? 'Rate limit reached. Reset in 1 hour.' 
-                        : `${rateLimitRemaining} request remaining this hour.`
-                      }
-                    </span>
-                  </div>
-                )}
               </div>
             </motion.div>
           </motion.div>

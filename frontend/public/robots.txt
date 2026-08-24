@@ -1,0 +1,25 @@
+# Robots.txt for Kohinoor Gemstone
+# https://kohinoorgemstone.com
+
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://kohinoorgemstone.com/sitemap.xml
+
+# Disallow admin and API routes
+Disallow: /admin
+Disallow: /api
+
+# Allow all search engines
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: Yandex
+Allow: /
+
+# Crawl delay for polite crawling
+Crawl-delay: 1

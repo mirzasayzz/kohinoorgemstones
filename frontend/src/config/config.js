@@ -1,6 +1,8 @@
 // API Configuration
+// Uses VITE_API_BASE_URL from environment variables
+// In production (Docker), API is served from same origin using relative path
 export const API_CONFIG = {
-  BASE_URL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api',
+  BASE_URL: import.meta.env.VITE_API_BASE_URL || '/api',
   ENDPOINTS: {
     // Auth endpoints
     AUTH: {
@@ -67,9 +69,9 @@ export const CLOUDINARY_CONFIG = {
 
 // Site Configuration
 export const SITE_CONFIG = {
-  BASE_URL: import.meta.env.VITE_SITE_URL || 'http://localhost:5173',
-  NAME: 'Kohinoor Gemstone',
-  DOMAIN: 'kohinoorgemstone.com'
+  BASE_URL: import.meta.env.VITE_SITE_URL || 'https://kohinoorgemstone.com',
+  NAME: import.meta.env.VITE_SITE_NAME || 'Kohinoor Gemstone',
+  DOMAIN: import.meta.env.VITE_SITE_DOMAIN || 'kohinoorgemstone.com'
 };
 
 // Business Information (fallback values - real values fetched from API)
@@ -130,7 +132,7 @@ export const APP_CONFIG = {
   WHATSAPP: {
     MESSAGE_TEMPLATE: (gemstone, businessInfo) => {
       const shopName = businessInfo?.shopName || BUSINESS_INFO.NAME;
-      const baseUrl = window.location.origin;
+      const baseUrl = SITE_CONFIG.BASE_URL;
       
       return `Hello ${shopName},
 

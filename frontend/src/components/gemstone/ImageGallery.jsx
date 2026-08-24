@@ -9,6 +9,7 @@ import {
   Share2,
   Maximize2
 } from 'lucide-react';
+import { SITE_CONFIG } from '../../config/config';
 
 const ImageGallery = ({ 
   images = [], 
@@ -130,19 +131,18 @@ const ImageGallery = ({
 
   // Share functionality
   const handleShare = async () => {
+    const shareUrl = `${SITE_CONFIG.BASE_URL}/gemstone/${gemstone?.slug || gemstone?._id}`;
     const shareData = {
       title: gemstone?.name?.english || 'Gemstone',
       text: `Check out this beautiful ${gemstone?.category}`,
-      url: window.location.href
+      url: shareUrl
     };
 
     try {
       if (navigator.share) {
         await navigator.share(shareData);
       } else {
-        // Fallback: copy to clipboard
-        await navigator.clipboard.writeText(window.location.href);
-        // You could add a toast notification here
+        await navigator.clipboard.writeText(shareUrl);
       }
     } catch (err) {
       console.log('Error sharing:', err);

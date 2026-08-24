@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
 
 const userSchema = new mongoose.Schema({
   name: {
@@ -40,7 +41,9 @@ const userSchema = new mongoose.Schema({
   profileImage: {
     type: String,
     default: null
-  }
+  },
+  resetPasswordToken: String,
+  resetPasswordExpire: Date
 }, {
   timestamps: true
 });
@@ -64,10 +67,20 @@ userSchema.methods.updateLastLogin = async function () {
   await this.save({ validateBeforeSave: false });
 };
 
+// Generate password reset token
+userSchema.methods.getResetPasswordToken = function () {
+  const resetToken = crypto.randomBytes(32).toString('hex');
+  this.resetPasswordToken = crypto.createHash('sha256').update(resetToken).digest('hex');
+  this.resetPasswordExpire = Date.now() + 30 * 60 * 1000; // 30 minutes
+  return resetToken;
+};
+
 // Hide sensitive information when converting to JSON
 userSchema.methods.toJSON = function () {
   const userObject = this.toObject();
   delete userObject.password;
+  delete userObject.resetPasswordToken;
+  delete userObject.resetPasswordExpire;
   return userObject;
 };
 

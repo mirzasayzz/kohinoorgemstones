@@ -86,7 +86,7 @@ async function clearAndSeedGemstones() {
     });
     
     console.log('\n🎉 Database seeding completed successfully!');
-    console.log('🔗 Visit: http://localhost:3001/admin/gemstones to view the beautiful new gemstones');
+    console.log(`🔗 Visit: ${process.env.BASE_URL}/admin/gemstones to view the beautiful new gemstones`);
     
   } catch (error) {
     console.error('❌ Error during seeding:', error);

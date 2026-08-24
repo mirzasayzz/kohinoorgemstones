@@ -62,7 +62,12 @@ export const getGemstones = asyncHandler(async (req, res, next) => {
   }
 
   if (reqQuery.purpose) {
-    query.purpose = { $in: reqQuery.purpose.split(',') };
+    // Handle both string and array inputs for purpose
+    if (Array.isArray(reqQuery.purpose)) {
+      query.purpose = { $in: reqQuery.purpose };
+    } else {
+      query.purpose = { $in: reqQuery.purpose.split(',') };
+    }
   }
 
   if (reqQuery.trending) {
@@ -74,7 +79,12 @@ export const getGemstones = asyncHandler(async (req, res, next) => {
   }
 
   if (reqQuery.color) {
-    query.color = { $regex: reqQuery.color, $options: 'i' };
+    // Handle both string and array inputs for color
+    if (Array.isArray(reqQuery.color)) {
+      query.color = { $in: reqQuery.color.map(c => new RegExp(c, 'i')) };
+    } else {
+      query.color = { $regex: reqQuery.color, $options: 'i' };
+    }
   }
 
   if (reqQuery.search) {

@@ -1,16 +1,38 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { HelmetProvider } from '@dr.pogodin/react-helmet';
 import { BusinessProvider } from './context/BusinessContext';
 import { WishlistProvider } from './context/WishlistContext';
-import { useToast } from './components/common/Toast';
+import { CartProvider } from './context/CartContext';
+import { AuthProvider } from './context/AuthContext';
+import { ToastProvider } from './context/ToastContext';
+import { SocketProvider } from './context/SocketContext';
 import Layout from './components/layout/Layout';
 import Home from './pages/Home';
 import AllGemstones from './pages/AllGemstones';
 import GemstoneDetail from './pages/GemstoneDetail';
 import About from './pages/About';
-import Contact from './pages/Contact';
 import Wishlist from './pages/Wishlist';
+import SignIn from './pages/SignIn';
+import SignUp from './pages/SignUp';
+import Profile from './pages/Profile';
+import Checkout from './pages/Checkout';
+import OrderSuccess from './pages/OrderSuccess';
+import { API_CONFIG } from './config/config';
 import './index.css';
+
+// Keep backend alive - ping every 10 minutes to prevent cold starts (only in production)
+const keepBackendAlive = () => {
+  // Only ping in production to prevent cold starts on Render
+  if (import.meta.env.PROD) {
+    fetch(`${API_CONFIG.BASE_URL}/health`, { method: 'GET' }).catch(() => {});
+  }
+};
+
+// Initial wake-up and periodic keep-alive
+if (typeof window !== 'undefined') {
+  keepBackendAlive(); // Wake up immediately on page load
+  setInterval(keepBackendAlive, 10 * 60 * 1000); // Every 10 minutes
+}
 
 // 404 Not Found component
 const NotFound = () => (
@@ -23,57 +45,52 @@ const NotFound = () => (
   </div>
 );
 
-// App wrapper with toast notifications
-const AppWithToasts = () => {
-  const { ToastContainer, showUpdate } = useToast();
-  
-  // Handle business update notifications
-  const handleBusinessUpdate = (businessInfo, updateInfo) => {
-    if (updateInfo.type === 'auto-update') {
-      showUpdate(updateInfo.message, {
-        duration: 5000,
-        actionButton: (
-          <button
-            onClick={() => window.location.reload()}
-            className="text-purple-600 hover:text-purple-800 text-xs font-medium underline"
-          >
-            Refresh
-          </button>
-        )
-      });
-    }
-  };
-  
+// App wrapper with providers
+const AppWithProviders = () => {
   return (
-    <BusinessProvider onBusinessUpdate={handleBusinessUpdate}>
-      <WishlistProvider>
-        <Router>
-          <div className="App font-body">
-            <Routes>
-              <Route path="/" element={<Layout />}>
-                <Route index element={<Home />} />
-                <Route path="gemstones" element={<AllGemstones />} />
-                <Route path="gemstone/:slug" element={<GemstoneDetail />} />
-                <Route path="about" element={<About />} />
-                <Route path="contact" element={<Contact />} />
-                <Route path="wishlist" element={<Wishlist />} />
-                <Route path="*" element={<NotFound />} />
-              </Route>
-            </Routes>
-          </div>
-          
-          {/* Toast notifications for auto-updates */}
-          <ToastContainer />
-        </Router>
-      </WishlistProvider>
-    </BusinessProvider>
+    <ToastProvider>
+      <BusinessProvider>
+        <AuthProvider>
+          <SocketProvider>
+            <WishlistProvider>
+              <CartProvider>
+                <Router>
+                <div className="App font-body">
+                  <Routes>
+                    {/* Auth pages - standalone without layout */}
+                    <Route path="/signin" element={<SignIn />} />
+                    <Route path="/signup" element={<SignUp />} />
+                    
+                    {/* Main app with layout */}
+                    <Route path="/" element={<Layout />}>
+                      <Route index element={<Home />} />
+                      <Route path="gemstones" element={<AllGemstones />} />
+                      <Route path="gemstone/:slug" element={<GemstoneDetail />} />
+                      <Route path="about" element={<About />} />
+                      <Route path="contact" element={<Navigate to="/about" replace />} />
+                      <Route path="wishlist" element={<Wishlist />} />
+                      <Route path="profile" element={<Profile />} />
+                      <Route path="checkout" element={<Checkout />} />
+                      <Route path="order-success" element={<OrderSuccess />} />
+                      <Route path="settings" element={<Navigate to="/profile" replace />} />
+                      <Route path="*" element={<NotFound />} />
+                    </Route>
+                  </Routes>
+                </div>
+              </Router>
+              </CartProvider>
+            </WishlistProvider>
+          </SocketProvider>
+        </AuthProvider>
+      </BusinessProvider>
+    </ToastProvider>
   );
 };
 
 function App() {
   return (
     <HelmetProvider>
-      <AppWithToasts />
+      <AppWithProviders />
     </HelmetProvider>
   );
 }

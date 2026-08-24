@@ -51,7 +51,14 @@ const businessInfoSchema = new mongoose.Schema({
     },
     pincode: {
       type: String,
-      match: [/^\d{6}$/, 'Please provide a valid 6-digit pincode']
+      trim: true,
+      validate: {
+        validator: function(v) {
+          // Allow empty string or valid 6-digit pincode
+          return !v || v === '' || /^\d{6}$/.test(v);
+        },
+        message: 'Please provide a valid 6-digit pincode'
+      }
     },
     country: {
       type: String,
@@ -82,6 +89,17 @@ const businessInfoSchema = new mongoose.Schema({
     youtube: { type: String, trim: true },
     linkedin: { type: String, trim: true }
   },
+  // Store-wide certification (JG Gems Testing Lab, etc.)
+  storeCertification: {
+    enabled: { type: Boolean, default: false },
+    labName: { type: String, trim: true, default: 'JG Gems Testing Lab' },
+    labAddress: { type: String, trim: true },
+    labWebsite: { type: String, trim: true },
+    certificationImage: { type: String }, // Store certification image/logo
+    description: { type: String, trim: true, maxLength: 500 },
+    tagline: { type: String, trim: true, default: "India's Most Authentic & Promising Testing Authority" }
+  },
+  // Individual certifications array (for multiple certs if needed)
   certifications: [{
     name: { type: String, trim: true },
     number: { type: String, trim: true },

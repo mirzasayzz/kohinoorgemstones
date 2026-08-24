@@ -1,0 +1,93 @@
+<!-- Admin Sidebar Partial -->
+<div id="overlay" class="fixed inset-0 bg-black/60 z-40 lg:hidden hidden" onclick="toggleSidebar()"></div>
+
+<aside id="sidebar" class="sidebar fixed inset-y-0 left-0 z-50 w-64 border-r border-gold transform -translate-x-full lg:translate-x-0 transition-transform bg-[#0f2027]">
+    <!-- Header -->
+    <div class="h-20 flex items-center px-4 border-b border-gold bg-gradient-to-r from-[#0f2027] to-[#1a3a47]">
+        <div class="w-12 h-12 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-xl flex items-center justify-center mr-3 shadow-lg shadow-yellow-500/30">
+            <i data-lucide="crown" class="w-6 h-6 text-white"></i>
+        </div>
+        <div class="flex-1">
+            <p class="text-xs text-gray-400 uppercase tracking-wider">Kingdom of</p>
+            <p class="text-lg font-bold text-gold"><%= user.name %></p>
+        </div>
+        <button onclick="toggleSidebar()" class="lg:hidden p-2 hover:bg-white/10 rounded">
+            <i data-lucide="x" class="w-5 h-5 text-white"></i>
+        </button>
+    </div>
+    
+    <!-- Navigation -->
+    <nav class="p-3 space-y-1 overflow-y-auto" style="height: calc(100vh - 160px);">
+        <p class="text-xs text-gray-500 uppercase px-3 py-2">Menu</p>
+        
+        <a href="/admin/dashboard" class="nav-link flex items-center px-3 py-2.5 rounded-lg text-sm <%= typeof activePage !== 'undefined' && activePage === 'dashboard' ? 'bg-gold/20 text-gold' : 'text-gray-300 hover:bg-white/5' %>">
+            <i data-lucide="home" class="w-5 h-5 mr-3"></i>Home
+        </a>
+        
+        <a href="/admin/gemstones" class="nav-link flex items-center px-3 py-2.5 rounded-lg text-sm <%= typeof activePage !== 'undefined' && (activePage === 'gemstones' || activePage === 'edit-gemstone') ? 'bg-gold/20 text-gold' : 'text-gray-300 hover:bg-white/5' %>">
+            <i data-lucide="gem" class="w-5 h-5 mr-3"></i>All Gemstones
+        </a>
+        
+        <a href="/admin/gemstones/add" class="nav-link flex items-center px-3 py-2.5 rounded-lg text-sm <%= typeof activePage !== 'undefined' && activePage === 'add-gemstone' ? 'bg-gold/20 text-gold' : 'text-gray-300 hover:bg-white/5' %>">
+            <i data-lucide="plus-circle" class="w-5 h-5 mr-3"></i>Add New
+        </a>
+        
+        <a href="/admin/users" class="nav-link flex items-center px-3 py-2.5 rounded-lg text-sm <%= typeof activePage !== 'undefined' && activePage === 'users' ? 'bg-gold/20 text-gold' : 'text-gray-300 hover:bg-white/5' %>">
+            <i data-lucide="users" class="w-5 h-5 mr-3"></i>Users
+        </a>
+        
+        <a href="/admin/chats" class="nav-link flex items-center px-3 py-2.5 rounded-lg text-sm <%= typeof activePage !== 'undefined' && activePage === 'chats' ? 'bg-gold/20 text-gold' : 'text-gray-300 hover:bg-white/5' %>">
+            <i data-lucide="message-circle" class="w-5 h-5 mr-3"></i>Chats
+            <% if (typeof unreadChats !== 'undefined' && unreadChats > 0) { %>
+            <span class="ml-auto bg-red-500 text-white text-xs px-2 py-0.5 rounded-full"><%= unreadChats %></span>
+            <% } else if (typeof totalUnread !== 'undefined' && totalUnread > 0) { %>
+            <span class="ml-auto bg-red-500 text-white text-xs px-2 py-0.5 rounded-full"><%= totalUnread %></span>
+            <% } %>
+        </a>
+        
+        <% if (user.role === 'super_admin') { %>
+        <a href="/admin/admins" class="nav-link flex items-center px-3 py-2.5 rounded-lg text-sm <%= typeof activePage !== 'undefined' && activePage === 'admins' ? 'bg-gold/20 text-gold' : 'text-gray-300 hover:bg-white/5' %>">
+            <i data-lucide="shield" class="w-5 h-5 mr-3"></i>Manage Admins
+        </a>
+        <% } %>
+        
+        <a href="/admin/ai-settings" class="nav-link flex items-center px-3 py-2.5 rounded-lg text-sm <%= typeof activePage !== 'undefined' && activePage === 'ai-settings' ? 'bg-gold/20 text-gold' : 'text-gray-300 hover:bg-white/5' %>">
+            <i data-lucide="sparkles" class="w-5 h-5 mr-3"></i>Kohinoor AI
+        </a>
+        
+        <p class="text-xs text-gray-500 uppercase px-3 py-2 mt-4">Settings</p>
+        
+        <a href="/admin/business" class="nav-link flex items-center px-3 py-2.5 rounded-lg text-sm <%= typeof activePage !== 'undefined' && activePage === 'business' ? 'bg-gold/20 text-gold' : 'text-gray-300 hover:bg-white/5' %>">
+            <i data-lucide="settings" class="w-5 h-5 mr-3"></i>Shop Settings
+        </a>
+        
+        <a href="/admin/change-password" class="nav-link flex items-center px-3 py-2.5 rounded-lg text-sm <%= typeof activePage !== 'undefined' && activePage === 'change-password' ? 'bg-gold/20 text-gold' : 'text-gray-300 hover:bg-white/5' %>">
+            <i data-lucide="key" class="w-5 h-5 mr-3"></i>Change Password
+        </a>
+    </nav>
+    
+    <!-- User Footer -->
+    <div class="absolute bottom-0 left-0 right-0 p-3 border-t border-gold bg-[#0f2027]">
+        <div class="flex items-center px-3 py-2">
+            <div class="w-8 h-8 bg-gold/20 rounded-full flex items-center justify-center mr-3">
+                <i data-lucide="crown" class="w-4 h-4 text-gold"></i>
+            </div>
+            <div class="flex-1">
+                <p class="text-sm font-medium text-gold"><%= user.name %></p>
+                <p class="text-xs text-gray-500"><%= user.role === 'super_admin' ? 'Super Admin' : 'Admin' %></p>
+            </div>
+            <a href="/admin/logout" class="p-2 hover:bg-red-500/20 rounded text-gray-400 hover:text-red-400" title="Logout">
+                <i data-lucide="log-out" class="w-4 h-4"></i>
+            </a>
+        </div>
+    </div>
+</aside>
+
+<script>
+function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('overlay');
+    sidebar.classList.toggle('-translate-x-full');
+    overlay.classList.toggle('hidden');
+}
+</script>

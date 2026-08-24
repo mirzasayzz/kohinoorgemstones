@@ -74,10 +74,22 @@ export const BusinessProvider = ({ children }) => {
     loadBusinessInfo(true);
   }, [loadBusinessInfo]);
 
-  // Load business info once on component mount only
+  // Load business info on mount
   useEffect(() => {
     loadBusinessInfo();
   }, []); // Empty dependency array - only runs once on mount
+
+  // Refresh business info when user comes back to tab
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        loadBusinessInfo(true);
+      }
+    };
+    
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [loadBusinessInfo]);
 
   const generateWhatsAppURL = (gemstone = null, customMessage = null) => {
     const whatsappNumber = businessInfo?.contact?.whatsapp?.replace(/[^\d]/g, '');

@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <style>
+        * { font-family: 'Segoe UI', system-ui, sans-serif; }
+        body { background: linear-gradient(135deg, #0f2027, #203a43, #2c5364); }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #0f2027; }
+        ::-webkit-scrollbar-thumb { background: #d4af37; border-radius: 3px; }
+        .sidebar { background: linear-gradient(180deg, #0f2027, #0a1a1f); }
+        .nav-link { transition: all 0.2s ease; border-left: 3px solid transparent; }
+        .nav-link:hover, .nav-link.active { background: rgba(212, 175, 55, 0.1); border-left-color: #d4af37; }
+        .card { background: rgba(15, 32, 39, 0.8); border: 1px solid rgba(212, 175, 55, 0.15); border-radius: 12px; }
+        .text-gold { color: #d4af37; }
+        .border-gold { border-color: rgba(212, 175, 55, 0.3); }
+        .btn-gold { background: linear-gradient(135deg, #d4af37, #c9a227); color: #0f2027; }
+        .input-glow { background: rgba(32, 58, 67, 0.6); border: 1px solid rgba(212, 175, 55, 0.2); color: #fff; }
+        .input-glow:focus { outline: none; border-color: #d4af37; box-shadow: 0 0 20px rgba(212, 175, 55, 0.4); }
+        .chat-list { max-height: calc(100vh - 200px); overflow-y: auto; }
+        .chat-messages { max-height: calc(100vh - 280px); overflow-y: auto; }
+        .message-bubble { max-width: 85%; }
+        @media (min-width: 640px) { .message-bubble { max-width: 70%; } }
+    </style>
+</head>
+<body class="text-white min-h-screen">
+    <% const activePage = 'chats'; %>
+    <%- include('partials/sidebar') %>
+
+    <div class="lg:ml-64 min-h-screen">
+        <header class="sticky top-0 z-30 h-16 bg-[#0f2027]/95 backdrop-blur border-b border-gold px-4">
+            <div class="h-full flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <button onclick="toggleSidebar()" class="lg:hidden p-2 hover:bg-white/10 rounded">
+                        <i data-lucide="menu" class="w-5 h-5"></i>
+                    </button>
+                    <h1 class="text-lg font-semibold">Customer Chats</h1>
+                    <% if (typeof totalUnread !== 'undefined' && totalUnread > 0) { %>
+                    <span class="px-2 py-1 bg-red-500/20 text-red-400 rounded text-xs"><%= totalUnread %> unread</span>
+                    <% } %>
+                </div>
+            </div>
+        </header>
+
+        <main class="p-4 lg:p-6">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                
+                <!-- Conversations List -->
+                <div class="card p-3 sm:p-4">
+                    <h2 class="font-semibold text-gold mb-3 sm:mb-4 flex items-center text-sm sm:text-base">
+                        <i data-lucide="message-square" class="w-4 h-4 mr-2"></i>
+                        Chats
+                    </h2>
+                    
+                    <div class="chat-list space-y-2">
+                        <% if (conversations && conversations.length > 0) { %>
+                            <% conversations.forEach(conv => { %>
+                            <a href="/admin/chats/<%= conv.customer._id %>" class="block p-3 rounded-lg hover:bg-gold/10 transition-colors <%= activeChat && activeChat.toString() === conv.customer._id.toString() ? 'bg-gold/20 border border-gold/30' : '' %>">
+                                <div class="flex items-center">
+                                    <div class="w-10 h-10 bg-gold/20 rounded-full flex items-center justify-center mr-3 relative">
+                                        <span class="text-gold font-bold"><%= conv.customer.name.charAt(0).toUpperCase() %></span>
+                                        <% if (conv.unreadCount > 0) { %>
+                                        <span class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center"><%= conv.unreadCount %></span>
+                                        <% } %>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <p class="font-medium text-white truncate"><%= conv.customer.name %></p>
+                                        <p class="text-xs text-gray-400 truncate"><%= conv.lastMessage %></p>
+                                    </div>
+                                    <div class="text-xs text-gray-500">
+                                        <%= new Date(conv.lastMessageTime).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) %>
+                                    </div>
+                                </div>
+                            </a>
+                            <% }); %>
+                        <% } else { %>
+                        <div class="text-center py-8">
+                            <i data-lucide="message-circle" class="w-12 h-12 text-gold/30 mx-auto mb-3"></i>
+                            <p class="text-gray-400 text-sm">No conversations yet</p>
+                        </div>
+                        <% } %>
+                    </div>
+                </div>
+
+                <!-- Chat Area -->
+                <div class="lg:col-span-2 card p-4 flex flex-col" style="min-height: 500px;">
+                    <% if (activeCustomer) { %>
+                    <!-- Chat Header -->
+                    <div class="flex items-center pb-4 border-b border-gold/20 mb-4">
+                        <div class="w-10 h-10 bg-gold/20 rounded-full flex items-center justify-center mr-3">
+                            <span class="text-gold font-bold"><%= activeCustomer.name.charAt(0).toUpperCase() %></span>
+                        </div>
+                        <div class="flex-1">
+                            <p class="font-medium text-white"><%= activeCustomer.name %></p>
+                            <p class="text-xs text-gray-400"><%= activeCustomer.email %> • <%= activeCustomer.phone %></p>
+                        </div>
+                        <a href="/admin/users" class="p-2 hover:bg-gold/20 rounded-lg text-gold">
+                            <i data-lucide="user" class="w-4 h-4"></i>
+                        </a>
+                    </div>
+
+                    <!-- Messages -->
+                    <div class="chat-messages flex-1 space-y-3 mb-4" id="messagesContainer">
+                        <% if (messages && messages.length > 0) { %>
+                            <% messages.forEach(msg => { %>
+                            <div class="flex <%= msg.sender === 'admin' ? 'justify-end' : 'justify-start' %>">
+                                <div class="message-bubble px-4 py-2 rounded-2xl <%= msg.sender === 'admin' ? 'bg-gradient-to-r from-amber-500 to-yellow-500 text-gray-900' : 'bg-slate-700 text-white' %>">
+                                    <p class="text-sm"><%= msg.content %></p>
+                                    <p class="text-xs mt-1 <%= msg.sender === 'admin' ? 'text-gray-800' : 'text-slate-400' %>">
+                                        <%= new Date(msg.createdAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true, timeZone: 'Asia/Kolkata' }) %>
+                                    </p>
+                                </div>
+                            </div>
+                            <% }); %>
+                        <% } else { %>
+                        <div class="text-center py-8">
+                            <p class="text-gray-400 text-sm">Start the conversation...</p>
+                        </div>
+                        <% } %>
+                    </div>
+
+                    <!-- Reply Input -->
+                    <form method="POST" action="/admin/chats/<%= activeCustomer._id %>/reply" class="flex gap-2">
+                        <input type="text" name="message" required placeholder="Type reply..." class="input-glow flex-1 px-3 py-2.5 rounded-lg text-sm">
+                        <button type="submit" class="btn-gold px-3 py-2.5 rounded-lg font-medium flex items-center text-sm">
+                            <i data-lucide="send" class="w-4 h-4"></i>
+                        </button>
+                    </form>
+                    <% } else { %>
+                    <!-- No Chat Selected -->
+                    <div class="flex-1 flex items-center justify-center">
+                        <div class="text-center">
+                            <i data-lucide="message-square" class="w-16 h-16 text-gold/30 mx-auto mb-4"></i>
+                            <p class="text-gray-400">Select a conversation to start chatting</p>
+                        </div>
+                    </div>
+                    <% } %>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        lucide.createIcons();
+        
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('-translate-x-full');
+            document.getElementById('overlay').classList.toggle('hidden');
+        }
+        
+        // Scroll to bottom of messages
+        const messagesContainer = document.getElementById('messagesContainer');
+        if (messagesContainer) {
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+    </script>
+</body>
+</html>

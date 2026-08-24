@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kohinoor AI | Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        gold: '#D4AF37',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%); min-height: 100vh; }
+        .card { background: rgba(255,255,255,0.03); border: 1px solid rgba(212,175,55,0.2); }
+        .status-dot { animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    </style>
+</head>
+<body class="text-gray-100">
+    <%- include('partials/sidebar', { user, activePage: 'ai-settings' }) %>
+    
+    <div class="lg:ml-64 min-h-screen">
+        <!-- Compact Header -->
+        <header class="h-14 border-b border-gold/30 flex items-center px-4 bg-[#0f2027]/80 backdrop-blur">
+            <button onclick="toggleSidebar()" class="lg:hidden p-2 mr-3 hover:bg-white/10 rounded">
+                <i data-lucide="menu" class="w-5 h-5"></i>
+            </button>
+            <h1 class="text-lg font-bold text-gold flex items-center gap-2">
+                <i data-lucide="sparkles" class="w-5 h-5"></i> Kohinoor AI
+            </h1>
+            <span id="statusIndicator" class="ml-auto flex items-center gap-1.5 text-xs">
+                <span class="status-dot w-2 h-2 rounded-full bg-gray-500"></span>
+                <span>Checking...</span>
+            </span>
+        </header>
+
+        <main class="p-4 space-y-4 max-w-2xl">
+            <!-- AI Status - Compact -->
+            <div class="card rounded-lg p-4">
+                <div class="flex items-center justify-between text-sm mb-3">
+                    <span class="text-gray-400">Provider</span>
+                    <span id="aiProvider" class="text-gold font-medium">Detecting...</span>
+                </div>
+                <div class="flex items-center justify-between text-sm mb-3">
+                    <span class="text-gray-400">Model</span>
+                    <span id="aiModel" class="text-white">-</span>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="testAI()" class="flex-1 py-2 bg-gold/20 hover:bg-gold/30 text-gold rounded-lg text-sm font-medium">
+                        <i data-lucide="zap" class="w-4 h-4 inline mr-1"></i> Test AI
+                    </button>
+                    <button onclick="clearSessions()" class="py-2 px-3 bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded-lg text-sm">
+                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- API Key - Compact -->
+            <div class="card rounded-lg p-4">
+                <div class="flex items-center gap-2 mb-3">
+                    <i data-lucide="key" class="w-4 h-4 text-gold"></i>
+                    <span class="text-sm font-medium text-gold">API Key</span>
+                    <span class="text-xs text-gray-500">(Gemini / MegaLLM / OpenAI)</span>
+                </div>
+                <form id="apiKeyForm">
+                    <div class="flex gap-2 mb-2">
+                        <div class="flex-1 relative">
+                            <input type="password" id="apiKey" name="apiKey"
+                                value="<%= aiConfig?.apiKey ? '••••••••••••••••' : '' %>"
+                                placeholder="sk-mega-... or AIza... or sk-..."
+                                class="w-full bg-white/5 border border-gold/30 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-gold">
+                            <button type="button" onclick="toggleApiKeyVisibility()" class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400">
+                                <i data-lucide="eye" class="w-4 h-4" id="eyeIcon"></i>
+                            </button>
+                        </div>
+                        <button type="button" onclick="clearApiKey()" class="px-2 bg-red-500/20 text-red-400 rounded-lg">
+                            <i data-lucide="x" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                    <p class="text-xs text-gray-500 mb-3">
+                        <span id="keyHint">Auto-detects: sk-mega-* → MegaLLM | sk-* → OpenAI | Other → Gemini</span>
+                    </p>
+                    <button type="submit" id="saveBtn" class="w-full py-2 bg-gold hover:bg-yellow-600 text-black text-sm font-semibold rounded-lg">
+                        <i data-lucide="save" class="w-4 h-4 inline mr-1"></i> Save & Test
+                    </button>
+                </form>
+            </div>
+
+            <!-- Test Response - Compact -->
+            <div class="card rounded-lg p-4" id="testArea" style="display: none;">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-sm font-medium text-gold">Test Result</span>
+                    <button onclick="document.getElementById('testArea').style.display='none'" class="text-gray-400">
+                        <i data-lucide="x" class="w-4 h-4"></i>
+                    </button>
+                </div>
+                <div id="testResponse" class="bg-black/30 rounded p-3 text-xs"></div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        // Check AI status on load
+        async function checkAIStatus() {
+            try {
+                const response = await fetch('/api/gemstone-ai/status');
+                const data = await response.json();
+                
+                const indicator = document.getElementById('statusIndicator');
+                const providerEl = document.getElementById('aiProvider');
+                const modelEl = document.getElementById('aiModel');
+                
+                if (data.status === 'active') {
+                    indicator.innerHTML = '<span class="status-dot w-2 h-2 rounded-full bg-green-500"></span><span class="text-green-400">Active</span>';
+                    
+                    // Show provider with color coding
+                    const providerNames = { megallm: 'MegaLLM', openai: 'OpenAI', gemini: 'Gemini' };
+                    const providerColors = { megallm: 'text-purple-400', openai: 'text-green-400', gemini: 'text-blue-400' };
+                    providerEl.textContent = providerNames[data.provider] || data.provider;
+                    providerEl.className = `font-medium ${providerColors[data.provider] || 'text-gold'}`;
+                    modelEl.textContent = data.model || '-';
+                } else {
+                    indicator.innerHTML = '<span class="w-2 h-2 rounded-full bg-red-500"></span><span class="text-red-400">Inactive</span>';
+                    providerEl.textContent = 'Not configured';
+                    providerEl.className = 'text-red-400';
+                    modelEl.textContent = '-';
+                }
+            } catch (error) {
+                const indicator = document.getElementById('statusIndicator');
+                indicator.innerHTML = '<span class="w-2 h-2 rounded-full bg-red-500"></span><span class="text-red-400">Error</span>';
+                document.getElementById('aiProvider').textContent = 'Error';
+                document.getElementById('aiModel').textContent = '-';
+            }
+        }
+
+        // Test AI Response
+        async function testAI() {
+            const testArea = document.getElementById('testArea');
+            const testResponse = document.getElementById('testResponse');
+            
+            testArea.style.display = 'block';
+            testResponse.innerHTML = '<div class="flex items-center gap-2"><i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> Testing AI...</div>';
+            lucide.createIcons();
+            
+            try {
+                const response = await fetch('/api/gemstone-ai', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        message: 'Hello, I am testing the AI. Please respond briefly.',
+                        sessionId: 'admin_test_' + Date.now()
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.response) {
+                    testResponse.innerHTML = `
+                        <div class="space-y-3">
+                            <div>
+                                <span class="text-gold font-medium">Response:</span>
+                                <p class="mt-1 text-gray-300">${data.response}</p>
+                            </div>
+                            <div class="flex gap-4 text-xs text-gray-500">
+                                <span>Mood: ${data.mood || 'N/A'}</span>
+                                <span>Suggestions: ${data.suggestedGemstones?.length || 0}</span>
+                                <span>Time: ${data.timestamp || new Date().toISOString()}</span>
+                            </div>
+                            <div class="text-green-400 flex items-center gap-1">
+                                <i data-lucide="check-circle" class="w-4 h-4"></i> AI is working correctly!
+                            </div>
+                        </div>
+                    `;
+                } else if (data.error) {
+                    testResponse.innerHTML = `<div class="text-red-400"><i data-lucide="alert-circle" class="w-4 h-4 inline"></i> Error: ${data.error}</div>`;
+                }
+            } catch (error) {
+                testResponse.innerHTML = `<div class="text-red-400"><i data-lucide="alert-circle" class="w-4 h-4 inline"></i> Failed to test AI: ${error.message}</div>`;
+            }
+            
+            lucide.createIcons();
+        }
+
+        // Clear all sessions
+        async function clearSessions() {
+            if (!confirm('Are you sure you want to clear all AI conversation sessions?')) return;
+            
+            try {
+                const response = await fetch('/api/gemstone-ai/clear-all', { method: 'POST' });
+                const data = await response.json();
+                alert(data.message || 'Sessions cleared!');
+            } catch (error) {
+                alert('Failed to clear sessions: ' + error.message);
+            }
+        }
+
+        // Toggle API key visibility
+        function toggleApiKeyVisibility() {
+            const input = document.getElementById('apiKey');
+            const icon = document.getElementById('eyeIcon');
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.setAttribute('data-lucide', 'eye-off');
+            } else {
+                input.type = 'password';
+                icon.setAttribute('data-lucide', 'eye');
+            }
+            lucide.createIcons();
+        }
+
+        // Clear API key
+        function clearApiKey() {
+            document.getElementById('apiKey').value = '';
+        }
+
+        // Save & Test API key
+        document.getElementById('apiKeyForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const apiKey = document.getElementById('apiKey').value;
+            const saveBtn = document.getElementById('saveBtn');
+            const testArea = document.getElementById('testArea');
+            const testResponse = document.getElementById('testResponse');
+            
+            // Skip if it's the masked value
+            if (apiKey === '••••••••••••••••') {
+                alert('No changes made');
+                return;
+            }
+            
+            // Show loading state
+            saveBtn.disabled = true;
+            saveBtn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 inline mr-1 animate-spin"></i> Saving...';
+            lucide.createIcons();
+            
+            try {
+                // Step 1: Save the API key
+                const saveResponse = await fetch('/admin/ai-settings/api-key', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ apiKey })
+                });
+                
+                const saveData = await saveResponse.json();
+                
+                if (!saveData.success) {
+                    throw new Error(saveData.message || 'Failed to save');
+                }
+                
+                // Step 2: Test the API key
+                saveBtn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 inline mr-1 animate-spin"></i> Testing...';
+                lucide.createIcons();
+                
+                testArea.style.display = 'block';
+                testResponse.innerHTML = '<div class="text-gray-400">Testing API key...</div>';
+                
+                const testRes = await fetch('/admin/ai-settings/test-key', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ apiKey })
+                });
+                
+                const testData = await testRes.json();
+                
+                if (testData.success) {
+                    const providerNames = { megallm: 'MegaLLM', openai: 'OpenAI', gemini: 'Gemini' };
+                    testResponse.innerHTML = `
+                        <div class="text-green-400 flex items-center gap-2 mb-2">
+                            <i data-lucide="check-circle" class="w-4 h-4"></i>
+                            <span>API Key saved & working!</span>
+                        </div>
+                        <div class="text-gray-400 text-xs">Provider: <span class="text-white">${providerNames[testData.provider] || testData.provider}</span></div>
+                        <div class="text-gray-400 text-xs mt-1">Response: <span class="text-gray-300">${testData.response || 'OK'}</span></div>
+                    `;
+                    // Refresh status after success
+                    setTimeout(() => checkAIStatus(), 500);
+                } else {
+                    testResponse.innerHTML = `
+                        <div class="text-red-400 flex items-center gap-2 mb-2">
+                            <i data-lucide="alert-circle" class="w-4 h-4"></i>
+                            <span>Saved but test failed!</span>
+                        </div>
+                        <div class="text-red-300 text-xs">${testData.message || 'Invalid API key'}</div>
+                    `;
+                }
+                lucide.createIcons();
+                
+            } catch (error) {
+                testArea.style.display = 'block';
+                testResponse.innerHTML = `
+                    <div class="text-red-400 flex items-center gap-2">
+                        <i data-lucide="alert-circle" class="w-4 h-4"></i>
+                        <span>Error: ${error.message}</span>
+                    </div>
+                `;
+                lucide.createIcons();
+            } finally {
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = '<i data-lucide="save" class="w-4 h-4 inline mr-1"></i> Save & Test';
+                lucide.createIcons();
+            }
+        });
+
+        // Initialize
+        checkAIStatus();
+    </script>
+</body>
+</html>

@@ -1,10 +1,9 @@
 import axios from 'axios';
 import { API_CONFIG } from '../config/config';
 
-// Enforce BASE_URL in production
-if (import.meta.env.PROD && (!API_CONFIG.BASE_URL || API_CONFIG.BASE_URL.includes('localhost'))) {
-  // eslint-disable-next-line no-console
-  console.error('VITE_API_BASE_URL is not set for production; API calls will fail.');
+// Validate API_CONFIG.BASE_URL is set
+if (!API_CONFIG.BASE_URL) {
+  console.error('❌ VITE_API_BASE_URL is not set in .env file. API calls will fail.');
 }
 
 // Create axios instance
@@ -126,8 +125,20 @@ export const authService = {
 export const gemstoneService = {
   // Get all gemstones with filtering and pagination
   async getGemstones(params = {}) {
-    const queryParams = new URLSearchParams(params).toString();
-    const url = `${API_CONFIG.ENDPOINTS.GEMSTONES.GET_ALL}${queryParams ? `?${queryParams}` : ''}`;
+    // Build query string with proper array handling for OR filters
+    const queryParams = new URLSearchParams();
+    
+    Object.entries(params).forEach(([key, value]) => {
+      if (Array.isArray(value)) {
+        // For arrays, append each value separately (enables $in / OR query)
+        value.forEach(v => queryParams.append(key, v));
+      } else if (value !== undefined && value !== null && value !== '') {
+        queryParams.append(key, value);
+      }
+    });
+    
+    const queryString = queryParams.toString();
+    const url = `${API_CONFIG.ENDPOINTS.GEMSTONES.GET_ALL}${queryString ? `?${queryString}` : ''}`;
     return await api.get(url);
   },
 
@@ -386,11 +397,49 @@ export const apiUtils = {
 
 // AI Services
 export const aiService = {
+  // Generate or get session ID for conversation continuity
+  getSessionId() {
+    let sessionId = sessionStorage.getItem('kohinoor_ai_session');
+    if (!sessionId) {
+      sessionId = `ai_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+      sessionStorage.setItem('kohinoor_ai_session', sessionId);
+    }
+    return sessionId;
+  },
+
+  // Reset session (start fresh conversation)
+  resetSession() {
+    sessionStorage.removeItem('kohinoor_ai_session');
+    return this.getSessionId();
+  },
+
   // Chat with AI for gemstone recommendations
-  async chatWithAI(message, context = 'gemstone_recommendation') {
+  async chatWithAI(message, context = 'gemstone_recommendation', userInfo = null) {
+    const sessionId = this.getSessionId();
+    
+    // Get user info from localStorage if not provided
+    let user = userInfo;
+    if (!user) {
+      try {
+        const storedUser = localStorage.getItem('kohinoor_user');
+        if (storedUser) {
+          user = JSON.parse(storedUser);
+        }
+      } catch (e) {
+        console.log('Could not parse user info');
+      }
+    }
+    
     return await api.post(API_CONFIG.ENDPOINTS.AI.GEMSTONE_CHAT, {
       message,
-      context
+      context,
+      sessionId,
+      userInfo: user ? {
+        name: user.name,
+        dob: user.dob,
+        place: user.place || user.city,
+        phone: user.phone
+      } : null
     });
   },
 

@@ -3,18 +3,33 @@
 /**
  * Deployment Test Script
  * Tests all critical endpoints after deployment fixes
+ * 
+ * IMPORTANT: Set environment variables for testing:
+ * - BASE_URL: API base URL (defaults to production)
+ * - ADMIN_EMAIL: Admin email for auth tests (required)
+ * - ADMIN_PASSWORD: Admin password for auth tests (required)
  */
 
-const BASE_URL = process.env.BASE_URL || 'https://kohinoor-w94f.onrender.com';
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'tubamirza822@gmail.com';
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'Tuba@6283';
+const BASE_URL = process.env.BASE_URL;
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
+
+if (!BASE_URL) {
+  console.error('❌ BASE_URL environment variable is required');
+  console.log('   Example: BASE_URL=https://kohinoor-w94f.onrender.com');
+  process.exit(1);
+}
+
+if (!ADMIN_EMAIL || !ADMIN_PASSWORD) {
+  console.warn('⚠️  ADMIN_EMAIL or ADMIN_PASSWORD not set - auth tests will be skipped');
+}
 
 let authToken = null;
 
 console.log('🧪 KOHINOOR DEPLOYMENT TEST SCRIPT');
 console.log('==================================');
 console.log(`Testing: ${BASE_URL}`);
-console.log(`Admin: ${ADMIN_EMAIL}`);
+if (ADMIN_EMAIL) console.log(`Admin: ${ADMIN_EMAIL}`);
 console.log('');
 
 async function makeRequest(endpoint, options = {}) {
@@ -66,6 +81,12 @@ async function testHealthCheck() {
 
 async function testAuthentication() {
   console.log('2️⃣  Testing Authentication...');
+  
+  if (!ADMIN_EMAIL || !ADMIN_PASSWORD) {
+    console.log('   ⏭️  Skipped (credentials not provided)');
+    return true; // Don't count as failure
+  }
+  
   const result = await makeRequest('/api/auth/login', {
     method: 'POST',
     body: JSON.stringify({
@@ -87,6 +108,12 @@ async function testAuthentication() {
 
 async function testProtectedEndpoint() {
   console.log('3️⃣  Testing Protected Endpoint...');
+  
+  if (!authToken) {
+    console.log('   ⏭️  Skipped (no auth token)');
+    return true;
+  }
+  
   const result = await makeRequest('/api/auth/me');
   
   if (result.success && result.data.data.user) {

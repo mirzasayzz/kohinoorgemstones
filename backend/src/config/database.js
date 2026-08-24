@@ -5,7 +5,10 @@ dotenv.config();
 
 const connectDB = async () => {
   try {
-    const conn = await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/kohinoor-gemstone');
+    if (!process.env.MONGODB_URI) {
+      throw new Error('MONGODB_URI environment variable is required');
+    }
+    const conn = await mongoose.connect(process.env.MONGODB_URI);
 
     console.log(`MongoDB Connected: ${conn.connection.host}`);
     
@@ -20,6 +23,21 @@ const connectDB = async () => {
 const createIndexes = async () => {
   try {
     const db = mongoose.connection.db;
+    
+    // Drop the old username unique index from customers collection if it exists
+    try {
+      const customersCollection = db.collection('customers');
+      const indexes = await customersCollection.listIndexes().toArray();
+      const usernameIndex = indexes.find(index => index.key && index.key.username);
+      
+      if (usernameIndex) {
+        await customersCollection.dropIndex(usernameIndex.name);
+        console.log('Dropped username unique index from customers collection');
+      }
+    } catch (error) {
+      // Collection may not exist or index already dropped
+      console.log('Username index not found or already removed');
+    }
     
     // Create indexes for gemstones collection
     await db.collection('gemstones').createIndex({ name: 'text', description: 'text' });

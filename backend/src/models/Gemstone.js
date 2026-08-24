@@ -31,6 +31,11 @@ const gemstoneSchema = new mongoose.Schema({
     ],
     index: true
   },
+  customCategory: {
+    type: String,
+    trim: true,
+    maxLength: [100, 'Custom category name cannot exceed 100 characters']
+  },
   purpose: [{
     type: String,
     enum: ['Love', 'Health', 'Wealth', 'Protection', 'Spiritual Growth', 'Success', 'Peace', 'Wisdom'],
@@ -121,6 +126,14 @@ const gemstoneSchema = new mongoose.Schema({
     certifyingBody: {
       type: String,
       trim: true
+    },
+    certificationImage: {
+      type: {
+        url: { type: String },
+        publicId: { type: String }
+      },
+      default: null,
+      required: false
     }
   },
   priceRange: {
@@ -166,6 +179,41 @@ const gemstoneSchema = new mongoose.Schema({
       trim: true,
       lowercase: true
     }]
+  },
+  // Letter for alphabetical search (A-Z)
+  letter: {
+    type: String,
+    trim: true,
+    uppercase: true,
+    maxLength: 1,
+    index: true
+  },
+  // Discount information
+  discount: {
+    percentage: {
+      type: Number,
+      min: 0,
+      max: 100,
+      default: 0
+    },
+    isActive: {
+      type: Boolean,
+      default: false
+    },
+    message: {
+      type: String,
+      default: 'Hurry Up!'
+    }
+  },
+  // Ratti (weight in Indian unit)
+  ratti: {
+    type: Number,
+    min: 0
+  },
+  // Price (single price field for simplicity)
+  price: {
+    type: Number,
+    min: 0
   },
   isActive: {
     type: Boolean,

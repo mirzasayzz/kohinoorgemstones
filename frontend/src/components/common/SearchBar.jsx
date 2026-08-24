@@ -13,7 +13,7 @@ const SearchBar = ({
   // Debounce search to avoid too many API calls
   useEffect(() => {
     const delayedSearch = setTimeout(() => {
-      if (onSearch && searchTerm.trim()) {
+      if (onSearch) {
         onSearch(searchTerm);
       }
     }, 300);

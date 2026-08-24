@@ -6,15 +6,17 @@
  */
 
 import axios from 'axios';
+import 'dotenv/config';
 
-const API_BASE = 'http://localhost:3001/api';
+const API_BASE = `${process.env.BASE_URL || process.env.BACKEND_URL || 'https://kohinoorgemstone.com'}/api`;
 let authToken = null;
 
-// Test credentials
-const ADMIN_CREDENTIALS = {
-  email: 'admin@gmail.com',
-  password: 'admin123'
-};
+// Test credentials (from environment only)
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
+const ADMIN_CREDENTIALS = (ADMIN_EMAIL && ADMIN_PASSWORD)
+  ? { email: ADMIN_EMAIL, password: ADMIN_PASSWORD }
+  : null;
 
 // ANSI color codes for console output
 const colors = {
@@ -34,6 +36,10 @@ const log = (message, color = 'reset') => {
 async function loginAdmin() {
   try {
     log('\n🔐 Testing Admin Login...', 'blue');
+    if (!ADMIN_CREDENTIALS) {
+      log('⚠️ Skipping login: ADMIN_EMAIL/ADMIN_PASSWORD not set in environment', 'yellow');
+      return false;
+    }
     const response = await axios.post(`${API_BASE}/auth/login`, ADMIN_CREDENTIALS);
     
     if (response.data.success) {

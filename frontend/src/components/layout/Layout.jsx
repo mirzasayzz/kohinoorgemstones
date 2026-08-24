@@ -3,6 +3,9 @@ import Header from './Header';
 import Footer from './Footer';
 import { useToast } from '../common/Toast';
 import GemstoneAI from '../common/GemstoneAI';
+import CustomerChat from '../common/CustomerChat';
+import CartDrawer from '../common/CartDrawer';
+import WishlistDrawer from '../common/WishlistDrawer';
 
 const Layout = () => {
   const { ToastContainer } = useToast();
@@ -20,6 +23,15 @@ const Layout = () => {
       
       {/* Floating AI Assistant */}
       <GemstoneAI />
+      
+      {/* Customer Chat - for logged in users */}
+      <CustomerChat />
+      
+      {/* Cart Drawer */}
+      <CartDrawer />
+      
+      {/* Wishlist Drawer */}
+      <WishlistDrawer />
       
       {/* Toast Notifications */}
       <ToastContainer />
