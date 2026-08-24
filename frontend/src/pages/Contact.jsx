@@ -5,7 +5,7 @@ import {
   Mail, 
   MapPin, 
   Clock, 
-  MessageCircle, 
+  MessageCircle,
   ExternalLink,
   Globe,
   Calendar,
@@ -129,17 +129,17 @@ const Contact = () => {
         keywords="contact, gemstone consultation, WhatsApp, phone, store location, business hours"
       />
       
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-        {/* Hero Section */}
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      {/* Hero Section */}
         <section className="relative bg-gradient-to-br from-sapphire via-emerald to-golden overflow-hidden">
           <div className="absolute inset-0 bg-black/20"></div>
           <div className="relative max-w-7xl mx-auto px-4 py-20 sm:py-28">
-            <motion.div
+          <motion.div
               initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
+            animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8 }}
               className="text-center"
-            >
+          >
               <motion.div
                 initial={{ scale: 0.8, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
@@ -170,27 +170,27 @@ const Contact = () => {
                   {isOpen() ? 'We\'re Open Now!' : nextOpening ? `Opens ${nextOpening.day} at ${formatTime(nextOpening.time)}` : 'Currently Closed'}
                 </span>
               </motion.div>
-            </motion.div>
+          </motion.div>
           </div>
-        </section>
+      </section>
 
         {/* Main Content */}
         <section className="py-20 bg-white dark:bg-gray-800">
-          <div className="max-w-7xl mx-auto px-4">
+        <div className="max-w-7xl mx-auto px-4">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
-              
+
               {/* Contact Information */}
-              <motion.div
-                initial={{ opacity: 0, x: -30 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.6 }}
-                viewport={{ once: true }}
+            <motion.div
+              initial={{ opacity: 0, x: -30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6 }}
+              viewport={{ once: true }}
                 className="space-y-8"
-              >
+            >
                 <div>
                   <h2 className="font-heading text-3xl font-bold text-gray-900 dark:text-white mb-4">
-                    Get in Touch
-                  </h2>
+                Get in Touch
+              </h2>
                   <p className="text-lg text-gray-600 dark:text-gray-300 leading-relaxed">
                     Whether you're looking for a specific gemstone, need astrological guidance, 
                     or want to learn more about our collection, we're here to help.
@@ -218,12 +218,12 @@ const Contact = () => {
                     whileTap={{ scale: 0.98 }}
                     onClick={handleCallClick}
                     className="flex items-center space-x-3 bg-sapphire hover:bg-sapphire-dark text-white px-6 py-4 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl"
-                  >
+                    >
                     <Phone className="w-5 h-5" />
                     <div className="text-left">
                       <div className="font-semibold">Call Now</div>
                       <div className="text-sm opacity-90">Direct Line</div>
-                    </div>
+                  </div>
                     <ArrowRight className="w-4 h-4 ml-auto" />
                   </motion.button>
                 </div>
@@ -265,11 +265,11 @@ const Contact = () => {
                         <button 
                           onClick={handleEmailClick}
                           className="text-gray-600 dark:text-gray-300 font-medium hover:text-emerald transition-colors"
-                        >
+                    >
                           {businessInfo.contact.email}
-                        </button>
+                    </button>
                         <p className="text-sm text-gray-500 dark:text-gray-400">We'll respond within 24 hours</p>
-                      </div>
+                  </div>
                     </motion.div>
                   )}
 
@@ -283,12 +283,12 @@ const Contact = () => {
                     >
                       <div className="p-3 bg-golden/10 rounded-lg">
                         <MapPin className="w-6 h-6 text-golden" />
-                      </div>
+                </div>
                       <div className="flex-1">
                         <h3 className="font-semibold text-gray-900 dark:text-white mb-1">Visit Our Store</h3>
                         <p className="text-gray-600 dark:text-gray-300 mb-2">{businessInfo.address.fullAddress}</p>
                         {businessInfo.googleMapsUrl && (
-                          <a
+                    <a 
                             href={businessInfo.googleMapsUrl}
                             target="_blank"
                             rel="noopener noreferrer"
@@ -323,9 +323,9 @@ const Contact = () => {
                               {isOpen() ? 'Open Now' : 'Currently Closed'}
                             </span>
                           </div>
-                        </div>
-                      </div>
-                      
+                  </div>
+                </div>
+
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         {Object.entries(businessInfo.businessHours).map(([day, hours]) => (
                           <div key={day} className="flex justify-between items-center py-2">
@@ -362,19 +362,19 @@ const Contact = () => {
 
                 <div className="bg-gray-200 dark:bg-gray-700 rounded-2xl overflow-hidden shadow-xl h-96 lg:h-[500px]">
                   {businessInfo?.googleMapsUrl ? (
-                    <iframe
+                        <iframe
                       src={businessInfo.googleMapsUrl.includes('embed') 
                         ? businessInfo.googleMapsUrl 
                         : `https://www.google.com/maps/embed?pb=${businessInfo.googleMapsUrl}`
                       }
-                      width="100%"
+                          width="100%"
                       height="100%"
-                      style={{ border: 0 }}
-                      allowFullScreen=""
-                      loading="lazy"
-                      referrerPolicy="no-referrer-when-downgrade"
+                          style={{ border: 0 }}
+                          allowFullScreen=""
+                          loading="lazy"
+                          referrerPolicy="no-referrer-when-downgrade"
                       className="w-full h-full"
-                      title="Kohinoor Gemstone Location"
+                          title="Kohinoor Gemstone Location"
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
@@ -383,8 +383,8 @@ const Contact = () => {
                         <p className="text-gray-500 dark:text-gray-400 text-lg">Map Loading...</p>
                         <p className="text-gray-400 dark:text-gray-500 text-sm">Please check back later</p>
                       </div>
-                    </div>
-                  )}
+                      </div>
+                    )}
                 </div>
 
                 {/* Additional Info Cards */}
@@ -406,19 +406,19 @@ const Contact = () => {
                   </div>
                 </div>
               </motion.div>
-            </div>
           </div>
-        </section>
+        </div>
+      </section>
 
         {/* CTA Section */}
         <section className="py-16 bg-gradient-to-r from-sapphire via-emerald to-golden">
           <div className="max-w-4xl mx-auto px-4 text-center">
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
-              viewport={{ once: true }}
-            >
+            viewport={{ once: true }}
+          >
               <h2 className="font-heading text-3xl sm:text-4xl font-bold text-white mb-4">
                 Ready to Start Your Gemstone Journey?
               </h2>
@@ -435,10 +435,10 @@ const Contact = () => {
                 <span>Chat with Expert</span>
                 <ArrowRight className="w-5 h-5" />
               </motion.button>
-            </motion.div>
-          </div>
-        </section>
-      </div>
+          </motion.div>
+        </div>
+      </section>
+    </div>
     </>
   );
 };

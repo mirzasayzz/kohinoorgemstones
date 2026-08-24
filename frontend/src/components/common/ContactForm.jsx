@@ -54,7 +54,7 @@ const ContactForm = ({ className = "" }) => {
       if (formData.phone) lines.push('', `Phone: ${formData.phone}`);
 
       const finalMessage = lines.join('\n');
-
+        
       // Open WhatsApp directly
       const whatsappData = generateWhatsAppURL(null, finalMessage);
       if (whatsappData && whatsappData.open) {

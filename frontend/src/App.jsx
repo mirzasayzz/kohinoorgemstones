@@ -1,5 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { HelmetProvider } from 'react-helmet-async';
+import { HelmetProvider } from '@dr.pogodin/react-helmet';
 import { BusinessProvider } from './context/BusinessContext';
 import { WishlistProvider } from './context/WishlistContext';
 import Layout from './components/layout/Layout';
@@ -27,21 +27,21 @@ function App() {
     <HelmetProvider>
       <BusinessProvider>
         <WishlistProvider>
-          <Router>
-            <div className="App font-body">
-              <Routes>
-                <Route path="/" element={<Layout />}>
-                  <Route index element={<Home />} />
-                  <Route path="gemstones" element={<AllGemstones />} />
-                  <Route path="gemstone/:slug" element={<GemstoneDetail />} />
-                  <Route path="about" element={<About />} />
-                  <Route path="contact" element={<Contact />} />
+        <Router>
+          <div className="App font-body">
+            <Routes>
+              <Route path="/" element={<Layout />}>
+                <Route index element={<Home />} />
+                <Route path="gemstones" element={<AllGemstones />} />
+                <Route path="gemstone/:slug" element={<GemstoneDetail />} />
+                <Route path="about" element={<About />} />
+                <Route path="contact" element={<Contact />} />
                   <Route path="wishlist" element={<Wishlist />} />
-                  <Route path="*" element={<NotFound />} />
-                </Route>
-              </Routes>
-            </div>
-          </Router>
+                <Route path="*" element={<NotFound />} />
+              </Route>
+            </Routes>
+          </div>
+        </Router>
         </WishlistProvider>
       </BusinessProvider>
     </HelmetProvider>
