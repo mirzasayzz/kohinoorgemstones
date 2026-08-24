@@ -125,22 +125,8 @@ export const BusinessProvider = ({ children, onBusinessUpdate }) => {
       console.error('Failed to load business info:', err);
       setError(err.message || 'Failed to load business information');
       
-      // Set fallback business info
-      setBusinessInfo({
-        shopName: 'Kohinoor Gemstone',
-        tagline: 'Premium Authentic Gemstones',
-        description: 'Family-owned gemstone business with heritage of trust and excellence.',
-        contact: {
-          email: 'info@kohinoorgemstone.com',
-          phone: '+91 98765 43210',
-          whatsapp: '+91 98765 43210'
-        },
-        address: {
-          fullAddress: 'Mumbai, Maharashtra, India'
-        },
-        socialMedia: {},
-        googleMapsUrl: ''
-      });
+      // Remove hardcoded fallbacks: set minimal null structure
+      setBusinessInfo(null);
     } finally {
       setLoading(false);
       isLoadingRef.current = false;

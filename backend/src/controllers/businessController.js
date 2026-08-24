@@ -10,7 +10,7 @@ export const getBusinessInfo = asyncHandler(async (req, res, next) => {
   res.status(200).json({
     success: true,
     data: {
-      businessInfo
+      businessInfo: businessInfo || null
     }
   });
 });
@@ -20,6 +20,10 @@ export const getBusinessInfo = asyncHandler(async (req, res, next) => {
 // @access  Private (Admin)
 export const updateBusinessInfo = asyncHandler(async (req, res, next) => {
   let businessInfo = await BusinessInfo.getBusinessInfo();
+
+  if (!businessInfo) {
+    businessInfo = new BusinessInfo({});
+  }
 
   // Update business info
   businessInfo = await businessInfo.updateBusinessInfo(req.body, req.user.id);
@@ -39,13 +43,13 @@ export const updateBusinessInfo = asyncHandler(async (req, res, next) => {
 export const getContactInfo = asyncHandler(async (req, res, next) => {
   const businessInfo = await BusinessInfo.getBusinessInfo();
 
-  const contactInfo = {
-    whatsapp: businessInfo.contact.whatsapp,
-    phone: businessInfo.contact.phone,
-    email: businessInfo.contact.email,
+  const contactInfo = businessInfo ? {
+    whatsapp: businessInfo.contact?.whatsapp,
+    phone: businessInfo.contact?.phone,
+    email: businessInfo.contact?.email,
     shopName: businessInfo.shopName,
-    address: businessInfo.address.fullAddress
-  };
+    address: businessInfo.address?.fullAddress
+  } : null;
 
   res.status(200).json({
     success: true,
@@ -60,12 +64,22 @@ export const getContactInfo = asyncHandler(async (req, res, next) => {
 // @access  Private (Admin)
 export const updateContactInfo = asyncHandler(async (req, res, next) => {
   let businessInfo = await BusinessInfo.getBusinessInfo();
+  if (!businessInfo) businessInfo = new BusinessInfo({});
 
   const { email, phone, whatsapp } = req.body;
   
-  if (email) businessInfo.contact.email = email;
-  if (phone) businessInfo.contact.phone = phone;
-  if (whatsapp) businessInfo.contact.whatsapp = whatsapp;
+  if (email) {
+    businessInfo.contact = businessInfo.contact || {};
+    businessInfo.contact.email = email;
+  }
+  if (phone) {
+    businessInfo.contact = businessInfo.contact || {};
+    businessInfo.contact.phone = phone;
+  }
+  if (whatsapp) {
+    businessInfo.contact = businessInfo.contact || {};
+    businessInfo.contact.whatsapp = whatsapp;
+  }
 
   businessInfo.lastUpdatedBy = req.user.id;
   await businessInfo.save();
@@ -75,9 +89,9 @@ export const updateContactInfo = asyncHandler(async (req, res, next) => {
     message: 'Contact information updated successfully',
     data: {
       contact: {
-        email: businessInfo.contact.email,
-        phone: businessInfo.contact.phone,
-        whatsapp: businessInfo.contact.whatsapp
+        email: businessInfo.contact?.email,
+        phone: businessInfo.contact?.phone,
+        whatsapp: businessInfo.contact?.whatsapp
       }
     }
   });
@@ -88,6 +102,7 @@ export const updateContactInfo = asyncHandler(async (req, res, next) => {
 // @access  Private (Admin)
 export const updateAllContactInfo = asyncHandler(async (req, res, next) => {
   let businessInfo = await BusinessInfo.getBusinessInfo();
+  if (!businessInfo) businessInfo = new BusinessInfo({});
 
   const { 
     email, 
@@ -103,17 +118,23 @@ export const updateAllContactInfo = asyncHandler(async (req, res, next) => {
   } = req.body;
   
   // Update contact information
-  if (email) businessInfo.contact.email = email;
-  if (phone) businessInfo.contact.phone = phone;
-  if (whatsapp) businessInfo.contact.whatsapp = whatsapp;
+  if (email || phone || whatsapp) {
+    businessInfo.contact = businessInfo.contact || {};
+    if (email) businessInfo.contact.email = email;
+    if (phone) businessInfo.contact.phone = phone;
+    if (whatsapp) businessInfo.contact.whatsapp = whatsapp;
+  }
   
   // Update address information
-  if (street) businessInfo.address.street = street;
-  if (area) businessInfo.address.area = area;
-  if (city) businessInfo.address.city = city;
-  if (state) businessInfo.address.state = state;
-  if (pincode) businessInfo.address.pincode = pincode;
-  if (country) businessInfo.address.country = country;
+  if (street || area || city || state || pincode || country) {
+    businessInfo.address = businessInfo.address || {};
+    if (street) businessInfo.address.street = street;
+    if (area) businessInfo.address.area = area;
+    if (city) businessInfo.address.city = city;
+    if (state) businessInfo.address.state = state;
+    if (pincode) businessInfo.address.pincode = pincode;
+    if (country) businessInfo.address.country = country;
+  }
   
   // Update Google Maps URL
   if (googleMapsUrl) businessInfo.googleMapsUrl = googleMapsUrl;
@@ -126,11 +147,11 @@ export const updateAllContactInfo = asyncHandler(async (req, res, next) => {
     message: 'All contact information updated successfully',
     data: {
       contact: {
-        email: businessInfo.contact.email,
-        phone: businessInfo.contact.phone,
-        whatsapp: businessInfo.contact.whatsapp
+        email: businessInfo.contact?.email,
+        phone: businessInfo.contact?.phone,
+        whatsapp: businessInfo.contact?.whatsapp
       },
-      address: businessInfo.address,
+      address: businessInfo.address || {},
       googleMapsUrl: businessInfo.googleMapsUrl
     }
   });
@@ -142,22 +163,22 @@ export const updateAllContactInfo = asyncHandler(async (req, res, next) => {
 export const getCompleteContactInfo = asyncHandler(async (req, res, next) => {
   const businessInfo = await BusinessInfo.getBusinessInfo();
 
-  const completeContactInfo = {
-    whatsapp: businessInfo.contact.whatsapp,
-    phone: businessInfo.contact.phone,
-    email: businessInfo.contact.email,
+  const completeContactInfo = businessInfo ? {
+    whatsapp: businessInfo.contact?.whatsapp,
+    phone: businessInfo.contact?.phone,
+    email: businessInfo.contact?.email,
     shopName: businessInfo.shopName,
     address: {
-      street: businessInfo.address.street,
-      area: businessInfo.address.area,
-      city: businessInfo.address.city,
-      state: businessInfo.address.state,
-      pincode: businessInfo.address.pincode,
-      country: businessInfo.address.country,
-      fullAddress: businessInfo.address.fullAddress
+      street: businessInfo.address?.street,
+      area: businessInfo.address?.area,
+      city: businessInfo.address?.city,
+      state: businessInfo.address?.state,
+      pincode: businessInfo.address?.pincode,
+      country: businessInfo.address?.country,
+      fullAddress: businessInfo.address?.fullAddress
     },
     googleMapsUrl: businessInfo.googleMapsUrl
-  };
+  } : null;
 
   res.status(200).json({
     success: true,
@@ -172,15 +193,19 @@ export const getCompleteContactInfo = asyncHandler(async (req, res, next) => {
 // @access  Private (Admin)
 export const updateAddress = asyncHandler(async (req, res, next) => {
   let businessInfo = await BusinessInfo.getBusinessInfo();
+  if (!businessInfo) businessInfo = new BusinessInfo({});
 
   const { street, area, city, state, pincode, country, googleMapsUrl } = req.body;
 
-  if (street) businessInfo.address.street = street;
-  if (area) businessInfo.address.area = area;
-  if (city) businessInfo.address.city = city;
-  if (state) businessInfo.address.state = state;
-  if (pincode) businessInfo.address.pincode = pincode;
-  if (country) businessInfo.address.country = country;
+  if (street || area || city || state || pincode || country) {
+    businessInfo.address = businessInfo.address || {};
+    if (street) businessInfo.address.street = street;
+    if (area) businessInfo.address.area = area;
+    if (city) businessInfo.address.city = city;
+    if (state) businessInfo.address.state = state;
+    if (pincode) businessInfo.address.pincode = pincode;
+    if (country) businessInfo.address.country = country;
+  }
 
   if (googleMapsUrl) businessInfo.googleMapsUrl = googleMapsUrl;
 
@@ -191,7 +216,7 @@ export const updateAddress = asyncHandler(async (req, res, next) => {
     success: true,
     message: 'Address updated successfully',
     data: {
-      address: businessInfo.address,
+      address: businessInfo.address || {},
       googleMapsUrl: businessInfo.googleMapsUrl
     }
   });
@@ -202,6 +227,7 @@ export const updateAddress = asyncHandler(async (req, res, next) => {
 // @access  Private (Admin)
 export const updateBusinessHours = asyncHandler(async (req, res, next) => {
   let businessInfo = await BusinessInfo.getBusinessInfo();
+  if (!businessInfo) businessInfo = new BusinessInfo({});
 
   const { businessHours } = req.body;
 
@@ -226,6 +252,7 @@ export const updateBusinessHours = asyncHandler(async (req, res, next) => {
 // @access  Private (Admin)
 export const updateSocialMedia = asyncHandler(async (req, res, next) => {
   let businessInfo = await BusinessInfo.getBusinessInfo();
+  if (!businessInfo) businessInfo = new BusinessInfo({});
 
   const { socialMedia } = req.body;
 
@@ -250,6 +277,7 @@ export const updateSocialMedia = asyncHandler(async (req, res, next) => {
 // @access  Private (Admin)
 export const addCertification = asyncHandler(async (req, res, next) => {
   let businessInfo = await BusinessInfo.getBusinessInfo();
+  if (!businessInfo) businessInfo = new BusinessInfo({});
 
   const { name, number, issuedBy, validUntil, image } = req.body;
 

@@ -47,9 +47,7 @@ export const setupDefaultAdmin = async () => {
       }
     }
 
-    // Ensure default business info exists
-    await BusinessInfo.getBusinessInfo();
-    console.log('✅ Business information initialized');
+    // Removed auto-initialization of BusinessInfo to avoid defaults
 
   } catch (error) {
     console.error('❌ Error setting up default admin:', error.message);

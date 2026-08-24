@@ -3,80 +3,59 @@ import mongoose from 'mongoose';
 const businessInfoSchema = new mongoose.Schema({
   shopName: {
     type: String,
-    required: [true, 'Shop name is required'],
-    trim: true,
-    default: 'Kohinoor Gemstone'
+    trim: true
   },
   tagline: {
     type: String,
-    trim: true,
-    default: 'Premium Gemstones for Life\'s Precious Moments'
+    trim: true
   },
   description: {
     type: String,
     trim: true,
-    maxLength: [500, 'Description cannot exceed 500 characters'],
-    default: 'We are a family-owned gemstone business dedicated to providing authentic, certified gemstones with a heritage of trust and excellence.'
+    maxLength: [500, 'Description cannot exceed 500 characters']
   },
   contact: {
     email: {
       type: String,
-      required: [true, 'Email is required'],
       lowercase: true,
       match: [
         /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/,
         'Please provide a valid email'
-      ],
-      default: 'info@kohinoorgemstone.com'
+      ]
     },
     phone: {
       type: String,
-      required: [true, 'Phone number is required'],
-      match: [/^\+?[1-9]\d{1,14}$/, 'Please provide a valid phone number'],
-      default: '+911234567890'
+      match: [/^\+?[1-9]\d{1,14}$/, 'Please provide a valid phone number']
     },
     whatsapp: {
       type: String,
-      required: [true, 'WhatsApp number is required'],
-      match: [/^\+?[1-9]\d{1,14}$/, 'Please provide a valid WhatsApp number'],
-      default: '+911234567890'
+      match: [/^\+?[1-9]\d{1,14}$/, 'Please provide a valid WhatsApp number']
     }
   },
   address: {
     street: {
       type: String,
-      required: [true, 'Street address is required'],
-      trim: true,
-      default: '123 Gemstone Street'
+      trim: true
     },
     area: {
       type: String,
-      trim: true,
-      default: 'Jewelry District'
+      trim: true
     },
     city: {
       type: String,
-      required: [true, 'City is required'],
-      trim: true,
-      default: 'Mumbai'
+      trim: true
     },
     state: {
       type: String,
-      required: [true, 'State is required'],
-      trim: true,
-      default: 'Maharashtra'
+      trim: true
     },
     pincode: {
       type: String,
-      required: [true, 'Pincode is required'],
-      match: [/^\d{6}$/, 'Please provide a valid 6-digit pincode'],
-      default: '400001'
+      match: [/^\d{6}$/, 'Please provide a valid 6-digit pincode']
     },
     country: {
       type: String,
-      required: [true, 'Country is required'],
-      trim: true,
-      default: 'India'
+      trim: true
     },
     fullAddress: {
       type: String,
@@ -85,8 +64,7 @@ const businessInfoSchema = new mongoose.Schema({
   },
   googleMapsUrl: {
     type: String,
-    trim: true,
-    default: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3771.8574447892247!2d72.8310437!3d19.0544472!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMTnCsDAzJzE2LjAiTiA3MsKwNDknNTEuOCJF!5e0!3m2!1sen!2sin!4v1234567890'
+    trim: true
   },
   businessHours: {
     monday: { open: String, close: String, closed: { type: Boolean, default: false } },
@@ -105,7 +83,7 @@ const businessInfoSchema = new mongoose.Schema({
     linkedin: { type: String, trim: true }
   },
   certifications: [{
-    name: { type: String, required: true, trim: true },
+    name: { type: String, trim: true },
     number: { type: String, trim: true },
     issuedBy: { type: String, trim: true },
     validUntil: { type: Date },
@@ -130,18 +108,15 @@ const businessInfoSchema = new mongoose.Schema({
   policies: {
     returnPolicy: {
       type: String,
-      trim: true,
-      default: 'We offer a 7-day return policy for unused items in original condition.'
+      trim: true
     },
     shippingPolicy: {
       type: String,
-      trim: true,
-      default: 'We provide secure shipping across India. International shipping available on request.'
+      trim: true
     },
     privacyPolicy: {
       type: String,
-      trim: true,
-      default: 'We respect your privacy and protect your personal information.'
+      trim: true
     }
   },
   seoSettings: {
@@ -162,9 +137,9 @@ const businessInfoSchema = new mongoose.Schema({
     }]
   },
   theme: {
-    primaryColor: { type: String, default: '#0F172A' },
-    secondaryColor: { type: String, default: '#B91C1C' },
-    accentColor: { type: String, default: '#047857' },
+    primaryColor: { type: String },
+    secondaryColor: { type: String },
+    accentColor: { type: String },
     logo: { type: String },
     favicon: { type: String }
   },
@@ -183,7 +158,8 @@ const businessInfoSchema = new mongoose.Schema({
 // Create full address before saving
 businessInfoSchema.pre('save', function (next) {
   if (this.isModified('address') || this.isNew) {
-    const { street, area, city, state, pincode, country } = this.address;
+    const { street, area, city, state, pincode, country } = this.address || {};
+    this.address = this.address || {};
     this.address.fullAddress = [street, area, city, state, pincode, country]
       .filter(Boolean)
       .join(', ');
@@ -193,29 +169,8 @@ businessInfoSchema.pre('save', function (next) {
 
 // Static method to get business info (singleton pattern)
 businessInfoSchema.statics.getBusinessInfo = async function () {
-  let businessInfo = await this.findOne({ isActive: true });
-  
-  if (!businessInfo) {
-    // Create default business info if none exists
-    businessInfo = await this.create({
-      shopName: 'Kohinoor Gemstone',
-      contact: {
-        email: 'info@kohinoorgemstone.com',
-        phone: '+911234567890',
-        whatsapp: '+911234567890'
-      },
-      address: {
-        street: '123 Gemstone Street',
-        area: 'Jewelry District',
-        city: 'Mumbai',
-        state: 'Maharashtra',
-        pincode: '400001',
-        country: 'India'
-      }
-    });
-  }
-  
-  return businessInfo;
+  const businessInfo = await this.findOne({ isActive: true });
+  return businessInfo; // do not auto-create defaults
 };
 
 // Method to update business info
