@@ -58,7 +58,8 @@ export const BusinessProvider = ({ children, onBusinessUpdate }) => {
     try {
       // Quick timestamp check without fetching full data
       const response = await businessService.getBusinessInfo();
-      const serverUpdatedAt = response.data.businessInfo.updatedAt;
+      const serverUpdatedAt = response?.data?.businessInfo?.updatedAt;
+      if (!serverUpdatedAt) return false;
       
       if (!lastUpdatedAtRef.current || new Date(serverUpdatedAt) > new Date(lastUpdatedAtRef.current)) {
         console.log('🔄 Business data updated, refreshing...');
@@ -89,7 +90,7 @@ export const BusinessProvider = ({ children, onBusinessUpdate }) => {
       ]);
       
       // Update timestamp for cache invalidation
-      const serverUpdatedAt = businessResponse.data.businessInfo.updatedAt;
+      const serverUpdatedAt = businessResponse?.data?.businessInfo?.updatedAt;
       const wasUpdated = lastUpdatedAtRef.current && new Date(serverUpdatedAt) > new Date(lastUpdatedAtRef.current);
       lastUpdatedAtRef.current = serverUpdatedAt;
       setLastUpdated(serverUpdatedAt);

@@ -1,6 +1,12 @@
 import axios from 'axios';
 import { API_CONFIG } from '../config/config';
 
+// Enforce BASE_URL in production
+if (import.meta.env.PROD && (!API_CONFIG.BASE_URL || API_CONFIG.BASE_URL.includes('localhost'))) {
+  // eslint-disable-next-line no-console
+  console.error('VITE_API_BASE_URL is not set for production; API calls will fail.');
+}
+
 // Create axios instance
 const api = axios.create({
   baseURL: API_CONFIG.BASE_URL,
@@ -30,17 +36,24 @@ api.interceptors.response.use(
     return response.data;
   },
   (error) => {
+    if (import.meta.env.PROD) {
+      // eslint-disable-next-line no-console
+      console.error('API request failed:', {
+        url: error.config?.url,
+        status: error.response?.status,
+        message: error.response?.data?.message || error.message
+      });
+    }
+
     // Handle token expiration
     if (error.response?.status === 401) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
-      // Redirect to login if needed
       if (window.location.pathname.startsWith('/admin')) {
         window.location.href = '/admin/login';
       }
     }
 
-    // Return formatted error
     const errorMessage = error.response?.data?.error || 
                         error.response?.data?.message || 
                         error.message || 
