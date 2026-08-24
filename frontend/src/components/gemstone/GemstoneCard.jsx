@@ -256,14 +256,15 @@ const GemstoneCard = ({ gemstone, index = 0, variant = 'grid' }) => {
                 </motion.button>
               </div>
 
-              {/* Right side - Buy Now */}
+              {/* Right side - WhatsApp Buy Now */}
               <motion.button
                 onClick={handleWhatsAppClick}
                 whileTap={{ scale: 0.95 }}
-                className="bg-green-500 text-white px-3 sm:px-4 py-2 rounded-full shadow-lg hover:bg-green-600 transition-colors backdrop-blur-sm flex items-center space-x-2"
+                className="bg-green-500 text-white p-2 sm:px-3 sm:py-2 rounded-full shadow-lg hover:bg-green-600 transition-colors backdrop-blur-sm flex items-center justify-center"
+                title="Buy via WhatsApp"
               >
-                <MessageCircle className="w-4 h-4" />
-                <span className="text-[11px] sm:text-xs font-medium">Buy Now</span>
+                <MessageCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                <span className="hidden sm:inline-block ml-1.5 text-xs font-medium whitespace-nowrap">Buy</span>
               </motion.button>
             </div>
           </motion.div>
@@ -273,13 +274,13 @@ const GemstoneCard = ({ gemstone, index = 0, variant = 'grid' }) => {
             className="hidden md:block absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent"
             variants={overlayVariants}
             initial="hidden"
-            whileHover="visible"
+            animate={isHovered ? "visible" : "hidden"}
           >
             {/* Action Buttons */}
             <motion.div 
               className="absolute inset-0 flex items-center justify-center"
               initial="hidden"
-              whileHover="visible"
+              animate={isHovered ? "visible" : "hidden"}
             >
               <div className="flex items-center space-x-3">
                 {[
@@ -427,10 +428,11 @@ const GemstoneCard = ({ gemstone, index = 0, variant = 'grid' }) => {
             
             <button
               onClick={handleWhatsAppClick}
-              className="btn-whatsapp text-sm px-3 py-1.5"
+              className="bg-green-500 hover:bg-green-600 text-white px-2 py-1 md:px-3 md:py-1.5 rounded-full transition-colors shadow-md flex items-center justify-center text-xs md:text-sm"
+              title="Buy via WhatsApp"
             >
-              <MessageCircle className="w-4 h-4" />
-              <span>Buy Now</span>
+              <MessageCircle className="w-3.5 h-3.5 md:w-4 md:h-4" />
+              <span className="hidden md:inline-block ml-1.5 whitespace-nowrap">Buy</span>
             </button>
           </div>
         </div>

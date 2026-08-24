@@ -53,7 +53,12 @@ export const getGemstones = asyncHandler(async (req, res, next) => {
 
   // Build query
   if (reqQuery.category) {
-    query.category = reqQuery.category;
+    // Handle both string and array inputs for category
+    if (Array.isArray(reqQuery.category)) {
+      query.category = { $in: reqQuery.category };
+    } else {
+      query.category = reqQuery.category;
+    }
   }
 
   if (reqQuery.purpose) {

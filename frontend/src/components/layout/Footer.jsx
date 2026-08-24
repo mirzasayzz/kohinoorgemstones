@@ -1,309 +1,96 @@
-import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { 
-  Gem, 
-  Phone, 
-  Mail, 
-  MapPin, 
-  MessageCircle,
-  Clock,
-  CheckCircle,
-  XCircle
+  Gem
 } from 'lucide-react';
 import { useBusinessContext } from '../../context/BusinessContext';
 
 const Footer = () => {
-  const { businessInfo, generateWhatsAppURL } = useBusinessContext();
-  const [currentYear] = useState(new Date().getFullYear());
-
-  // Check if business is currently open
-  const isCurrentlyOpen = () => {
-    if (!businessInfo?.businessHours) return null;
-    
-    const now = new Date();
-    const currentDay = now.toLocaleDateString('en-US', { weekday: 'short' }).toLowerCase(); // 'mon', 'tue', etc.
-    const currentTime = now.getHours() * 100 + now.getMinutes(); // Convert to HHMM format
-    
-    const dayMap = {
-      'sun': 'sunday',
-      'mon': 'monday', 
-      'tue': 'tuesday',
-      'wed': 'wednesday',
-      'thu': 'thursday',
-      'fri': 'friday',
-      'sat': 'saturday'
-    };
-    
-    const fullDayName = dayMap[currentDay];
-    const todayHours = businessInfo.businessHours[fullDayName];
-    
-    if (!todayHours || todayHours.closed) return false;
-    
-    if (todayHours.open && todayHours.close) {
-      const openTime = parseInt(todayHours.open.replace(':', ''));
-      const closeTime = parseInt(todayHours.close.replace(':', ''));
-      return currentTime >= openTime && currentTime <= closeTime;
-    }
-    
-    return false;
-  };
-
-  // Format time for display
-  const formatTime = (time) => {
-    if (!time) return '';
-    const [hours, minutes] = time.split(':');
-    const hour = parseInt(hours);
-    const ampm = hour >= 12 ? 'PM' : 'AM';
-    const displayHour = hour > 12 ? hour - 12 : hour === 0 ? 12 : hour;
-    return `${displayHour}${minutes !== '00' ? ':' + minutes : ''}${ampm}`;
-  };
-
-  // Get today's hours
-  const getTodayHours = () => {
-    if (!businessInfo?.businessHours) return '';
-    
-    const now = new Date();
-    const currentDay = now.toLocaleDateString('en-US', { weekday: 'short' }).toLowerCase();
-    
-    const dayMap = {
-      'sun': 'sunday',
-      'mon': 'monday', 
-      'tue': 'tuesday',
-      'wed': 'wednesday',
-      'thu': 'thursday',
-      'fri': 'friday',
-      'sat': 'saturday'
-    };
-    
-    const fullDayName = dayMap[currentDay];
-    const todayHours = businessInfo.businessHours[fullDayName];
-    
-    if (!todayHours || todayHours.closed) return 'Closed today';
-    
-    if (todayHours.open && todayHours.close) {
-      return `${formatTime(todayHours.open)} - ${formatTime(todayHours.close)}`;
-    }
-    
-    return '';
-  };
-
-  // Handle WhatsApp click
-  const handleWhatsAppClick = () => {
-    if (!businessInfo?.contact?.whatsapp) return;
-    
-    const message = `Hello! I found your website and would like to inquire about your gemstones. Could you please help me?`;
-    const whatsappData = generateWhatsAppURL(null, message);
-    
-    if (whatsappData && whatsappData.open) {
-      whatsappData.open();
-    }
-  };
-
-  const currentlyOpen = isCurrentlyOpen();
-  const todayHours = getTodayHours();
+  const { businessInfo } = useBusinessContext();
 
   return (
-    <footer className="bg-gray-900 text-white border-t border-gray-800">
-      <div className="max-w-7xl mx-auto px-4 py-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <footer className="bg-luxury-charcoal dark:bg-luxury-charcoal text-luxury-pearl">
+      {/* Main Footer Content */}
+      <div className="max-w-7xl mx-auto px-4 py-2 md:py-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-6">
           
-          {/* Business Info */}
-          <div className="space-y-4">
-            <Link to="/" className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-gradient-to-r from-amber-400 via-red-500 to-emerald-500 rounded-full flex items-center justify-center">
-                <Gem className="w-4 h-4 text-white" />
-              </div>
-              <span className="text-xl font-bold text-amber-400">
-                {businessInfo?.shopName || ''}
+          {/* Brand Section */}
+          <div className="text-center md:text-left">
+            <Link to="/" className="flex items-center justify-center md:justify-start space-x-2 mb-1 md:mb-2 group">
+              <Gem className="w-4 h-4 md:w-5 md:h-5 text-luxury-gold group-hover:animate-pulse" />
+              <span className="font-luxury text-sm md:text-base font-bold text-luxury-pearl">
+                {businessInfo?.shopName || 'Kohinoor'}
               </span>
             </Link>
-            
-            {businessInfo?.tagline && (
-              <p className="text-gray-400 text-sm leading-relaxed">
-                {businessInfo.tagline}
-              </p>
-            )}
-
-            {/* Quick Links */}
-            <div className="flex flex-wrap gap-4 text-sm">
-              <Link to="/about" className="text-gray-400 hover:text-amber-400 transition-colors">
-                About
-              </Link>
-              <Link to="/gemstones" className="text-gray-400 hover:text-amber-400 transition-colors">
-                Gemstones
-              </Link>
-              <Link to="/contact" className="text-gray-400 hover:text-amber-400 transition-colors">
-                Contact
-              </Link>
+            <p className="text-luxury-pearl/70 text-xs leading-relaxed mb-1 md:mb-2">
+              {businessInfo?.description || 'Premium natural gemstones with three generations of expertise. Each piece certified authentic and ethically sourced.'}
+            </p>
+            <div className="text-xs text-luxury-pearl/60">
+              <p>© {new Date().getFullYear()} • Est. 1985 • Family Owned • Certified Authentic</p>
             </div>
           </div>
 
-          {/* Contact Information */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-amber-400">Contact Us</h3>
-            
-            <div className="space-y-3">
-              {businessInfo?.contact?.phone && (
-                <a 
-                  href={`tel:${businessInfo.contact.phone}`}
-                  className="flex items-center space-x-3 text-gray-300 hover:text-white transition-colors group"
-                >
-                  <Phone className="w-4 h-4 text-blue-400 group-hover:text-blue-300" />
-                  <span>{businessInfo.contact.phone}</span>
-                </a>
-              )}
-
-              {businessInfo?.contact?.whatsapp && (
-                <button
-                  onClick={handleWhatsAppClick}
-                  className="flex items-center space-x-3 text-gray-300 hover:text-white transition-colors group w-full text-left"
-                >
-                  <MessageCircle className="w-4 h-4 text-green-400 group-hover:text-green-300" />
-                  <span>WhatsApp: {businessInfo.contact.whatsapp}</span>
-                </button>
-              )}
-
-              {businessInfo?.contact?.email && (
-                <a 
-                  href={`mailto:${businessInfo.contact.email}`}
-                  className="flex items-center space-x-3 text-gray-300 hover:text-white transition-colors group"
-                >
-                  <Mail className="w-4 h-4 text-red-400 group-hover:text-red-300" />
-                  <span className="break-all">{businessInfo.contact.email}</span>
-                </a>
-              )}
-
-              {(businessInfo?.address?.street || businessInfo?.address?.city) && (
-                <div className="flex items-start space-x-3 text-gray-300">
-                  <MapPin className="w-4 h-4 text-amber-400 mt-0.5 flex-shrink-0" />
-                  <div className="text-sm leading-relaxed">
-                    {businessInfo.address.street && (
-                      <div>{businessInfo.address.street}</div>
-                    )}
-                    <div>
-                      {[
-                        businessInfo.address.area,
-                        businessInfo.address.city,
-                        businessInfo.address.state,
-                        businessInfo.address.pincode
-                      ].filter(Boolean).join(', ')}
-                    </div>
-                  </div>
+          {/* Contact Info */}
+          <div className="text-center md:text-left">
+            <h3 className="font-medium text-luxury-pearl mb-1 text-xs md:text-sm">
+              Contact Us
+            </h3>
+            <div className="space-y-1">
+              {/* Contact Info Line */}
+              <div className="text-xs md:text-sm text-luxury-pearl/70">
+                {businessInfo?.contact?.phone && (
+                  <a 
+                    href={`tel:${businessInfo.contact.phone}`}
+                    className="hover:text-luxury-gold transition-colors duration-200"
+                  >
+                    {businessInfo.contact.phone}
+                  </a>
+                )}
+                {businessInfo?.contact?.phone && businessInfo?.contact?.email && (
+                  <span className="mx-2">•</span>
+                )}
+                {businessInfo?.contact?.email && (
+                  <a 
+                    href={`mailto:${businessInfo.contact.email}`}
+                    className="hover:text-luxury-gold transition-colors duration-200"
+                  >
+                    {businessInfo.contact.email}
+                  </a>
+                )}
+              </div>
+              
+              {/* Business Hours Line */}
+              {(businessInfo?.contact?.hours || businessInfo?.businessHours) && (
+                <div className="text-xs md:text-sm text-luxury-pearl/70">
+                  {businessInfo?.contact?.hours ? (
+                    businessInfo.contact.hours
+                  ) : businessInfo?.businessHours ? (
+                    <>
+                      {!businessInfo.businessHours.monday?.closed && businessInfo.businessHours.monday?.open ? (
+                        `Mon-Fri: ${businessInfo.businessHours.monday.open} - ${businessInfo.businessHours.monday.close}`
+                      ) : (
+                        'Mon-Fri: 10:00 AM - 8:00 PM'
+                      )}
+                      <span className="mx-2">•</span>
+                      {!businessInfo.businessHours.saturday?.closed && businessInfo.businessHours.saturday?.open ? (
+                        `Sat: ${businessInfo.businessHours.saturday.open} - ${businessInfo.businessHours.saturday.close}`
+                      ) : (
+                        'Sat: 10:00 AM - 8:00 PM'
+                      )}
+                      <span className="mx-2">•</span>
+                      {businessInfo.businessHours.sunday?.closed ? (
+                        'Sun: Closed'
+                      ) : businessInfo.businessHours.sunday?.open ? (
+                        `Sun: ${businessInfo.businessHours.sunday.open} - ${businessInfo.businessHours.sunday.close}`
+                      ) : (
+                        'Sun: Closed'
+                      )}
+                    </>
+                  ) : (
+                    'Mon-Sat: 10:00 AM - 8:00 PM'
+                  )}
                 </div>
               )}
             </div>
-          </div>
-
-          {/* Business Hours & Status - Compact */}
-          <div className="space-y-3">
-            <h3 className="text-lg font-semibold text-amber-400">Store Hours</h3>
-            
-            {/* Current Status - Compact */}
-            <div className="flex items-center space-x-2 p-2 rounded bg-gray-800">
-              {currentlyOpen === true ? (
-                <>
-                  <CheckCircle className="w-4 h-4 text-green-400" />
-                  <div className="text-sm">
-                    <span className="text-green-400 font-medium">Open Now</span>
-                    <span className="text-gray-400 ml-2">{todayHours}</span>
-                  </div>
-                </>
-              ) : currentlyOpen === false ? (
-                <>
-                  <XCircle className="w-4 h-4 text-red-400" />
-                  <div className="text-sm">
-                    <span className="text-red-400 font-medium">Closed</span>
-                    <span className="text-gray-400 ml-2">{todayHours}</span>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <Clock className="w-4 h-4 text-gray-400" />
-                  <div className="text-sm">
-                    <span className="text-gray-400 font-medium">Contact for hours</span>
-                  </div>
-                </>
-              )}
-            </div>
-
-            {/* Simplified Hours Summary */}
-            {businessInfo?.businessHours && (
-              <div className="text-xs text-gray-400 space-y-1">
-                {(() => {
-                  const weekdays = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
-                  const weekend = ['saturday', 'sunday'];
-                  
-                  // Check if weekdays have same hours
-                  const weekdayHours = weekdays.map(day => {
-                    const dayInfo = businessInfo.businessHours[day];
-                    if (dayInfo?.closed || (!dayInfo?.open && !dayInfo?.close)) return 'Closed';
-                    if (dayInfo?.open && dayInfo?.close) return `${formatTime(dayInfo.open)}-${formatTime(dayInfo.close)}`;
-                    return 'N/A';
-                  });
-                  
-                  const uniqueWeekdayHours = [...new Set(weekdayHours)];
-                  const sameWeekdayHours = uniqueWeekdayHours.length === 1;
-                  
-                  // Check weekend hours
-                  const saturdayInfo = businessInfo.businessHours.saturday;
-                  const sundayInfo = businessInfo.businessHours.sunday;
-                  
-                  const satHours = saturdayInfo?.closed || (!saturdayInfo?.open && !saturdayInfo?.close) 
-                    ? 'Closed' 
-                    : saturdayInfo?.open && saturdayInfo?.close 
-                      ? `${formatTime(saturdayInfo.open)}-${formatTime(saturdayInfo.close)}`
-                      : 'N/A';
-                      
-                  const sunHours = sundayInfo?.closed || (!sundayInfo?.open && !sundayInfo?.close) 
-                    ? 'Closed' 
-                    : sundayInfo?.open && sundayInfo?.close 
-                      ? `${formatTime(sundayInfo.open)}-${formatTime(sundayInfo.close)}`
-                      : 'N/A';
-                  
-                  return (
-                    <>
-                      {sameWeekdayHours ? (
-                        <div className="flex justify-between">
-                          <span>Mon-Fri:</span>
-                          <span>{uniqueWeekdayHours[0]}</span>
-                        </div>
-                      ) : (
-                        weekdays.map(day => {
-                          const dayInfo = businessInfo.businessHours[day];
-                          const dayName = day.charAt(0).toUpperCase() + day.slice(1, 3);
-                          const hours = dayInfo?.closed || (!dayInfo?.open && !dayInfo?.close) 
-                            ? 'Closed' 
-                            : dayInfo?.open && dayInfo?.close 
-                              ? `${formatTime(dayInfo.open)}-${formatTime(dayInfo.close)}`
-                              : 'N/A';
-                          return (
-                            <div key={day} className="flex justify-between">
-                              <span>{dayName}:</span>
-                              <span>{hours}</span>
-                            </div>
-                          );
-                        })
-                      )}
-                      <div className="flex justify-between">
-                        <span>Sat:</span>
-                        <span>{satHours}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Sun:</span>
-                        <span>{sunHours}</span>
-                      </div>
-                    </>
-                  );
-                })()}
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Bottom Copyright */}
-        <div className="border-t border-gray-800 mt-6 pt-4">
-          <div className="text-center text-gray-500 text-xs">
-            © {currentYear} {businessInfo?.shopName || ''}. All rights reserved.
           </div>
         </div>
       </div>

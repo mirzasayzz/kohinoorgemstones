@@ -1,16 +1,11 @@
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
 import { 
   Phone, 
   Mail, 
   MapPin, 
-  Clock, 
+  Clock,
   MessageCircle,
-  ExternalLink,
-  Globe,
-  Calendar,
-  Star,
-  ArrowRight
+  ExternalLink
 } from 'lucide-react';
 import { useBusinessContext } from '../context/BusinessContext';
 import SEOHead from '../components/common/SEOHead';
@@ -18,15 +13,6 @@ import LoadingSpinner from '../components/common/LoadingSpinner';
 
 const Contact = () => {
   const { businessInfo, loading, error, forceRefresh } = useBusinessContext();
-  const [currentTime, setCurrentTime] = useState(new Date());
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentTime(new Date());
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, []);
 
   // Check if business is currently open
   const isOpen = () => {
@@ -52,57 +38,6 @@ const Contact = () => {
     return currentTimeMinutes >= openTimeMinutes && currentTimeMinutes <= closeTimeMinutes;
   };
 
-  // Get next opening time
-  const getNextOpeningTime = () => {
-    if (!businessInfo?.businessHours) return null;
-    
-    const now = new Date();
-    const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-    
-    for (let i = 0; i < 7; i++) {
-      const checkDate = new Date(now);
-      checkDate.setDate(now.getDate() + i);
-      const dayName = days[checkDate.getDay()];
-      const dayHours = businessInfo.businessHours[dayName];
-      
-      if (dayHours && !dayHours.closed && dayHours.open) {
-        if (i === 0 && !isOpen()) {
-          // Today but after closing time
-          const [openHour, openMin] = dayHours.open.split(':').map(Number);
-          const currentTimeMinutes = now.getHours() * 60 + now.getMinutes();
-          const openTimeMinutes = openHour * 60 + openMin;
-          
-          if (currentTimeMinutes < openTimeMinutes) {
-            return { day: 'Today', time: dayHours.open };
-          }
-        } else if (i > 0) {
-          const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-          return { day: dayNames[checkDate.getDay()], time: dayHours.open };
-        }
-      }
-    }
-    return null;
-  };
-
-  const handleWhatsAppClick = () => {
-    if (businessInfo?.contact?.whatsapp) {
-      const message = encodeURIComponent("Hi! I'd like to inquire about your gemstones and services.");
-      window.open(`https://wa.me/${businessInfo.contact.whatsapp.replace(/[^\d]/g, '')}?text=${message}`, '_blank');
-    }
-  };
-
-  const handleCallClick = () => {
-    if (businessInfo?.contact?.phone) {
-      window.open(`tel:${businessInfo.contact.phone}`, '_self');
-    }
-  };
-
-  const handleEmailClick = () => {
-    if (businessInfo?.contact?.email) {
-      window.open(`mailto:${businessInfo.contact.email}`, '_self');
-    }
-  };
-
   const formatTime = (time) => {
     if (!time) return '';
     const [hour, minute] = time.split(':');
@@ -113,345 +48,199 @@ const Contact = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+      <div className="min-h-screen bg-white dark:bg-gray-900 flex items-center justify-center">
         <LoadingSpinner size="large" />
       </div>
     );
   }
 
-  // Fail-safe: if API failed or no businessInfo, show a minimal page instead of spinning
   if (error || !businessInfo) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="min-h-screen bg-white dark:bg-gray-900">
         <div className="max-w-4xl mx-auto px-4 py-16 text-center">
-          <h1 className="font-heading text-3xl font-bold text-gray-900 dark:text-white mb-3">Contact Us</h1>
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-3">Contact Us</h1>
           <p className="text-gray-600 dark:text-gray-400 mb-6">We're updating our contact information. Please try again shortly.</p>
-          <button onClick={() => forceRefresh()} className="btn-primary px-6 py-2">Retry</button>
+          <button onClick={() => forceRefresh()} className="px-6 py-2 bg-luxury-gold text-luxury-charcoal rounded-lg hover:bg-luxury-gold/90 transition-colors">
+            Retry
+          </button>
         </div>
       </div>
     );
   }
 
-  const nextOpening = getNextOpeningTime();
-
   return (
     <>
       <SEOHead 
-        title="Contact Us - Get in Touch"
-        description=""
-        keywords="contact, gemstone consultation, WhatsApp, phone, store location, business hours"
+        title="Contact Us"
+        description="Get in touch with our gemstone experts. Visit our store, call, or send us a message."
+        keywords="contact, gemstone consultation, phone, store location, business hours"
       />
       
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      {/* Hero Section */}
-        <section className="relative bg-gradient-to-br from-sapphire via-emerald to-golden overflow-hidden">
-          <div className="absolute inset-0 bg-black/20"></div>
-          <div className="relative max-w-7xl mx-auto px-4 py-20 sm:py-28">
-          <motion.div
-              initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
-              className="text-center"
-          >
-              <motion.div
-                initial={{ scale: 0.8, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ delay: 0.2, duration: 0.6 }}
-                className="inline-flex items-center space-x-2 bg-white/20 backdrop-blur-sm rounded-full px-6 py-3 mb-6"
-              >
-                <MessageCircle className="w-5 h-5 text-white" />
-                <span className="text-white font-medium">Get Expert Consultation</span>
-              </motion.div>
-              
-              <h1 className="font-heading text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-6">
-                Let's Connect
-              </h1>
-              <p className="text-xl text-white/90 max-w-3xl mx-auto leading-relaxed mb-8">
-                Ready to find your perfect gemstone? Our experts are here to guide you through 
-                your journey to authentic, premium gemstones.
-              </p>
-              
-              {/* Quick Status */}
-              <motion.div
-                initial={{ y: 20, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.4, duration: 0.6 }}
-                className="inline-flex items-center space-x-3 bg-white/10 backdrop-blur-sm rounded-full px-6 py-3"
-              >
-                <div className={`w-3 h-3 rounded-full ${isOpen() ? 'bg-green-400' : 'bg-red-400'} animate-pulse`}></div>
-                <span className="text-white font-medium">
-                  {isOpen() ? 'We\'re Open Now!' : nextOpening ? `Opens ${nextOpening.day} at ${formatTime(nextOpening.time)}` : 'Currently Closed'}
-                </span>
-              </motion.div>
-          </motion.div>
+      <div className="min-h-screen bg-white dark:bg-gray-900">
+        
+        {/* Header */}
+        <section className="bg-luxury-pearl dark:bg-luxury-charcoal py-8 md:py-12">
+          <div className="max-w-4xl mx-auto px-4 text-center">
+            <h1 className="text-2xl md:text-3xl font-bold text-luxury-charcoal dark:text-luxury-pearl mb-3">
+              Contact Us
+            </h1>
+            <p className="text-sm md:text-base text-luxury-charcoal/70 dark:text-luxury-pearl/70">
+              Visit our store, give us a call, or send us a message
+            </p>
+            
+            {/* Open/Closed Status */}
+            <div className="mt-4 inline-flex items-center space-x-2 px-3 py-1 bg-white/50 dark:bg-gray-800/50 rounded-full">
+              <div className={`w-2 h-2 rounded-full ${isOpen() ? 'bg-green-500' : 'bg-red-500'}`}></div>
+              <span className="text-xs font-medium text-luxury-charcoal dark:text-luxury-pearl">
+                {isOpen() ? 'Open Now' : 'Currently Closed'}
+              </span>
+            </div>
           </div>
-      </section>
+        </section>
 
         {/* Main Content */}
-        <section className="py-20 bg-white dark:bg-gray-800">
-        <div className="max-w-7xl mx-auto px-4">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
+        <section className="py-8 md:py-16">
+          <div className="max-w-6xl mx-auto px-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
 
               {/* Contact Information */}
-            <motion.div
-              initial={{ opacity: 0, x: -30 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6 }}
-              viewport={{ once: true }}
-                className="space-y-8"
-            >
-                <div>
-                  <h2 className="font-heading text-3xl font-bold text-gray-900 dark:text-white mb-4">
-                Get in Touch
-              </h2>
-                  <p className="text-lg text-gray-600 dark:text-gray-300 leading-relaxed">
-                    Whether you're looking for a specific gemstone, need astrological guidance, 
-                    or want to learn more about our collection, we're here to help.
-                  </p>
-                </div>
-
-                {/* Quick Actions */}
+              <div className="space-y-6">
+                
+                {/* Quick Contact */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <motion.button
-                    whileHover={{ scale: 1.02, y: -2 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={handleWhatsAppClick}
-                    className="flex items-center space-x-3 bg-green-500 hover:bg-green-600 text-white px-6 py-4 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl"
-                  >
-                    <MessageCircle className="w-5 h-5" />
-                    <div className="text-left">
-                      <div className="font-semibold">WhatsApp</div>
-                      <div className="text-sm opacity-90">Instant Response</div>
-                    </div>
-                    <ArrowRight className="w-4 h-4 ml-auto" />
-                  </motion.button>
-                  
-                  <motion.button
-                    whileHover={{ scale: 1.02, y: -2 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={handleCallClick}
-                    className="flex items-center space-x-3 bg-sapphire hover:bg-sapphire-dark text-white px-6 py-4 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl"
+                  {businessInfo?.contact?.whatsapp && (
+                    <a
+                      href={`https://wa.me/${businessInfo.contact.whatsapp.replace(/[^\d]/g, '')}?text=${encodeURIComponent("Hi! I'd like to inquire about your gemstones.")}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-center space-x-2 bg-green-500 hover:bg-green-600 text-white px-4 py-3 rounded-lg transition-colors text-sm"
                     >
-                    <Phone className="w-5 h-5" />
-                    <div className="text-left">
-                      <div className="font-semibold">Call Now</div>
-                      <div className="text-sm opacity-90">Direct Line</div>
-                  </div>
-                    <ArrowRight className="w-4 h-4 ml-auto" />
-                  </motion.button>
+                      <MessageCircle className="w-4 h-4" />
+                      <span>WhatsApp</span>
+                    </a>
+                  )}
+                  
+                  {businessInfo?.contact?.phone && (
+                    <a
+                      href={`tel:${businessInfo.contact.phone}`}
+                      className="flex items-center justify-center space-x-2 bg-luxury-gold hover:bg-luxury-gold/90 text-luxury-charcoal px-4 py-3 rounded-lg transition-colors text-sm"
+                    >
+                      <Phone className="w-4 h-4" />
+                      <span>Call Now</span>
+                    </a>
+                  )}
                 </div>
 
                 {/* Contact Details */}
-                <div className="space-y-6">
+                <div className="space-y-4">
                   {businessInfo?.contact?.phone && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 20 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.1, duration: 0.5 }}
-                      viewport={{ once: true }}
-                      className="flex items-start space-x-4 p-6 bg-gray-50 dark:bg-gray-700 rounded-xl hover:shadow-md transition-shadow"
-                    >
-                      <div className="p-3 bg-sapphire/10 rounded-lg">
-                        <Phone className="w-6 h-6 text-sapphire" />
+                    <div className="flex items-center space-x-3 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                      <Phone className="w-5 h-5 text-luxury-gold" />
+                      <div>
+                        <div className="font-medium text-gray-900 dark:text-white">Phone</div>
+                        <div className="text-sm text-gray-600 dark:text-gray-400">{businessInfo.contact.phone}</div>
                       </div>
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-gray-900 dark:text-white mb-1">Phone</h3>
-                        <p className="text-gray-600 dark:text-gray-300 font-medium">{businessInfo.contact.phone}</p>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">Available during business hours</p>
-                      </div>
-                    </motion.div>
+                    </div>
                   )}
 
                   {businessInfo?.contact?.email && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 20 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.2, duration: 0.5 }}
-                      viewport={{ once: true }}
-                      className="flex items-start space-x-4 p-6 bg-gray-50 dark:bg-gray-700 rounded-xl hover:shadow-md transition-shadow"
-                    >
-                      <div className="p-3 bg-emerald/10 rounded-lg">
-                        <Mail className="w-6 h-6 text-emerald" />
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-gray-900 dark:text-white mb-1">Email</h3>
-                        <button 
-                          onClick={handleEmailClick}
-                          className="text-gray-600 dark:text-gray-300 font-medium hover:text-emerald transition-colors"
-                    >
+                    <div className="flex items-center space-x-3 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                      <Mail className="w-5 h-5 text-luxury-gold" />
+                      <div>
+                        <div className="font-medium text-gray-900 dark:text-white">Email</div>
+                        <a 
+                          href={`mailto:${businessInfo.contact.email}`}
+                          className="text-sm text-gray-600 dark:text-gray-400 hover:text-luxury-gold"
+                        >
                           {businessInfo.contact.email}
-                    </button>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">We'll respond within 24 hours</p>
-                  </div>
-                    </motion.div>
+                        </a>
+                      </div>
+                    </div>
                   )}
 
                   {businessInfo?.address?.fullAddress && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 20 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.3, duration: 0.5 }}
-                      viewport={{ once: true }}
-                      className="flex items-start space-x-4 p-6 bg-gray-50 dark:bg-gray-700 rounded-xl hover:shadow-md transition-shadow"
-                    >
-                      <div className="p-3 bg-golden/10 rounded-lg">
-                        <MapPin className="w-6 h-6 text-golden" />
-                </div>
+                    <div className="flex items-start space-x-3 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                      <MapPin className="w-5 h-5 text-luxury-gold mt-0.5" />
                       <div className="flex-1">
-                        <h3 className="font-semibold text-gray-900 dark:text-white mb-1">Visit Our Store</h3>
-                        <p className="text-gray-600 dark:text-gray-300 mb-2">{businessInfo.address.fullAddress}</p>
+                        <div className="font-medium text-gray-900 dark:text-white mb-1">Address</div>
+                        <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                          {businessInfo.address.fullAddress}
+                        </div>
                         {businessInfo.googleMapsUrl && (
-                    <a 
+                          <a 
                             href={businessInfo.googleMapsUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center text-golden hover:text-golden-dark transition-colors text-sm font-medium"
+                            className="inline-flex items-center text-luxury-gold hover:text-luxury-gold/80 text-sm"
                           >
-                            <ExternalLink className="w-4 h-4 mr-1" />
-                            View on Google Maps
+                            <ExternalLink className="w-3 h-3 mr-1" />
+                            View on Maps
                           </a>
                         )}
                       </div>
-                    </motion.div>
+                    </div>
                   )}
 
                   {/* Business Hours */}
                   {businessInfo?.businessHours && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 20 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.4, duration: 0.5 }}
-                      viewport={{ once: true }}
-                      className="p-6 bg-gray-50 dark:bg-gray-700 rounded-xl"
-                    >
-                      <div className="flex items-center space-x-3 mb-4">
-                        <div className="p-3 bg-ruby/10 rounded-lg">
-                          <Clock className="w-6 h-6 text-ruby" />
-                        </div>
-                        <div>
-                          <h3 className="font-semibold text-gray-900 dark:text-white">Business Hours</h3>
-                          <div className="flex items-center space-x-2">
-                            <div className={`w-2 h-2 rounded-full ${isOpen() ? 'bg-green-400' : 'bg-red-400'}`}></div>
-                            <span className={`text-sm font-medium ${isOpen() ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-                              {isOpen() ? 'Open Now' : 'Currently Closed'}
-                            </span>
-                          </div>
-                  </div>
-                </div>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                      <div className="flex items-center space-x-2 mb-3">
+                        <Clock className="w-5 h-5 text-luxury-gold" />
+                        <div className="font-medium text-gray-900 dark:text-white">Business Hours</div>
+                        <div className={`w-2 h-2 rounded-full ${isOpen() ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                      </div>
+                      
+                      <div className="space-y-1">
                         {Object.entries(businessInfo.businessHours).map(([day, hours]) => (
-                          <div key={day} className="flex justify-between items-center py-2">
-                            <span className="capitalize font-medium text-gray-700 dark:text-gray-300">
-                              {day}:
-                            </span>
+                          <div key={day} className="flex justify-between text-sm">
+                            <span className="capitalize text-gray-700 dark:text-gray-300">{day}:</span>
                             <span className="text-gray-600 dark:text-gray-400">
                               {hours.closed ? 'Closed' : `${formatTime(hours.open)} - ${formatTime(hours.close)}`}
                             </span>
                           </div>
                         ))}
                       </div>
-                    </motion.div>
+                    </div>
                   )}
                 </div>
-              </motion.div>
+              </div>
 
-              {/* Map Section */}
-              <motion.div
-                initial={{ opacity: 0, x: 30 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.6 }}
-                viewport={{ once: true }}
-                className="space-y-8"
-              >
-                <div>
-                  <h2 className="font-heading text-3xl font-bold text-gray-900 dark:text-white mb-4">
-                    Find Us
-                  </h2>
-                  <p className="text-lg text-gray-600 dark:text-gray-300">
-                    Visit our showroom to experience our premium gemstone collection in person.
-                  </p>
-                </div>
-
-                <div className="bg-gray-200 dark:bg-gray-700 rounded-2xl overflow-hidden shadow-xl h-96 lg:h-[500px]">
+              {/* Map */}
+              <div>
+                <h2 className="text-xl md:text-2xl font-semibold text-luxury-charcoal dark:text-luxury-pearl mb-4">
+                  Visit Our Store
+                </h2>
+                
+                <div className="bg-gray-200 dark:bg-gray-700 rounded-lg overflow-hidden h-64 md:h-96">
                   {businessInfo?.googleMapsUrl ? (
-                        <iframe
+                    <iframe
                       src={businessInfo.googleMapsUrl.includes('embed') 
                         ? businessInfo.googleMapsUrl 
                         : `https://www.google.com/maps/embed?pb=${businessInfo.googleMapsUrl}`
                       }
-                          width="100%"
+                      width="100%"
                       height="100%"
-                          style={{ border: 0 }}
-                          allowFullScreen=""
-                          loading="lazy"
-                          referrerPolicy="no-referrer-when-downgrade"
+                      style={{ border: 0 }}
+                      allowFullScreen=""
+                      loading="lazy"
+                      referrerPolicy="no-referrer-when-downgrade"
                       className="w-full h-full"
-                          title="Location"
+                      title="Store Location"
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
                       <div className="text-center">
-                        <MapPin className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                        <p className="text-gray-500 dark:text-gray-400 text-lg">Map Loading...</p>
-                        <p className="text-gray-400 dark:text-gray-500 text-sm">Please check back later</p>
+                        <MapPin className="w-12 h-12 text-gray-400 mx-auto mb-2" />
+                        <p className="text-gray-500 dark:text-gray-400">Map Loading...</p>
                       </div>
-                      </div>
-                    )}
+                    </div>
+                  )}
                 </div>
-
-                {/* Additional Info Cards */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="p-6 bg-gradient-to-br from-sapphire/10 to-emerald/10 rounded-xl">
-                    <Star className="w-8 h-8 text-golden mb-3" />
-                    <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Expert Consultation</h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-300">
-                      Get personalized gemstone recommendations from our certified experts.
-                    </p>
-                  </div>
-                  
-                  <div className="p-6 bg-gradient-to-br from-emerald/10 to-golden/10 rounded-xl">
-                    <Calendar className="w-8 h-8 text-emerald mb-3" />
-                    <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Flexible Appointments</h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-300">
-                      Schedule a convenient time for detailed consultation and viewing.
-                    </p>
-                  </div>
-                </div>
-              </motion.div>
+              </div>
+            </div>
           </div>
-        </div>
-      </section>
-
-        {/* CTA Section */}
-        <section className="py-16 bg-gradient-to-r from-sapphire via-emerald to-golden">
-          <div className="max-w-4xl mx-auto px-4 text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
-          >
-              <h2 className="font-heading text-3xl sm:text-4xl font-bold text-white mb-4">
-                Ready to Start Your Gemstone Journey?
-              </h2>
-              <p className="text-xl text-white/90 mb-8 leading-relaxed">
-                Connect with us today and discover the perfect gemstone for your needs.
-              </p>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={handleWhatsAppClick}
-                className="inline-flex items-center space-x-3 bg-white text-sapphire px-8 py-4 rounded-full font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-200"
-              >
-                <MessageCircle className="w-6 h-6" />
-                <span>Chat with Expert</span>
-                <ArrowRight className="w-5 h-5" />
-              </motion.button>
-          </motion.div>
-        </div>
-      </section>
-    </div>
+        </section>
+      </div>
     </>
   );
 };

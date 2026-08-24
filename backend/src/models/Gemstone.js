@@ -202,14 +202,14 @@ gemstoneSchema.methods.incrementViewCount = async function () {
 gemstoneSchema.statics.getTrending = function () {
   return this.find({ trending: true, isActive: true })
     .sort({ createdAt: -1 })
-    .limit(8);
+    .limit(12);
 };
 
 // Static method to get new arrivals
 gemstoneSchema.statics.getNewArrivals = function () {
   return this.find({ isActive: true })
     .sort({ createdAt: -1 })
-    .limit(8);
+    .limit(10);
 };
 
 // Static method to search gemstones

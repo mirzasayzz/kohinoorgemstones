@@ -301,8 +301,8 @@ const AllGemstones = () => {
 
             {/* Loading State */}
             {loading && currentPage === 1 ? (
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
-                {[...Array(12)].map((_, i) => (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-6">
+                {[...Array(15)].map((_, i) => (
                   <div key={i} className="premium-card animate-pulse">
                     <div className="aspect-square bg-gray-200 dark:bg-gray-600"></div>
                     <div className="p-2.5 sm:p-3">
@@ -350,7 +350,7 @@ const AllGemstones = () => {
                 <div className={`
                   grid gap-3 sm:gap-6
                   ${viewMode === 'grid' 
-                    ? 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-4' 
+                    ? 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5' 
                     : 'grid-cols-1'
                   }
                 `}>

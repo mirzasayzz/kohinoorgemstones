@@ -16,16 +16,16 @@ const FilterPanel = ({
     color: false
   });
 
-  // Filter options based on memory.md requirements
+  // Filter options matching database enum values
   const filterOptions = {
     category: [
       'Ruby', 'Emerald', 'Diamond', 'Sapphire', 'Pearl', 
       'Topaz', 'Coral', 'Turquoise', 'Onyx', 'Aqeeq', 
-      'Moonstone', 'Zircon', 'Opal', 'Tourmaline', 'Garnet'
+      'Moonstone', 'Zircon', 'Opal', 'Tourmaline', 'Garnet', 'Other'
     ],
     purpose: [
-      'Love', 'Health', 'Wealth', 'Protection', 'Peace',
-      'Success', 'Spiritual Growth', 'Confidence', 'Creativity', 'Focus'
+      'Love', 'Health', 'Wealth', 'Protection', 'Spiritual Growth', 
+      'Success', 'Peace', 'Wisdom'
     ],
     color: [
       'Red', 'Blue', 'Green', 'Yellow', 'White', 'Black',
@@ -74,7 +74,7 @@ const FilterPanel = ({
           {icon}
           <span className="font-medium text-gray-900 dark:text-white">{title}</span>
           {filters[filterType]?.length > 0 && (
-            <span className="bg-sapphire text-white text-xs px-2 py-0.5 rounded-full">
+            <span className="bg-luxury-gold text-luxury-charcoal text-xs px-2 py-0.5 rounded-full">
               {filters[filterType].length}
             </span>
           )}
@@ -105,7 +105,7 @@ const FilterPanel = ({
                       className={`
                         flex items-center p-2 rounded-lg cursor-pointer transition-all duration-200
                         ${isSelected 
-                          ? 'bg-sapphire/10 border-2 border-sapphire text-sapphire dark:text-golden dark:border-golden dark:bg-golden/10' 
+                          ? 'bg-luxury-gold/10 border-2 border-luxury-gold text-luxury-gold dark:text-luxury-gold dark:border-luxury-gold dark:bg-luxury-gold/10' 
                           : 'bg-white dark:bg-gray-600 border border-gray-300 dark:border-gray-500 hover:bg-gray-50 dark:hover:bg-gray-500'
                         }
                       `}
@@ -177,19 +177,19 @@ const FilterPanel = ({
                 title="Category" 
                 filterType="category" 
                 options={filterOptions.category}
-                icon={<div className="w-2 h-2 bg-emerald rounded-full" />}
+                icon={<div className="w-2 h-2 bg-luxury-emerald rounded-full" />}
               />
               <FilterSection 
                 title="Purpose" 
                 filterType="purpose" 
                 options={filterOptions.purpose}
-                icon={<div className="w-2 h-2 bg-golden rounded-full" />}
+                icon={<div className="w-2 h-2 bg-luxury-gold rounded-full" />}
               />
               <FilterSection 
                 title="Color" 
                 filterType="color" 
                 options={filterOptions.color}
-                icon={<div className="w-2 h-2 bg-ruby rounded-full" />}
+                icon={<div className="w-2 h-2 bg-luxury-ruby rounded-full" />}
               />
             </div>
 
@@ -221,12 +221,12 @@ const FilterPanel = ({
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-600">
           <div className="flex items-center space-x-2">
-            <Filter className="w-5 h-5 text-sapphire dark:text-golden" />
+            <Filter className="w-5 h-5 text-luxury-gold dark:text-luxury-gold" />
             <h2 className="font-heading text-lg font-semibold text-gray-900 dark:text-white">
               Filters
             </h2>
             {getActiveFilterCount() > 0 && (
-              <span className="bg-sapphire text-white text-sm px-2 py-1 rounded-full">
+              <span className="bg-luxury-gold text-luxury-charcoal text-sm px-2 py-1 rounded-full">
                 {getActiveFilterCount()}
               </span>
             )}
@@ -246,19 +246,19 @@ const FilterPanel = ({
           title="Category" 
           filterType="category" 
           options={filterOptions.category}
-          icon={<div className="w-2 h-2 bg-emerald rounded-full" />}
+          icon={<div className="w-2 h-2 bg-luxury-emerald rounded-full" />}
         />
         <FilterSection 
           title="Purpose" 
           filterType="purpose" 
           options={filterOptions.purpose}
-          icon={<div className="w-2 h-2 bg-golden rounded-full" />}
+          icon={<div className="w-2 h-2 bg-luxury-gold rounded-full" />}
         />
         <FilterSection 
           title="Color" 
           filterType="color" 
           options={filterOptions.color}
-          icon={<div className="w-2 h-2 bg-ruby rounded-full" />}
+          icon={<div className="w-2 h-2 bg-luxury-ruby rounded-full" />}
         />
       </div>
     </div>
