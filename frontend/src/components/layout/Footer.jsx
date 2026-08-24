@@ -1,0 +1,157 @@
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { 
+  Gem, 
+  Phone, 
+  Mail, 
+  MapPin, 
+  MessageCircle,
+  Clock
+} from 'lucide-react';
+import { useBusiness } from '../../context/BusinessContext';
+
+const Footer = () => {
+  const { businessInfo, generateWhatsAppURL } = useBusiness();
+  const [currentYear] = useState(new Date().getFullYear());
+
+  // Quick contact info for mobile
+  const handleWhatsAppQuickChat = () => {
+    const message = `Hello ${businessInfo?.shopName || 'Kohinoor Gemstone'},
+
+I found your website and would like to get quick assistance with gemstone selection. Please help me choose the right gemstone for my needs.
+
+Thank you!`;
+
+    // Use the enhanced WhatsApp integration
+    const whatsappData = generateWhatsAppURL(null, message);
+    if (whatsappData && whatsappData.open) {
+      whatsappData.open();
+    } else {
+      const url = typeof whatsappData === 'string' ? whatsappData : whatsappData.webUrl;
+      window.open(url, '_blank');
+    }
+  };
+
+  // Essential links only
+  const essentialLinks = [
+    { name: 'About Us', href: '/about' },
+    { name: 'All Gemstones', href: '/gemstones' },
+    { name: 'Contact', href: '/contact' }
+  ];
+
+  return (
+    <footer className="bg-sapphire dark:bg-gray-900 text-white">
+      {/* Quick WhatsApp Contact - Compact */}
+      <div className="bg-green-600 hover:bg-green-700 transition-colors duration-300">
+        <div className="max-w-7xl mx-auto px-4 py-2">
+          <button
+            onClick={handleWhatsAppQuickChat}
+            className="w-full flex items-center justify-center space-x-2 text-white font-medium"
+          >
+            <MessageCircle className="w-4 h-4" />
+            <span className="text-xs sm:text-sm">Chat with us on WhatsApp - Get instant help! 💎</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Main Footer Content - Ultra Compact */}
+      <div className="max-w-7xl mx-auto px-4 py-4">
+        <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
+          
+          {/* Company Info - Minimal */}
+          <div className="flex-1">
+            <Link to="/" className="flex items-center space-x-2 mb-2">
+              <div className="w-6 h-6 bg-gradient-to-r from-golden via-ruby to-emerald rounded-full flex items-center justify-center">
+                <Gem className="w-3 h-3 text-white" />
+              </div>
+              <span className="font-heading text-lg font-bold text-golden">
+                {businessInfo?.shopName || 'Kohinoor Gemstone'}
+              </span>
+            </Link>
+            
+            <p className="text-gray-300 text-xs mb-2 leading-tight max-w-xs">
+              Premium authentic gemstones. Family heritage of trust.
+            </p>
+
+            {/* Essential Links - Horizontal */}
+            <div className="flex gap-3">
+              {essentialLinks.map((link, index) => (
+                <Link 
+                  key={index}
+                  to={link.href}
+                  className="text-gray-300 hover:text-golden transition-colors text-xs"
+                >
+                  {link.name}
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          {/* Contact Info - Compact */}
+          <div className="flex-1 min-w-0">
+            <div className="grid grid-cols-1 gap-1">
+              {/* Phone & WhatsApp - Same Line */}
+              {businessInfo?.contact?.phone && (
+                <div className="flex items-center justify-between">
+                  <a 
+                    href={`tel:${businessInfo.contact.phone}`}
+                    className="flex items-center space-x-1 text-gray-300 hover:text-golden transition-colors text-xs"
+                  >
+                    <Phone className="w-3 h-3" />
+                    <span>{businessInfo.contact.phone}</span>
+                  </a>
+                  
+                  {businessInfo?.contact?.whatsapp && (
+                    <button
+                      onClick={handleWhatsAppQuickChat}
+                      className="flex items-center space-x-1 text-gray-300 hover:text-green-400 transition-colors text-xs"
+                    >
+                      <MessageCircle className="w-3 h-3" />
+                      <span>WhatsApp</span>
+                    </button>
+                  )}
+                </div>
+              )}
+
+              {/* Email */}
+              {businessInfo?.contact?.email && (
+                <a 
+                  href={`mailto:${businessInfo.contact.email}`}
+                  className="flex items-center space-x-1 text-gray-300 hover:text-golden transition-colors text-xs"
+                >
+                  <Mail className="w-3 h-3" />
+                  <span className="truncate">{businessInfo.contact.email}</span>
+                </a>
+              )}
+
+              {/* Address - One Line */}
+              <div className="flex items-center space-x-1 text-gray-300 text-xs">
+                <MapPin className="w-3 h-3 flex-shrink-0" />
+                <span className="truncate">
+                  {businessInfo?.address?.city || 'Mumbai'}, {businessInfo?.address?.state || 'Maharashtra'}
+                </span>
+              </div>
+
+              {/* Hours - One Line */}
+              <div className="flex items-center space-x-1 text-gray-300 text-xs">
+                <Clock className="w-3 h-3 flex-shrink-0" />
+                <span>Mon-Sat: 10AM-7PM | Sun: Closed</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Bottom Copyright - Ultra Compact */}
+      <div className="border-t border-gray-700 bg-sapphire/80 dark:bg-gray-900/80">
+        <div className="max-w-7xl mx-auto px-4 py-2">
+          <p className="text-center text-xs text-gray-400">
+            © {currentYear} {businessInfo?.shopName || 'Kohinoor Gemstone'}. All rights reserved. 💎
+          </p>
+        </div>
+      </div>
+    </footer>
+  );
+};
+
+export default Footer; 

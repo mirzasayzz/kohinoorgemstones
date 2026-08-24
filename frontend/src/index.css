@@ -1,0 +1,194 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+  
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  body {
+    margin: 0;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+      'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    color: #1a202c;
+    background-color: #ffffff;
+  }
+  
+  .dark body {
+    color: #f7fafc;
+    background-color: #1a202c;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Playfair Display', serif;
+  }
+}
+
+@layer components {
+  /* Gradient Text */
+  .gradient-text {
+    background: linear-gradient(135deg, #0F172A, #B91C1C, #047857, #FACC15);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-size: 200% 200%;
+    animation: gradientShift 3s ease-in-out infinite;
+  }
+  
+  /* Gemstone Effects */
+  .gemstone-shadow {
+    box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.1), 
+                0 4px 10px -2px rgba(185, 28, 28, 0.05),
+                0 0 0 1px rgba(4, 120, 87, 0.05);
+  }
+  
+  .gemstone-hover {
+    transition: all 0.3s ease;
+  }
+  
+  .gemstone-hover:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 20px 40px -10px rgba(15, 23, 42, 0.2), 
+                0 8px 20px -4px rgba(185, 28, 28, 0.1),
+                0 0 0 1px rgba(4, 120, 87, 0.1);
+  }
+  
+  /* Premium Effects */
+  .premium-border {
+    border: 2px solid transparent;
+    background: linear-gradient(white, white) padding-box,
+                linear-gradient(135deg, #0F172A, #B91C1C, #047857, #FACC15) border-box;
+  }
+  
+  .dark .premium-border {
+    background: linear-gradient(#1a202c, #1a202c) padding-box,
+                linear-gradient(135deg, #0F172A, #B91C1C, #047857, #FACC15) border-box;
+  }
+  
+  .premium-card {
+    @apply bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 dark:border-gray-700;
+  }
+  
+  /* Button Styles */
+  .btn-primary {
+    @apply inline-flex items-center justify-center space-x-2 px-6 py-3 bg-sapphire text-white font-medium rounded-lg hover:bg-sapphire/90 transition-all duration-200 shadow-lg hover:shadow-xl active:scale-95;
+  }
+  
+  .btn-secondary {
+    @apply inline-flex items-center justify-center space-x-2 px-6 py-3 border-2 border-sapphire text-sapphire font-medium rounded-lg hover:bg-sapphire hover:text-white transition-all duration-200 active:scale-95;
+  }
+  
+  .btn-whatsapp {
+    @apply inline-flex items-center justify-center space-x-2 px-4 py-2 bg-green-500 text-white font-medium rounded-lg hover:bg-green-600 transition-all duration-200 shadow-md hover:shadow-lg active:scale-95;
+  }
+}
+
+@layer utilities {
+  /* Text Shadow */
+  .text-shadow {
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .text-shadow-lg {
+    text-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
+  
+  /* Backdrop Blur Glass Effect */
+  .backdrop-blur-glass {
+    backdrop-filter: blur(10px);
+    background: rgba(255, 255, 255, 0.8);
+  }
+  
+  .dark .backdrop-blur-glass {
+    background: rgba(26, 32, 44, 0.8);
+  }
+  
+  /* Hide Scrollbar */
+  .scrollbar-hide {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;     /* Firefox */
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;             /* Chrome, Safari and Opera */
+  }
+  
+  /* Line Clamp Utilities */
+  .line-clamp-1 {
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  
+  .line-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  
+  /* Animation Keyframes */
+  @keyframes gradientShift {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  
+  @keyframes slideUp {
+    from { 
+      opacity: 0; 
+      transform: translateY(20px); 
+    }
+    to { 
+      opacity: 1; 
+      transform: translateY(0); 
+    }
+  }
+  
+  @keyframes scaleIn {
+    from { 
+      opacity: 0; 
+      transform: scale(0.9); 
+    }
+    to { 
+      opacity: 1; 
+      transform: scale(1); 
+    }
+  }
+  
+  /* Mobile Touch Optimizations */
+  .touch-action-manipulation {
+    touch-action: manipulation;
+  }
+  
+  /* Focus Styles for Accessibility */
+  .focus-ring:focus {
+    outline: 2px solid #3B82F6;
+    outline-offset: 2px;
+  }
+  
+  /* Dark mode specific utilities */
+  .dark-gradient {
+    background: linear-gradient(135deg, #1a202c 0%, #2d3748 50%, #4a5568 100%);
+  }
+}
