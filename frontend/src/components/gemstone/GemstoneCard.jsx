@@ -33,11 +33,9 @@ const GemstoneCard = ({ gemstone, index = 0, variant = 'grid' }) => {
     if (generateWhatsAppURL && gemstone) {
       const whatsappData = generateWhatsAppURL(gemstone);
       
-      // Use the enhanced open method with app preference and fallback
       if (whatsappData && whatsappData.open) {
         whatsappData.open();
       } else {
-        // Fallback for older method (if any)
         const url = typeof whatsappData === 'string' ? whatsappData : whatsappData.webUrl;
         window.open(url, '_blank');
       }
@@ -49,12 +47,9 @@ const GemstoneCard = ({ gemstone, index = 0, variant = 'grid' }) => {
     e.stopPropagation();
     
     try {
-      // Try enhanced sharing with image first
       const shared = await shareGemstoneWithImage(gemstone);
       
-      // If it returns a WhatsApp URL instead of true, it means native sharing failed
       if (shared !== true) {
-        // Fallback to standard sharing
         if (navigator.share) {
           navigator.share({
             title: `${gemstone?.name?.english} - ${gemstone?.name?.urdu}`,
@@ -62,13 +57,11 @@ const GemstoneCard = ({ gemstone, index = 0, variant = 'grid' }) => {
             url: window.location.origin + `/gemstone/${gemstone?.slug || gemstone?._id}`
           });
         } else {
-          // Copy to clipboard as final fallback
           navigator.clipboard.writeText(window.location.origin + `/gemstone/${gemstone?.slug || gemstone?._id}`);
         }
       }
     } catch (error) {
       console.error('Sharing failed:', error);
-      // Final fallback - copy to clipboard
       navigator.clipboard.writeText(window.location.origin + `/gemstone/${gemstone?.slug || gemstone?._id}`);
     }
   };
@@ -77,7 +70,6 @@ const GemstoneCard = ({ gemstone, index = 0, variant = 'grid' }) => {
     e.preventDefault();
     e.stopPropagation();
     
-    // Haptic feedback on mobile
     if (navigator.vibrate) {
       navigator.vibrate(100);
     }
@@ -85,7 +77,6 @@ const GemstoneCard = ({ gemstone, index = 0, variant = 'grid' }) => {
     const wasInWishlist = isInWishlist(gemstone?._id);
     toggleWishlist(gemstone);
     
-    // Show toast notification
     if (wasInWishlist) {
       showWishlistRemove(gemstone);
     } else {
@@ -93,7 +84,6 @@ const GemstoneCard = ({ gemstone, index = 0, variant = 'grid' }) => {
     }
   };
 
-  // Enhanced animation variants for desktop hover effects
   const cardVariants = {
     hidden: { 
       opacity: 0, 
@@ -106,7 +96,7 @@ const GemstoneCard = ({ gemstone, index = 0, variant = 'grid' }) => {
       scale: 1,
       transition: {
         duration: 0.4,
-        delay: index * 0.1, // Stagger animation
+        delay: index * 0.1,
         ease: "easeOut"
       }
     },
@@ -127,7 +117,6 @@ const GemstoneCard = ({ gemstone, index = 0, variant = 'grid' }) => {
     }
   };
 
-  // Desktop overlay animations
   const overlayVariants = {
     hidden: {
       opacity: 0,
@@ -143,7 +132,6 @@ const GemstoneCard = ({ gemstone, index = 0, variant = 'grid' }) => {
     }
   };
 
-  // Action button animations
   const actionButtonVariants = {
     hidden: {
       scale: 0,
@@ -165,7 +153,6 @@ const GemstoneCard = ({ gemstone, index = 0, variant = 'grid' }) => {
   const fallbackImage = '/placeholder-gemstone.svg';
   const imageUrl = gemstone?.images?.[0]?.url || fallbackImage;
   
-  // Debug log for troubleshooting
   if (gemstone && (!gemstone.images || gemstone.images.length === 0)) {
     console.log('Gemstone missing images:', gemstone.name?.english, gemstone.images);
   }
@@ -188,10 +175,10 @@ const GemstoneCard = ({ gemstone, index = 0, variant = 'grid' }) => {
     >
       <Link to={`/gemstone/${gemstone?.slug || gemstone?._id}`} className="block h-full">
         
-        {/* Enhanced Image Container with Lazy Loading */}
+        {/* Image */}
         <div className={`
           relative overflow-hidden group/image
-          ${variant === 'list' ? 'w-32 h-32 flex-shrink-0' : 'aspect-square w-full'}
+          ${variant === 'list' ? 'w-28 h-28 sm:w-32 sm:h-32 flex-shrink-0' : 'aspect-square w-full'}
           ${variant === 'featured' ? 'md:aspect-[2/1]' : ''}
         `}>
           
@@ -203,7 +190,7 @@ const GemstoneCard = ({ gemstone, index = 0, variant = 'grid' }) => {
               animate={{ scale: 1, rotate: 0 }}
               transition={{ delay: 0.3, type: "spring" }}
             >
-              <div className="bg-ruby text-white px-2 py-1 rounded-full text-xs font-semibold flex items-center space-x-1 shadow-lg backdrop-blur-sm">
+              <div className="bg-ruby text-white px-2 py-1 rounded-full text-[10px] sm:text-xs font-semibold flex items-center space-x-1 shadow-lg backdrop-blur-sm">
                 <TrendingUp className="w-3 h-3" />
                 <span>Trending</span>
               </div>
@@ -218,14 +205,14 @@ const GemstoneCard = ({ gemstone, index = 0, variant = 'grid' }) => {
               animate={{ scale: 1, rotate: 0 }}
               transition={{ delay: 0.4, type: "spring" }}
             >
-              <div className="bg-golden text-sapphire px-2 py-1 rounded-full text-xs font-semibold flex items-center space-x-1 shadow-lg backdrop-blur-sm">
+              <div className="bg-golden text-sapphire px-2 py-1 rounded-full text-[10px] sm:text-xs font-semibold flex items-center space-x-1 shadow-lg backdrop-blur-sm">
                 <Star className="w-3 h-3" />
                 <span>Featured</span>
               </div>
             </motion.div>
           )}
 
-          {/* Enhanced Image with Lazy Loading */}
+          {/* Image */}
           <GemstoneImage
             src={gemstone?.images?.[0]?.url}
             alt={`${gemstone?.name?.english} - ${gemstone?.name?.urdu}`}
@@ -236,7 +223,7 @@ const GemstoneCard = ({ gemstone, index = 0, variant = 'grid' }) => {
 
           {/* Mobile Action Bar */}
           <motion.div 
-            className="md:hidden absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/60 to-transparent p-3 z-10"
+            className="md:hidden absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/60 to-transparent p-2.5 sm:p-3 z-10"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
@@ -254,34 +241,34 @@ const GemstoneCard = ({ gemstone, index = 0, variant = 'grid' }) => {
                   <Share2 className="w-4 h-4" />
                 </motion.button>
 
-                                 {/* Wishlist Button */}
-                 <motion.button
-                   onClick={handleWishlist}
-                   whileTap={{ scale: 0.9 }}
-                   className={`backdrop-blur-sm text-white p-2 rounded-full shadow-lg transition-colors ${
-                     isInWishlist(gemstone?._id) 
-                       ? 'bg-red-500 hover:bg-red-600' 
-                       : 'bg-white/20 hover:bg-white/30'
-                   }`}
-                   title={isInWishlist(gemstone?._id) ? "Remove from Wishlist" : "Add to Wishlist"}
-                 >
-                   <Heart className={`w-4 h-4 ${isInWishlist(gemstone?._id) ? 'fill-current' : ''}`} />
-                 </motion.button>
+                {/* Wishlist Button */}
+                <motion.button
+                  onClick={handleWishlist}
+                  whileTap={{ scale: 0.9 }}
+                  className={`backdrop-blur-sm text-white p-2 rounded-full shadow-lg transition-colors ${
+                    isInWishlist(gemstone?._id) 
+                      ? 'bg-red-500 hover:bg-red-600' 
+                      : 'bg-white/20 hover:bg-white/30'
+                  }`}
+                  title={isInWishlist(gemstone?._id) ? "Remove from Wishlist" : "Add to Wishlist"}
+                >
+                  <Heart className={`w-4 h-4 ${isInWishlist(gemstone?._id) ? 'fill-current' : ''}`} />
+                </motion.button>
               </div>
 
               {/* Right side - Buy Now */}
               <motion.button
                 onClick={handleWhatsAppClick}
                 whileTap={{ scale: 0.95 }}
-                className="bg-green-500 text-white px-4 py-2 rounded-full shadow-lg hover:bg-green-600 transition-colors backdrop-blur-sm flex items-center space-x-2"
+                className="bg-green-500 text-white px-3 sm:px-4 py-2 rounded-full shadow-lg hover:bg-green-600 transition-colors backdrop-blur-sm flex items-center space-x-2"
               >
                 <MessageCircle className="w-4 h-4" />
-                <span className="text-xs font-medium">Buy Now</span>
+                <span className="text-[11px] sm:text-xs font-medium">Buy Now</span>
               </motion.button>
             </div>
           </motion.div>
 
-          {/* Enhanced Desktop Hover Overlay */}
+          {/* Desktop Hover Overlay */}
           <motion.div 
             className="hidden md:block absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent"
             variants={overlayVariants}
@@ -314,7 +301,7 @@ const GemstoneCard = ({ gemstone, index = 0, variant = 'grid' }) => {
                   </motion.button>
                 ))}
                 
-                {/* Wishlist Button - Separate to handle dynamic styling */}
+                {/* Wishlist Button */}
                 <motion.button
                   custom={3}
                   variants={actionButtonVariants}
@@ -333,11 +320,10 @@ const GemstoneCard = ({ gemstone, index = 0, variant = 'grid' }) => {
               </div>
             </motion.div>
 
-            {/* Gradient Overlay for Better Text Readability */}
             <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent h-20" />
           </motion.div>
 
-          {/* Enhanced View Count */}
+          {/* View Count */}
           {gemstone?.viewCount > 0 && (
             <motion.div 
               className="absolute bottom-2 left-2 z-10"
@@ -345,14 +331,14 @@ const GemstoneCard = ({ gemstone, index = 0, variant = 'grid' }) => {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.5 }}
             >
-              <div className="bg-black/60 text-white px-2 py-1 rounded-full text-xs flex items-center space-x-1 backdrop-blur-sm">
+              <div className="bg-black/60 text-white px-2 py-1 rounded-full text-[10px] sm:text-xs flex items-center space-x-1 backdrop-blur-sm">
                 <Eye className="w-3 h-3" />
                 <span>{gemstone.viewCount.toLocaleString()}</span>
               </div>
             </motion.div>
           )}
 
-          {/* Premium Quality Indicator */}
+          {/* Certified */}
           {gemstone?.certification?.certified && (
             <motion.div
               className="absolute top-2 left-1/2 transform -translate-x-1/2 z-10"
@@ -360,7 +346,7 @@ const GemstoneCard = ({ gemstone, index = 0, variant = 'grid' }) => {
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.6 }}
             >
-              <div className="bg-emerald-500 text-white px-2 py-1 rounded-full text-xs font-semibold flex items-center space-x-1 shadow-lg backdrop-blur-sm">
+              <div className="bg-emerald-500 text-white px-2 py-1 rounded-full text-[10px] sm:text-xs font-semibold flex items-center space-x-1 shadow-lg backdrop-blur-sm">
                 <Award className="w-3 h-3" />
                 <span>Certified</span>
               </div>
@@ -368,60 +354,60 @@ const GemstoneCard = ({ gemstone, index = 0, variant = 'grid' }) => {
           )}
         </div>
 
-        {/* Content Section - Mobile First */}
+        {/* Content */}
         <div className={`
-          p-3 flex-grow flex flex-col
-          ${variant === 'list' ? 'justify-center ml-4' : ''}
+          p-2.5 sm:p-3 flex-grow flex flex-col
+          ${variant === 'list' ? 'justify-center ml-3 sm:ml-4' : ''}
         `}>
           
-          {/* Gemstone Names - Stacked on mobile */}
-          <div className="mb-2">
+          {/* Names */}
+          <div className="mb-1.5 sm:mb-2">
             <h3 className={`
-              font-heading font-semibold text-gray-900 dark:text-white mb-1
-              ${variant === 'featured' ? 'text-lg md:text-xl' : 'text-sm md:text-base'}
+              font-heading font-semibold text-gray-900 dark:text-white mb-0.5
+              ${variant === 'featured' ? 'text-base sm:text-lg md:text-xl' : 'text-sm md:text-base'}
               line-clamp-1
             `}>
               {gemstone?.name?.english}
             </h3>
             <p className={`
               text-gray-600 dark:text-gray-400 font-medium
-              ${variant === 'featured' ? 'text-sm md:text-base' : 'text-xs md:text-sm'}
+              ${variant === 'featured' ? 'text-xs sm:text-sm md:text-base' : 'text-[11px] sm:text-xs md:text-sm'}
               line-clamp-1
             `}>
               {gemstone?.name?.urdu}
             </p>
           </div>
 
-          {/* Summary - Show on mobile for featured, hide on small cards */}
+          {/* Summary */}
           {variant === 'featured' && gemstone?.summary && (
-            <p className="text-sm text-gray-700 dark:text-gray-300 mb-3 line-clamp-2">
+            <p className="text-sm text-gray-700 dark:text-gray-300 mb-2.5 line-clamp-2">
               {gemstone.summary}
             </p>
           )}
 
-          {/* Category and Color - Mobile friendly */}
-          <div className="flex items-center justify-between mb-2">
-            <span className="bg-emerald/10 text-emerald-700 dark:text-emerald-400 px-2 py-1 rounded-full text-xs font-medium">
+          {/* Category/Color */}
+          <div className="flex items-center justify-between mb-1.5 sm:mb-2">
+            <span className="bg-emerald/10 text-emerald-700 dark:text-emerald-400 px-2 py-0.5 rounded-full text-[11px] sm:text-xs font-medium">
               {gemstone?.category}
             </span>
-            <span className="text-xs text-gray-500 dark:text-gray-400">
+            <span className="text-[11px] sm:text-xs text-gray-500 dark:text-gray-400">
               {gemstone?.color}
             </span>
           </div>
 
-          {/* Purpose Tags - Show max 2 on mobile */}
+          {/* Purpose Tags */}
           {gemstone?.purpose && gemstone.purpose.length > 0 && (
-            <div className="flex flex-wrap gap-1 mb-3">
+            <div className="flex flex-wrap gap-1 mb-2.5">
               {gemstone.purpose.slice(0, variant === 'list' ? 1 : 2).map((purpose, index) => (
                 <span
                   key={index}
-                  className="bg-golden/10 text-golden-700 dark:text-golden-400 px-2 py-0.5 rounded-full text-xs font-medium"
+                  className="bg-golden/10 text-golden-700 dark:text-golden-400 px-2 py-0.5 rounded-full text-[11px] sm:text-xs font-medium"
                 >
                   {purpose}
                 </span>
               ))}
               {gemstone.purpose.length > 2 && variant !== 'list' && (
-                <span className="text-xs text-gray-500 dark:text-gray-400">
+                <span className="text-[11px] sm:text-xs text-gray-500 dark:text-gray-400">
                   +{gemstone.purpose.length - 2} more
                 </span>
               )}
