@@ -21,6 +21,7 @@ import adminRoutes from './routes/adminDashboardRoutes.js';
 import gemstoneAIRoutes from './routes/gemstoneAIRoutes.js';
 import customerAuthRoutes from './routes/customerAuthRoutes.js';
 import paymentRoutes from './routes/paymentRoutes.js';
+import cartRoutes from './routes/cartRoutes.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { setupDefaultAdmin, displayStartupInfo } from './utils/setupAdmin.js';
 
@@ -151,6 +152,7 @@ app.use('/api', apiLimiter);
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/customer', customerAuthRoutes);
+app.use('/api/cart', cartRoutes);
 app.use('/api/gemstones', gemstoneRoutes);
 app.use('/api/business', businessRoutes);
 app.use('/api/upload', uploadRoutes);

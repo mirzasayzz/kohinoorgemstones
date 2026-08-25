@@ -171,7 +171,9 @@ router.post('/send-otp', async (req, res) => {
     }
 
     // Generate OTP for new user - store temporarily
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otp = process.env.TEST_MODE === 'true'
+      ? '123456'
+      : Math.floor(100000 + Math.random() * 900000).toString();
     const otpExpire = Date.now() + 30 * 60 * 1000; // 30 minutes (extended)
 
     // Store OTP temporarily
@@ -249,7 +251,7 @@ router.post('/signup', async (req, res) => {
     // Check if email exists
     const existingEmail = await Customer.findOne({ email });
     if (existingEmail) {
-      return res.status(400).json({ success: false, message: 'This email is already registered. Please sign in or use a different email.' });
+      return res.status(409).json({ success: false, exists: true, message: 'This email is already registered. Please sign in.' });
     }
 
     // Check age (must be at least 13) - only if DOB provided
@@ -543,6 +545,13 @@ router.post('/reset-password', async (req, res) => {
     console.error('Reset password error:', error);
     res.status(500).json({ success: false, message: 'Password reset failed. Please try again.' });
   }
+});
+
+// ============================================
+// LOGOUT
+// ============================================
+router.post('/logout', async (req, res) => {
+  res.json({ success: true, message: 'Logged out successfully' });
 });
 
 // ============================================

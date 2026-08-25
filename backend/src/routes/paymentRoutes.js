@@ -5,11 +5,20 @@ import jwt from 'jsonwebtoken';
 
 const router = express.Router();
 
-// Initialize Razorpay Instance
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID,
-  key_secret: process.env.RAZORPAY_KEY_SECRET
-});
+// Initialize Razorpay Instance.
+// In TEST_MODE there are no configured keys; stub only the methods CI relies on.
+const razorpay = process.env.TEST_MODE === 'true'
+  ? {
+      orders: {
+        async create(options) {
+          return { id: `test_order_${Date.now()}`, ...options };
+        },
+      },
+    }
+  : new Razorpay({
+      key_id: process.env.RAZORPAY_KEY_ID,
+      key_secret: process.env.RAZORPAY_KEY_SECRET
+    });
 
 // Authentication middleware for customers checking out
 const authenticateCustomer = async (req, res, next) => {

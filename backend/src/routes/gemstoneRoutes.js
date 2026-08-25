@@ -13,7 +13,13 @@ import {
   getPredefinedGemstones
 } from '../controllers/gemstoneController.js';
 import { protect, adminOnly, optionalAuth } from '../middleware/auth.js';
+import { asyncHandler } from '../middleware/errorHandler.js';
+import Gemstone from '../models/Gemstone.js';
 import { body, param } from 'express-validator';
+
+const getGemstoneCategories = async () => {
+  return Gemstone.distinct('category', { isActive: true });
+};
 
 const router = express.Router();
 
@@ -48,6 +54,14 @@ const idValidation = [
 router.get('/predefined', getPredefinedGemstones);
 router.get('/trending', getTrendingGemstones);
 router.get('/new-arrivals', getNewArrivals);
+router.get('/categories', asyncHandler(async (req, res) => {
+  const categories = await getGemstoneCategories();
+  res.status(200).json({ success: true, count: categories.length, data: { categories } });
+}));
+router.get('/featured', asyncHandler(async (req, res) => {
+  const gemstones = await Gemstone.find({ featured: true, isActive: true }).sort('-createdAt');
+  res.status(200).json({ success: true, count: gemstones.length, data: { gemstones } });
+}));
 router.get('/search/:query', searchGemstones);
 router.get('/', optionalAuth, getGemstones);
 

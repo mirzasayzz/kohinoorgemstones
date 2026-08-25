@@ -102,8 +102,17 @@ export const getGemstones = asyncHandler(async (req, res, next) => {
 
   // Sort
   if (req.query.sort) {
-    const sortBy = req.query.sort.split(',').join(' ');
-    mongoQuery = mongoQuery.sort(sortBy);
+    const sortValue = req.query.sort;
+    if (sortValue === 'price_asc') {
+      mongoQuery = mongoQuery.sort({ price: 1 });
+    } else if (sortValue === 'price_desc') {
+      mongoQuery = mongoQuery.sort({ price: -1 });
+    } else if (sortValue === 'name') {
+      mongoQuery = mongoQuery.sort({ 'name.english': 1 });
+    } else {
+      const sortBy = req.query.sort.split(',').join(' ');
+      mongoQuery = mongoQuery.sort(sortBy);
+    }
   } else {
     mongoQuery = mongoQuery.sort('-createdAt');
   }
