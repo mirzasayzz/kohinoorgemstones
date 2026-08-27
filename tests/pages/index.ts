@@ -6,3 +6,4 @@ export { ProductPage } from './ProductPage';
 export { CartPage } from './CartPage';
 export { CheckoutPage } from './CheckoutPage';
 export { ProfilePage } from './ProfilePage';
+export { WishlistPage } from './WishlistPage';

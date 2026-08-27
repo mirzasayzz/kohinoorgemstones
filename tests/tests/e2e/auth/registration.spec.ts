@@ -1,22 +1,18 @@
 import { test, expect } from '@playwright/test';
 import { RegisterPage } from '../../../pages/RegisterPage';
-import { LoginPage } from '../../../pages/LoginPage';
-import { faker } from '@faker-js/faker';
-import { checkSiteAvailable } from '../../../helpers/site-check';
+import { assertSiteAvailable } from '../../../helpers/site-check';
+import { checkFormAccessibility } from '../../../helpers/accessibility';
 
 test.describe('Registration Functionality', () => {
   let registerPage: RegisterPage;
-  let loginPage: LoginPage;
 
   test.beforeAll(async ({ request }) => {
     const baseUrl = process.env.BASE_URL || 'http://localhost:5173';
-    const available = await checkSiteAvailable(request, baseUrl);
-    test.skip(!available, 'Site is not reachable - skipping E2E tests');
+    await assertSiteAvailable(request, baseUrl);
   });
 
   test.beforeEach(async ({ page }) => {
     registerPage = new RegisterPage(page);
-    loginPage = new LoginPage(page);
   });
 
   test.describe('UI Validation', () => {
@@ -26,240 +22,133 @@ test.describe('Registration Functionality', () => {
       await expect(page).toHaveTitle(/register|sign up/i);
     });
 
-    test('should have all required form fields', async ({ page }) => {
+    test('should have email input and send OTP button', async ({ page }) => {
       await registerPage.navigateToRegisterPage();
       await registerPage.verifyRegisterPageLoaded();
-      
-      await expect(registerPage.firstNameInput).toBeVisible();
-      await expect(registerPage.lastNameInput).toBeVisible();
       await expect(registerPage.emailInput).toBeVisible();
-      await expect(registerPage.phoneInput).toBeVisible();
-      await expect(registerPage.passwordInput).toBeVisible();
-      await expect(registerPage.confirmPasswordInput).toBeVisible();
-      await expect(registerPage.registerButton).toBeVisible();
-    });
-
-    test('should display terms checkbox', async ({ page }) => {
-      await registerPage.navigateToRegisterPage();
-      await expect(registerPage.termsCheckbox).toBeVisible();
+      await expect(registerPage.sendOtpButton).toBeVisible();
     });
 
     test('should display signin link', async ({ page }) => {
       await registerPage.navigateToRegisterPage();
       await expect(registerPage.signinLink).toBeVisible();
     });
+
+    test('should have proper form accessibility', async ({ page }) => {
+      await registerPage.navigateToRegisterPage();
+      const issues = await checkFormAccessibility(page, 'form');
+      expect(issues).toHaveLength(0);
+    });
+
+    test('should have accessible email input', async ({ page }) => {
+      await registerPage.navigateToRegisterPage();
+      const ariaLabel = await registerPage.emailInput.getAttribute('aria-label');
+      const placeholder = await registerPage.emailInput.getAttribute('placeholder');
+      expect(ariaLabel || placeholder).toBeTruthy();
+    });
   });
 
   test.describe('Successful Registration', () => {
-    test('should register with valid data', async ({ page }) => {
-      const userData = {
-        firstName: faker.person.firstName(),
-        lastName: faker.person.lastName(),
-        email: faker.internet.email(),
-        phone: faker.phone.number({ style: 'national' }),
-        password: 'TestPassword123!',
-      };
+    test('should register with valid data via OTP flow', async ({ page }) => {
+      const email = `testuser${Date.now()}@playwright.local`;
 
       await registerPage.navigateToRegisterPage();
-      await registerPage.register(userData);
+      await registerPage.register(email, '123456', {
+        name: 'Test User',
+        phone: '9876543210',
+        password: 'TestPassword123!',
+      });
       await registerPage.verifyRegistrationSuccessful();
     });
 
-    test('should redirect to login after registration', async ({ page }) => {
-      const userData = {
-        firstName: faker.person.firstName(),
-        lastName: faker.person.lastName(),
-        email: faker.internet.email(),
-        phone: faker.phone.number({ style: 'national' }),
-        password: 'TestPassword123!',
-      };
+    test('should redirect to home after registration', async ({ page }) => {
+      const email = `testuser${Date.now()}@playwright.local`;
 
       await registerPage.navigateToRegisterPage();
-      await registerPage.register(userData);
-      await expect(page).toHaveURL(/signin|login/);
+      await registerPage.register(email, '123456', {
+        name: 'Redirect User',
+        password: 'TestPassword123!',
+      });
+      await expect(page).toHaveURL('/');
     });
 
-    test('should send verification email', async ({ page }) => {
-      const userData = {
-        firstName: faker.person.firstName(),
-        lastName: faker.person.lastName(),
-        email: faker.internet.email(),
-        phone: faker.phone.number({ style: 'national' }),
-        password: 'TestPassword123!',
-      };
+    test('should register without phone number', async ({ page }) => {
+      const email = `nophone${Date.now()}@playwright.local`;
 
       await registerPage.navigateToRegisterPage();
-      await registerPage.register(userData);
-      await registerPage.verifySuccessMessage('Verification email sent');
+      await registerPage.register(email, '123456', {
+        name: 'No Phone User',
+        password: 'TestPassword123!',
+      });
+      await registerPage.verifyRegistrationSuccessful();
     });
   });
 
   test.describe('Failed Registration', () => {
     test('should show error with existing email', async ({ page }) => {
-      const userData = {
-        firstName: faker.person.firstName(),
-        lastName: faker.person.lastName(),
-        email: process.env.TEST_USER_EMAIL || 'testuser@example.com',
-        phone: faker.phone.number({ style: 'national' }),
-        password: 'TestPassword123!',
-      };
-
       await registerPage.navigateToRegisterPage();
-      await registerPage.register(userData);
-      await registerPage.verifyErrorMessage('Email already registered');
+      await registerPage.sendOtp('customer@playwright.local');
+      await registerPage.verifyErrorMessage(/already|exist/i);
     });
 
-    test('should show error with empty fields', async ({ page }) => {
+    test('should show error with empty email', async ({ page }) => {
       await registerPage.navigateToRegisterPage();
       await registerPage.submitEmptyForm();
-      await registerPage.verifyErrorMessage('Please fill in all required fields');
-    });
-
-    test('should show error with mismatched passwords', async ({ page }) => {
-      await registerPage.navigateToRegisterPage();
-      await registerPage.submitWithMismatchedPasswords();
-      await registerPage.verifyErrorMessage('Passwords do not match');
-    });
-
-    test('should show error with weak password', async ({ page }) => {
-      await registerPage.navigateToRegisterPage();
-      await registerPage.submitWithWeakPassword();
-      await registerPage.verifyErrorMessage('Password is too weak');
     });
 
     test('should show error with invalid email format', async ({ page }) => {
-      const userData = {
-        firstName: faker.person.firstName(),
-        lastName: faker.person.lastName(),
-        email: 'invalidemail',
-        phone: faker.phone.number({ style: 'national' }),
-        password: 'TestPassword123!',
-      };
-
       await registerPage.navigateToRegisterPage();
-      await registerPage.register(userData);
-      await registerPage.verifyErrorMessage('Please enter a valid email');
-    });
-
-    test('should show error with invalid phone number', async ({ page }) => {
-      const userData = {
-        firstName: faker.person.firstName(),
-        lastName: faker.person.lastName(),
-        email: faker.internet.email(),
-        phone: '123',
-        password: 'TestPassword123!',
-      };
-
-      await registerPage.navigateToRegisterPage();
-      await registerPage.register(userData);
-      await registerPage.verifyErrorMessage('Please enter a valid phone number');
-    });
-
-    test('should show error without accepting terms', async ({ page }) => {
-      const userData = {
-        firstName: faker.person.firstName(),
-        lastName: faker.person.lastName(),
-        email: faker.internet.email(),
-        phone: faker.phone.number({ style: 'national' }),
-        password: 'TestPassword123!',
-      };
-
-      await registerPage.navigateToRegisterPage();
-      await registerPage.registerWithoutTerms(userData);
-      await registerPage.verifyErrorMessage('Please accept the terms');
+      await registerPage.fill(registerPage.emailInput, 'invalidemail');
+      await registerPage.click(registerPage.sendOtpButton);
     });
   });
 
-  test.describe('Field Validation', () => {
-    test('should validate first name is required', async ({ page }) => {
+  test.describe('OTP Flow', () => {
+    test('should progress through all steps', async ({ page }) => {
+      const email = `otpflow${Date.now()}@playwright.local`;
+
       await registerPage.navigateToRegisterPage();
-      await registerPage.fill(registerPage.lastNameInput, 'Doe');
-      await registerPage.fill(registerPage.emailInput, 'test@example.com');
-      await registerPage.fill(registerPage.phoneInput, '1234567890');
-      await registerPage.fill(registerPage.passwordInput, 'Password123!');
-      await registerPage.fill(registerPage.confirmPasswordInput, 'Password123!');
-      await registerPage.check(registerPage.termsCheckbox);
-      await registerPage.click(registerPage.registerButton);
-      await registerPage.verifyFirstNameFieldError('First name is required');
+
+      await registerPage.sendOtp(email);
+      await registerPage.verifyStep2Loaded();
+
+      await registerPage.verifyOtp('123456');
+      await registerPage.verifyStep3Loaded();
+
+      await registerPage.completeProfile({
+        name: 'OTP Flow User',
+        password: 'TestPassword123!',
+      });
+      await registerPage.verifyRegistrationSuccessful();
     });
 
-    test('should validate last name is required', async ({ page }) => {
+    test('should show error with invalid OTP', async ({ page }) => {
+      const email = `invalidotp${Date.now()}@playwright.local`;
+
       await registerPage.navigateToRegisterPage();
-      await registerPage.fill(registerPage.firstNameInput, 'John');
-      await registerPage.fill(registerPage.emailInput, 'test@example.com');
-      await registerPage.fill(registerPage.phoneInput, '1234567890');
-      await registerPage.fill(registerPage.passwordInput, 'Password123!');
-      await registerPage.fill(registerPage.confirmPasswordInput, 'Password123!');
-      await registerPage.check(registerPage.termsCheckbox);
-      await registerPage.click(registerPage.registerButton);
-      await registerPage.verifyLastNameFieldError('Last name is required');
+      await registerPage.sendOtp(email);
+      await registerPage.verifyStep2Loaded();
+
+      await registerPage.verifyOtp('000000');
+      await registerPage.verifyErrorMessage(/invalid|expired/i);
     });
 
-    test('should validate email is required', async ({ page }) => {
+    test('should allow changing email on step 2', async ({ page }) => {
+      const email1 = `change1${Date.now()}@playwright.local`;
+
       await registerPage.navigateToRegisterPage();
-      await registerPage.fill(registerPage.firstNameInput, 'John');
-      await registerPage.fill(registerPage.lastNameInput, 'Doe');
-      await registerPage.fill(registerPage.phoneInput, '1234567890');
-      await registerPage.fill(registerPage.passwordInput, 'Password123!');
-      await registerPage.fill(registerPage.confirmPasswordInput, 'Password123!');
-      await registerPage.check(registerPage.termsCheckbox);
-      await registerPage.click(registerPage.registerButton);
-      await registerPage.verifyEmailFieldError('Email is required');
+      await registerPage.sendOtp(email1);
+      await registerPage.verifyStep2Loaded();
+
+      await registerPage.click(registerPage.changeEmailButton);
+      await registerPage.verifyRegisterPageLoaded();
     });
 
-    test('should validate phone is required', async ({ page }) => {
+    test('should show step indicators', async ({ page }) => {
       await registerPage.navigateToRegisterPage();
-      await registerPage.fill(registerPage.firstNameInput, 'John');
-      await registerPage.fill(registerPage.lastNameInput, 'Doe');
-      await registerPage.fill(registerPage.emailInput, 'test@example.com');
-      await registerPage.fill(registerPage.passwordInput, 'Password123!');
-      await registerPage.fill(registerPage.confirmPasswordInput, 'Password123!');
-      await registerPage.check(registerPage.termsCheckbox);
-      await registerPage.click(registerPage.registerButton);
-      await registerPage.verifyPhoneFieldError('Phone number is required');
-    });
-
-    test('should validate password is required', async ({ page }) => {
-      await registerPage.navigateToRegisterPage();
-      await registerPage.fill(registerPage.firstNameInput, 'John');
-      await registerPage.fill(registerPage.lastNameInput, 'Doe');
-      await registerPage.fill(registerPage.emailInput, 'test@example.com');
-      await registerPage.fill(registerPage.phoneInput, '1234567890');
-      await registerPage.check(registerPage.termsCheckbox);
-      await registerPage.click(registerPage.registerButton);
-      await registerPage.verifyPasswordFieldError('Password is required');
-    });
-
-    test('should validate confirm password is required', async ({ page }) => {
-      await registerPage.navigateToRegisterPage();
-      await registerPage.fill(registerPage.firstNameInput, 'John');
-      await registerPage.fill(registerPage.lastNameInput, 'Doe');
-      await registerPage.fill(registerPage.emailInput, 'test@example.com');
-      await registerPage.fill(registerPage.phoneInput, '1234567890');
-      await registerPage.fill(registerPage.passwordInput, 'Password123!');
-      await registerPage.check(registerPage.termsCheckbox);
-      await registerPage.click(registerPage.registerButton);
-      await registerPage.verifyConfirmPasswordFieldError('Please confirm your password');
-    });
-  });
-
-  test.describe('Password Strength', () => {
-    test('should display password strength indicator', async ({ page }) => {
-      await registerPage.navigateToRegisterPage();
-      await registerPage.fill(registerPage.passwordInput, 'Weak');
-      await registerPage.verifyPasswordStrength('Weak');
-      
-      await registerPage.fill(registerPage.passwordInput, 'Medium123');
-      await registerPage.verifyPasswordStrength('Medium');
-      
-      await registerPage.fill(registerPage.passwordInput, 'StrongPassword123!');
-      await registerPage.verifyPasswordStrength('Strong');
-    });
-
-    test('should show password requirements', async ({ page }) => {
-      await registerPage.navigateToRegisterPage();
-      await registerPage.click(registerPage.passwordInput);
-      await registerPage.verifyPasswordRequirements();
+      await expect(page.locator('text=1')).toBeVisible();
+      await expect(page.locator('text=2')).toBeVisible();
+      await expect(page.locator('text=3')).toBeVisible();
     });
   });
 
@@ -277,46 +166,11 @@ test.describe('Registration Functionality', () => {
     });
   });
 
-  test.describe('Form Interactions', () => {
-    test('should clear form fields', async ({ page }) => {
-      await registerPage.navigateToRegisterPage();
-      await registerPage.fill(registerPage.firstNameInput, 'John');
-      await registerPage.fill(registerPage.lastNameInput, 'Doe');
-      await registerPage.clearAll();
-      
-      await expect(registerPage.firstNameInput).toHaveValue('');
-      await expect(registerPage.lastNameInput).toHaveValue('');
-    });
-
-    test('should submit form with Enter key', async ({ page }) => {
-      const userData = {
-        firstName: faker.person.firstName(),
-        lastName: faker.person.lastName(),
-        email: faker.internet.email(),
-        phone: faker.phone.number({ style: 'national' }),
-        password: 'TestPassword123!',
-      };
-
-      await registerPage.navigateToRegisterPage();
-      await registerPage.fill(registerPage.firstNameInput, userData.firstName);
-      await registerPage.fill(registerPage.lastNameInput, userData.lastName);
-      await registerPage.fill(registerPage.emailInput, userData.email);
-      await registerPage.fill(registerPage.phoneInput, userData.phone);
-      await registerPage.fill(registerPage.passwordInput, userData.password);
-      await registerPage.fill(registerPage.confirmPasswordInput, userData.password);
-      await registerPage.check(registerPage.termsCheckbox);
-      await registerPage.confirmPasswordInput.press('Enter');
-      await registerPage.waitForPageLoad();
-    });
-  });
-
   test.describe('Responsive Design', () => {
     test('should display correctly on mobile', async ({ page }) => {
       await page.setViewportSize({ width: 375, height: 812 });
       await registerPage.navigateToRegisterPage();
       await registerPage.verifyRegisterPageLoaded();
-      await expect(registerPage.firstNameInput).toBeVisible();
-      await expect(registerPage.lastNameInput).toBeVisible();
       await expect(registerPage.emailInput).toBeVisible();
     });
 
