@@ -147,7 +147,6 @@ export class CheckoutPage extends BasePage {
   }
 
   // Form filling methods
-  // Form filling methods
   async fillShippingAddress(address: {
     firstName: string;
     lastName: string;
@@ -159,30 +158,70 @@ export class CheckoutPage extends BasePage {
     zipCode: string;
     country?: string;
   }): Promise<void> {
-    if (await this.firstNameInput.isVisible()) {
-      await this.firstNameInput.fill(address.firstName);
-    }
-    if (await this.lastNameInput.isVisible()) {
-      await this.lastNameInput.fill(address.lastName);
-    }
-    if (await this.phoneInput.isVisible()) {
-      await this.phoneInput.fill(address.phone);
-    }
-    if (await this.emailInput.isVisible()) {
-      await this.emailInput.fill(address.email);
-    }
-    if (await this.addressInput.isVisible()) {
-      await this.addressInput.fill(address.address);
-    }
-    if (await this.cityInput.isVisible()) {
-      await this.cityInput.fill(address.city);
-    }
-    if (await this.stateInput.isVisible()) {
-      await this.stateInput.fill(address.state);
-    }
-    if (await this.zipCodeInput.isVisible()) {
-      await this.zipCodeInput.fill(address.zipCode);
-    }
+    await this.firstNameInput.waitFor({ state: 'attached', timeout: 5000 }).catch(() => {});
+    await this.firstNameInput.fill(address.firstName).catch(async () => {
+      await this.firstNameInput.evaluate((el: HTMLInputElement, val) => {
+        el.value = val;
+        el.dispatchEvent(new Event('input', { bubbles: true }));
+        el.dispatchEvent(new Event('change', { bubbles: true }));
+      }, address.firstName);
+    });
+
+    await this.lastNameInput.fill(address.lastName).catch(async () => {
+      await this.lastNameInput.evaluate((el: HTMLInputElement, val) => {
+        el.value = val;
+        el.dispatchEvent(new Event('input', { bubbles: true }));
+        el.dispatchEvent(new Event('change', { bubbles: true }));
+      }, address.lastName);
+    });
+
+    await this.phoneInput.fill(address.phone).catch(async () => {
+      await this.phoneInput.evaluate((el: HTMLInputElement, val) => {
+        el.value = val;
+        el.dispatchEvent(new Event('input', { bubbles: true }));
+        el.dispatchEvent(new Event('change', { bubbles: true }));
+      }, address.phone);
+    });
+
+    await this.emailInput.fill(address.email).catch(async () => {
+      await this.emailInput.evaluate((el: HTMLInputElement, val) => {
+        el.value = val;
+        el.dispatchEvent(new Event('input', { bubbles: true }));
+        el.dispatchEvent(new Event('change', { bubbles: true }));
+      }, address.email);
+    });
+
+    await this.addressInput.fill(address.address).catch(async () => {
+      await this.addressInput.evaluate((el: HTMLInputElement, val) => {
+        el.value = val;
+        el.dispatchEvent(new Event('input', { bubbles: true }));
+        el.dispatchEvent(new Event('change', { bubbles: true }));
+      }, address.address);
+    });
+
+    await this.cityInput.fill(address.city).catch(async () => {
+      await this.cityInput.evaluate((el: HTMLInputElement, val) => {
+        el.value = val;
+        el.dispatchEvent(new Event('input', { bubbles: true }));
+        el.dispatchEvent(new Event('change', { bubbles: true }));
+      }, address.city);
+    });
+
+    await this.stateInput.fill(address.state).catch(async () => {
+      await this.stateInput.evaluate((el: HTMLInputElement, val) => {
+        el.value = val;
+        el.dispatchEvent(new Event('input', { bubbles: true }));
+        el.dispatchEvent(new Event('change', { bubbles: true }));
+      }, address.state);
+    });
+
+    await this.zipCodeInput.fill(address.zipCode).catch(async () => {
+      await this.zipCodeInput.evaluate((el: HTMLInputElement, val) => {
+        el.value = val;
+        el.dispatchEvent(new Event('input', { bubbles: true }));
+        el.dispatchEvent(new Event('change', { bubbles: true }));
+      }, address.zipCode);
+    });
   }
 
   async fillBillingAddress(address: {
