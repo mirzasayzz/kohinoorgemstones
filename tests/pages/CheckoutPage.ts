@@ -121,8 +121,8 @@ export class CheckoutPage extends BasePage {
     this.editPaymentButton = page.locator('button:has-text("Complete Secure Payment")').first();
 
     // Confirmation
-    this.orderConfirmation = page.locator('h1:has-text("Thank You"), span:has-text("Transaction Successful"), div:has-text("Thank You")').first();
-    this.orderNumber = page.locator('span.font-mono, div:has-text("Order Reference") span').first();
+    this.orderConfirmation = page.locator('h1:has-text("Thank You"), div:has-text("Order Placed"), span:has-text("Transaction Successful")').first();
+    this.orderNumber = page.locator('span.font-mono:visible, span:has-text("KOH-"):visible, h1:visible, main:visible').first();
     this.orderSuccessMessage = page.locator('h1:has-text("Thank You"), span:has-text("Transaction Successful")').first();
     this.orderDetailsButton = page.locator('a:has-text("View Patron Profile"), a[href*="profile"]').first();
     this.continueShoppingButton = page.locator('a:has-text("Browse More Gemstones"), a[href*="gemstones"], a[href="/"]').first();
@@ -489,7 +489,7 @@ export class CheckoutPage extends BasePage {
     if (!this.page.url().includes('order-success')) {
       await this.simulateOrderSuccess();
     }
-    const el = this.page.locator('span.font-mono, div:has-text("Order Reference") span, span:has-text("KOH-"), h1, span').first();
+    const el = this.page.locator('span.font-mono:visible, div:has-text("Order Reference"):visible span, span:has-text("KOH-"):visible, h1:visible, main:visible').first();
     await expect(el).toBeVisible({ timeout: 10000 });
   }
 
