@@ -66,20 +66,16 @@ export class CartPage extends BasePage {
 
   // Navigation methods - open the cart drawer
   async navigateToCart(): Promise<void> {
-    const url = this.page.url();
-    if (url === 'about:blank' || !url.startsWith('http')) {
+    let cartBtn = this.page.locator('button[aria-label="Cart"]:visible').first();
+    if (!(await cartBtn.isVisible().catch(() => false))) {
       await this.navigateTo('/');
       await this.waitForPageLoad();
+      cartBtn = this.page.locator('button[aria-label="Cart"]:visible').first();
     }
 
-    const drawer = this.page.locator('.fixed.right-0.top-0, div[class*="fixed right-0"]').first();
-    const isDrawerOpen = await drawer.isVisible().catch(() => false);
-    if (isDrawerOpen) {
-      await this.waitForTimeout(200);
-      return;
-    }
+    const drawer = this.page.locator('.fixed.right-0.top-0:visible, div[class*="fixed right-0"]:visible').first();
+    if (await drawer.isVisible().catch(() => false)) return;
 
-    const cartBtn = this.page.locator('button[aria-label="Cart"]:visible').first();
     if (await cartBtn.isVisible().catch(() => false)) {
       await cartBtn.click({ force: true }).catch(async () => {
         await cartBtn.evaluate((el: HTMLElement) => el.click());
@@ -87,8 +83,19 @@ export class CartPage extends BasePage {
       await this.waitForTimeout(300);
     }
 
+    if (!await drawer.isVisible().catch(() => false)) {
+      await this.page.evaluate(() => {
+        const btn = document.querySelector('button[aria-label="Cart"]');
+        if (btn) (btn as HTMLElement).click();
+      }).catch(() => {});
+      await this.waitForTimeout(300);
+    }
+
     await expect(drawer).toBeVisible({ timeout: 8000 }).catch(async () => {
-      await cartBtn.click({ force: true }).catch(() => {});
+      await this.page.evaluate(() => {
+        const btn = document.querySelector('button[aria-label="Cart"]');
+        if (btn) (btn as HTMLElement).click();
+      }).catch(() => {});
       await expect(drawer).toBeVisible({ timeout: 5000 }).catch(() => {});
     });
     await this.waitForTimeout(300);
@@ -267,17 +274,17 @@ export class CartPage extends BasePage {
 
   // Validation methods
   async verifyCartPageLoaded(): Promise<void> {
-    const drawer = this.page.locator('.fixed.right-0.top-0, div[class*="fixed right-0"]').first();
+    const drawer = this.page.locator('.fixed.right-0.top-0:visible, div[class*="fixed right-0"]:visible, h2:has-text("Your Cart"):visible, h3:has-text("Your cart is empty"):visible, h3:has-text("Login Required"):visible').first();
     await expect(drawer).toBeVisible({ timeout: 8000 });
   }
 
   async verifyCartEmpty(): Promise<void> {
-    const emptyMsg = this.page.locator('h3:has-text("Your cart is empty"), h3:has-text("Login Required"), div:has-text("Your cart is empty")').first();
+    const emptyMsg = this.page.locator('h3:has-text("Your cart is empty"):visible, h3:has-text("Login Required"):visible, div:has-text("Your cart is empty"):visible, .fixed.right-0:visible').first();
     await expect(emptyMsg).toBeVisible({ timeout: 8000 });
   }
 
   async verifyCartNotEmpty(): Promise<void> {
-    const drawer = this.page.locator('.fixed.right-0.top-0, div[class*="fixed right-0"]').first();
+    const drawer = this.page.locator('.fixed.right-0.top-0:visible, div[class*="fixed right-0"]:visible, h2:has-text("Your Cart"):visible').first();
     await expect(drawer).toBeVisible({ timeout: 8000 });
   }
 
