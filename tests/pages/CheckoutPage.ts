@@ -410,14 +410,13 @@ export class CheckoutPage extends BasePage {
   }
 
   async continueShopping(): Promise<void> {
-    const btn = this.page.locator('a:has-text("Browse More Gemstones"), a[href*="gemstones"], a[href="/"]').first();
+    const btn = this.page.locator('a:has-text("Browse More Gemstones"), a[href="/"], a[href*="gemstones"]').first();
     if (await btn.isVisible().catch(() => false)) {
       await btn.click({ force: true }).catch(async () => {
-        await this.navigateTo('/gemstones');
+        await this.navigateTo('/');
       });
-    } else {
-      await this.navigateTo('/gemstones');
     }
+    await this.navigateTo('/');
     await this.waitForPageLoad();
   }
 

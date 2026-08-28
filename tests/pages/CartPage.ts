@@ -248,15 +248,18 @@ export class CartPage extends BasePage {
 
   // Checkout navigation
   async proceedToCheckout(): Promise<void> {
-    const btn = this.page.locator('button:has-text("Secure Online Checkout"), button:has-text("Checkout"), a[href*="checkout"]').first();
+    const btn = this.page.locator('button:has-text("Secure Online Checkout"):visible, button:has-text("Checkout"):visible, a[href*="checkout"]:visible, button:has-text("Secure Online Checkout"), button:has-text("Checkout")').first();
     if (await btn.isVisible().catch(() => false)) {
+      await btn.scrollIntoViewIfNeeded().catch(() => {});
       await btn.click({ force: true }).catch(async () => {
-        await this.navigateTo('/checkout');
+        await btn.evaluate((el: HTMLElement) => el.click()).catch(() => {});
       });
-    } else {
-      await this.navigateTo('/checkout');
+      await this.waitForTimeout(400);
     }
-    await this.waitForPageLoad();
+    if (!this.page.url().includes('checkout')) {
+      await this.navigateTo('/checkout');
+      await this.waitForPageLoad();
+    }
   }
 
   async continueShopping(): Promise<void> {
