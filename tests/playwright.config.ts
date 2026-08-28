@@ -1,6 +1,9 @@
 import { defineConfig, devices } from '@playwright/test';
 import dotenv from 'dotenv';
 import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 dotenv.config({ path: path.resolve(__dirname, '.env') });
 
@@ -8,8 +11,8 @@ export default defineConfig({
   testDir: './tests',
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 1 : undefined,
+  retries: process.env.CI ? 1 : 0,
+  workers: process.env.CI ? 2 : undefined,
   reporter: [
     ['html', { outputFolder: 'html-report', open: 'never' }],
     ['json', { outputFile: 'test-results.json' }],
@@ -30,33 +33,34 @@ export default defineConfig({
   },
   projects: [
     {
-      name: 'setup',
-      testMatch: /.*\.setup\.ts/,
+      // API requests do not need a browser.
+      name: 'api',
+      testMatch: /.*\/api\/.*\.spec\.ts/,
     },
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
-      dependencies: ['setup'],
+      testIgnore: /.*\/api\/.*\.spec\.ts/,
     },
     {
       name: 'firefox',
       use: { ...devices['Desktop Firefox'] },
-      dependencies: ['setup'],
+      testIgnore: /.*\/api\/.*\.spec\.ts/,
     },
     {
       name: 'webkit',
       use: { ...devices['Desktop Safari'] },
-      dependencies: ['setup'],
+      testIgnore: /.*\/api\/.*\.spec\.ts/,
     },
     {
       name: 'Mobile Chrome',
       use: { ...devices['Pixel 5'] },
-      dependencies: ['setup'],
+      testIgnore: /.*\/api\/.*\.spec\.ts/,
     },
     {
       name: 'Mobile Safari',
       use: { ...devices['iPhone 12'] },
-      dependencies: ['setup'],
+      testIgnore: /.*\/api\/.*\.spec\.ts/,
     },
   ],
   outputDir: 'test-results',
@@ -64,6 +68,4 @@ export default defineConfig({
   expect: {
     timeout: 15000,
   },
-  globalSetup: undefined,
-  globalTeardown: undefined,
 });

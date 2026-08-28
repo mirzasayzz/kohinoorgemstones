@@ -9,10 +9,6 @@ on:
 
 env:
   NODE_VERSION: '20'
-  BASE_URL: ${{ secrets.BASE_URL }}
-  API_BASE_URL: ${{ secrets.API_BASE_URL }}
-  TEST_USER_EMAIL: ${{ secrets.TEST_USER_EMAIL }}
-  TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
 
 jobs:
   lint-and-typecheck:
@@ -48,7 +44,6 @@ jobs:
     name: API Tests
     runs-on: ubuntu-latest
     needs: lint-and-typecheck
-    continue-on-error: true
     timeout-minutes: 15
 
     steps:
@@ -62,7 +57,30 @@ jobs:
           cache: 'npm'
           cache-dependency-path: tests/package-lock.json
 
-      - name: Install dependencies
+      - name: Start MongoDB
+        uses: supercharge/mongodb-github-action@1.11.0
+        with:
+          mongodb-version: '7.0'
+          mongodb-name: kohinoor_playwright
+
+      - name: Install backend dependencies
+        run: |
+          cd backend
+          npm ci
+
+      - name: Seed test data
+        run: |
+          cd backend
+          NODE_ENV=test TEST_MODE=true JWT_SECRET=playwright-local-secret GEMINI_API_KEY=test MONGODB_URI=mongodb://127.0.0.1:27017/kohinoor_playwright node scripts/seed-ci.js
+
+      - name: Start backend server
+        run: |
+          cd backend
+          NODE_ENV=test TEST_MODE=true PORT=3001 JWT_SECRET=playwright-local-secret GEMINI_API_KEY=test MONGODB_URI=mongodb://127.0.0.1:27017/kohinoor_playwright node src/server.js &
+          sleep 5
+          curl -f http://127.0.0.1:3001/api/health || exit 1
+
+      - name: Install test dependencies
         run: |
           cd tests
           npm ci
@@ -75,7 +93,7 @@ jobs:
       - name: Run API tests
         run: |
           cd tests
-          npx playwright test tests/api --reporter=list
+          API_BASE_URL=http://127.0.0.1:3001 npx playwright test tests/api --project=api --reporter=list
 
       - name: Upload test results
         if: always()
@@ -91,7 +109,6 @@ jobs:
     name: E2E Tests (${{ matrix.browser }})
     runs-on: ubuntu-latest
     needs: lint-and-typecheck
-    continue-on-error: true
     timeout-minutes: 30
 
     strategy:
@@ -110,7 +127,42 @@ jobs:
           cache: 'npm'
           cache-dependency-path: tests/package-lock.json
 
-      - name: Install dependencies
+      - name: Start MongoDB
+        uses: supercharge/mongodb-github-action@1.11.0
+        with:
+          mongodb-version: '7.0'
+          mongodb-name: kohinoor_playwright
+
+      - name: Install backend dependencies
+        run: |
+          cd backend
+          npm ci
+
+      - name: Seed test data
+        run: |
+          cd backend
+          NODE_ENV=test TEST_MODE=true JWT_SECRET=playwright-local-secret GEMINI_API_KEY=test MONGODB_URI=mongodb://127.0.0.1:27017/kohinoor_playwright node scripts/seed-ci.js
+
+      - name: Start backend server
+        run: |
+          cd backend
+          NODE_ENV=test TEST_MODE=true PORT=3001 JWT_SECRET=playwright-local-secret GEMINI_API_KEY=test MONGODB_URI=mongodb://127.0.0.1:27017/kohinoor_playwright node src/server.js &
+          sleep 5
+          curl -f http://127.0.0.1:3001/api/health || exit 1
+
+      - name: Install frontend dependencies
+        run: |
+          cd frontend
+          npm ci
+
+      - name: Start frontend dev server
+        run: |
+          cd frontend
+          VITE_API_BASE_URL=http://127.0.0.1:3001/api npm run dev -- --host 127.0.0.1 --port 5173 &
+          sleep 5
+          curl -f http://127.0.0.1:5173 || exit 1
+
+      - name: Install test dependencies
         run: |
           cd tests
           npm ci
@@ -123,7 +175,7 @@ jobs:
       - name: Run E2E tests
         run: |
           cd tests
-          npx playwright test tests/e2e --project=${{ matrix.browser }} --reporter=list
+          BASE_URL=http://127.0.0.1:5173 API_BASE_URL=http://127.0.0.1:3001 npx playwright test tests/e2e --project=${{ matrix.browser }} --reporter=list
 
       - name: Upload test results
         if: always()
@@ -139,7 +191,6 @@ jobs:
     name: Mobile Tests (${{ matrix.device }})
     runs-on: ubuntu-latest
     needs: lint-and-typecheck
-    continue-on-error: true
     timeout-minutes: 20
 
     strategy:
@@ -158,7 +209,42 @@ jobs:
           cache: 'npm'
           cache-dependency-path: tests/package-lock.json
 
-      - name: Install dependencies
+      - name: Start MongoDB
+        uses: supercharge/mongodb-github-action@1.11.0
+        with:
+          mongodb-version: '7.0'
+          mongodb-name: kohinoor_playwright
+
+      - name: Install backend dependencies
+        run: |
+          cd backend
+          npm ci
+
+      - name: Seed test data
+        run: |
+          cd backend
+          NODE_ENV=test TEST_MODE=true JWT_SECRET=playwright-local-secret GEMINI_API_KEY=test MONGODB_URI=mongodb://127.0.0.1:27017/kohinoor_playwright node scripts/seed-ci.js
+
+      - name: Start backend server
+        run: |
+          cd backend
+          NODE_ENV=test TEST_MODE=true PORT=3001 JWT_SECRET=playwright-local-secret GEMINI_API_KEY=test MONGODB_URI=mongodb://127.0.0.1:27017/kohinoor_playwright node src/server.js &
+          sleep 5
+          curl -f http://127.0.0.1:3001/api/health || exit 1
+
+      - name: Install frontend dependencies
+        run: |
+          cd frontend
+          npm ci
+
+      - name: Start frontend dev server
+        run: |
+          cd frontend
+          VITE_API_BASE_URL=http://127.0.0.1:3001/api npm run dev -- --host 127.0.0.1 --port 5173 &
+          sleep 5
+          curl -f http://127.0.0.1:5173 || exit 1
+
+      - name: Install test dependencies
         run: |
           cd tests
           npm ci
@@ -166,18 +252,18 @@ jobs:
       - name: Install Playwright browsers
         run: |
           cd tests
-          npx playwright install --with-deps
+          npx playwright install --with-deps chromium
 
       - name: Run mobile tests
         run: |
           cd tests
-          npx playwright test tests/e2e --project="${{ matrix.device }}" --reporter=list
+          BASE_URL=http://127.0.0.1:5173 API_BASE_URL=http://127.0.0.1:3001 npx playwright test tests/e2e --project="${{ matrix.device }}" --reporter=list
 
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: mobile-test-results-${{ matrix.device }}
+          name: mobile-results-${{ matrix.device }}
           path: |
             tests/test-results
             tests/html-report
@@ -197,8 +283,8 @@ jobs:
           echo "| Suite | Status |" >> $GITHUB_STEP_SUMMARY
           echo "|-------|--------|" >> $GITHUB_STEP_SUMMARY
           echo "| Lint & Type Check | Required |" >> $GITHUB_STEP_SUMMARY
-          echo "| API Tests | continue-on-error |" >> $GITHUB_STEP_SUMMARY
-          echo "| E2E Tests (chromium, firefox, webkit) | continue-on-error |" >> $GITHUB_STEP_SUMMARY
-          echo "| Mobile Tests (Chrome, Safari) | continue-on-error |" >> $GITHUB_STEP_SUMMARY
+          echo "| API Tests | Required |" >> $GITHUB_STEP_SUMMARY
+          echo "| E2E Tests (chromium, firefox, webkit) | Required |" >> $GITHUB_STEP_SUMMARY
+          echo "| Mobile Tests (Chrome, Safari) | Required |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "Note: E2E and API tests require a running backend server. Tests run locally against dev server." >> $GITHUB_STEP_SUMMARY
+          echo "Tests run against a local backend + frontend started by the workflow." >> $GITHUB_STEP_SUMMARY
