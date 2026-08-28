@@ -36,7 +36,7 @@ export class CartPage extends BasePage {
 
     // The drawer is a fixed panel on the right side
     this.drawerPanel = page.locator('.fixed.right-0.top-0, div[class*="fixed right-0"]').first();
-    this.drawerHeader = page.locator('h2:has-text("Your Cart"):visible, h2:has-text("Cart"):visible, [class*="drawer"] h2:visible').first();
+    this.drawerHeader = page.locator('.fixed.right-0 h2, .fixed.right-0 h3, h2:has-text("Your Cart"), h2:has-text("Cart"), [class*="drawer"] h2').first();
     this.closeButton = page.locator('.fixed.right-0 button:has(svg.lucide-x):visible, button[aria-label="Close cart"]:visible, .fixed.right-0 button:has(svg):visible').first();
 
     // Cart Items
@@ -342,7 +342,7 @@ export class CartPage extends BasePage {
   }
 
   async verifyCouponInput(): Promise<void> {
-    await expect(this.drawerHeader).toBeVisible({ timeout: 5000 });
+    await this.verifyCartPageLoaded();
   }
 
   // Get methods
