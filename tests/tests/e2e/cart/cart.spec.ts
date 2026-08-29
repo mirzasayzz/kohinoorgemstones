@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import { HomePage } from '../../../pages/HomePage';
 import { ProductPage } from '../../../pages/ProductPage';
 import { CartPage } from '../../../pages/CartPage';
-import { checkSiteAvailable } from '../../../helpers/site-check';
+import { assertSiteAvailable } from '../../../helpers/site-check';
 
 test.describe('Shopping Cart', () => {
   let homePage: HomePage;
@@ -11,8 +11,7 @@ test.describe('Shopping Cart', () => {
 
   test.beforeAll(async ({ request }) => {
     const baseUrl = process.env.BASE_URL || 'http://localhost:5173';
-    const available = await checkSiteAvailable(request, baseUrl);
-    test.skip(!available, 'Site is not reachable - skipping E2E tests');
+    await assertSiteAvailable(request, baseUrl);
   });
 
   test.beforeEach(async ({ page }) => {

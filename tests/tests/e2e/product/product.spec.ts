@@ -1,7 +1,9 @@
 import { test, expect } from '@playwright/test';
 import { HomePage } from '../../../pages/HomePage';
 import { ProductPage } from '../../../pages/ProductPage';
-import { checkSiteAvailable } from '../../../helpers/site-check';
+import { assertSiteAvailable } from '../../../helpers/site-check';
+import { measurePagePerformance, checkCoreWebVitals, assertPerformanceBudget } from '../../../helpers/performance';
+import { checkImageAccessibility, checkHeadingHierarchy } from '../../../helpers/accessibility';
 
 test.describe('Product Browsing', () => {
   let homePage: HomePage;
@@ -9,8 +11,7 @@ test.describe('Product Browsing', () => {
 
   test.beforeAll(async ({ request }) => {
     const baseUrl = process.env.BASE_URL || 'http://localhost:5173';
-    const available = await checkSiteAvailable(request, baseUrl);
-    test.skip(!available, 'Site is not reachable - skipping E2E tests');
+    await assertSiteAvailable(request, baseUrl);
   });
 
   test.beforeEach(async ({ page }) => {
@@ -364,6 +365,70 @@ test.describe('Product Browsing', () => {
       await homePage.navigateToHomePage();
       await homePage.clickProduct(0);
       await productPage.verifyProductPageLoaded();
+    });
+  });
+
+  test.describe('Performance', () => {
+    test('should load homepage within performance budget', async ({ page }) => {
+      await homePage.navigateToHomePage();
+      const { violations } = await assertPerformanceBudget(page, {
+        maxLoadTime: 5000,
+        maxLCP: 2500,
+        maxCLS: 0.1,
+      });
+      expect(violations).toHaveLength(0);
+    });
+
+    test('should have acceptable Core Web Vitals', async ({ page }) => {
+      await homePage.navigateToHomePage();
+      const vitals = await checkCoreWebVitals(page);
+      expect(vitals.lcp).toBeLessThan(4000);
+      expect(vitals.cls).toBeLessThan(0.25);
+    });
+
+    test('should measure page performance metrics', async ({ page }) => {
+      await homePage.navigateToHomePage();
+      const metrics = await measurePagePerformance(page);
+      expect(metrics.loadTime).toBeGreaterThan(0);
+      expect(metrics.totalResources).toBeGreaterThan(0);
+    });
+
+    test('should load product detail within budget', async ({ page }) => {
+      await homePage.navigateToHomePage();
+      await homePage.clickProduct(0);
+      const { violations } = await assertPerformanceBudget(page, {
+        maxLoadTime: 5000,
+        maxLCP: 3000,
+      });
+      expect(violations).toHaveLength(0);
+    });
+  });
+
+  test.describe('Accessibility', () => {
+    test('should have valid image alt texts on homepage', async ({ page }) => {
+      await homePage.navigateToHomePage();
+      const issues = await checkImageAccessibility(page);
+      expect(issues).toHaveLength(0);
+    });
+
+    test('should have valid heading hierarchy on homepage', async ({ page }) => {
+      await homePage.navigateToHomePage();
+      const { issues } = await checkHeadingHierarchy(page);
+      expect(issues).toHaveLength(0);
+    });
+
+    test('should have valid image alt texts on product page', async ({ page }) => {
+      await homePage.navigateToHomePage();
+      await homePage.clickProduct(0);
+      const issues = await checkImageAccessibility(page);
+      expect(issues).toHaveLength(0);
+    });
+
+    test('should have valid heading hierarchy on product page', async ({ page }) => {
+      await homePage.navigateToHomePage();
+      await homePage.clickProduct(0);
+      const { issues } = await checkHeadingHierarchy(page);
+      expect(issues).toHaveLength(0);
     });
   });
 });
