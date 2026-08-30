@@ -72,6 +72,7 @@ const UserMenu = ({ onLoginClick, onChatClick }) => {
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
         onClick={() => setIsOpen(!isOpen)}
+        aria-label="User menu"
         className="flex items-center gap-1 sm:gap-2 p-1 sm:p-1.5 sm:pr-3 bg-neutral-100 dark:bg-neutral-800 
           rounded-full hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
       >

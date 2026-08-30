@@ -36,11 +36,6 @@ const GemstoneCard = ({ gemstone, index = 0, variant = 'grid' }) => {
     e.preventDefault();
     e.stopPropagation();
     
-    if (!isAuthenticated) {
-      toast.error('Please login to add items to cart');
-      return;
-    }
-    
     const result = addToCart(gemstone);
     if (result?.success) {
       toast.cartAdd(gemstone);

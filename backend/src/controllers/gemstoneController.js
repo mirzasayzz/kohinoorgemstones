@@ -88,7 +88,15 @@ export const getGemstones = asyncHandler(async (req, res, next) => {
   }
 
   if (reqQuery.search) {
-    query.$text = { $search: reqQuery.search };
+    query.$or = [
+      { 'name.english': { $regex: reqQuery.search, $options: 'i' } },
+      { 'name.urdu': { $regex: reqQuery.search, $options: 'i' } },
+      { category: { $regex: reqQuery.search, $options: 'i' } },
+      { description: { $regex: reqQuery.search, $options: 'i' } },
+      { summary: { $regex: reqQuery.search, $options: 'i' } },
+      { uses: { $regex: reqQuery.search, $options: 'i' } },
+      { tags: { $in: [new RegExp(reqQuery.search, 'i')] } }
+    ];
   }
 
   // Create query

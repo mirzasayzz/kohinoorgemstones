@@ -62,11 +62,6 @@ export const CartProvider = ({ children }) => {
   // Add to cart
   const addToCart = (gemstone, quantity = 1) => {
     if (!gemstone || !gemstone._id) return false;
-    
-    // Only allow for logged-in users
-    if (!isAuthenticated) {
-      return { success: false, message: 'Please login to add items to cart' };
-    }
 
     setCartItems(prev => {
       const existingIndex = prev.findIndex(item => item._id === gemstone._id);

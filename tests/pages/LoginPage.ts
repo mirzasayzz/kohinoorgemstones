@@ -28,10 +28,10 @@ export class LoginPage extends BasePage {
     this.createAccountLink = page.locator('a:has-text("Create an account"), a:has-text("Sign Up"), a[href*="signup"]');
 
     // Logo
-    this.logo = page.locator('a[href="/"] img, .logo, [class*="logo"]');
+    this.logo = page.locator('a[href="/"]').first();
 
     // Messages
-    this.errorMessage = page.locator('[class*="error"], [class*="alert-danger"]');
+    this.errorMessage = page.locator('div.text-red-400');
     this.successMessage = page.locator('[class*="success"], [class*="alert-success"]');
     this.loadingSpinner = page.locator('.loading, .spinner, [class*="loading"], [class*="spinner"]');
   }
@@ -78,9 +78,7 @@ export class LoginPage extends BasePage {
   }
 
   async verifyLoginSuccessful(): Promise<void> {
-    const currentUrl = await this.getCurrentUrl();
-    expect(currentUrl).not.toContain('/signin');
-    expect(currentUrl).not.toContain('/login');
+    await expect(this.page).not.toHaveURL(/signin|login/);
   }
 
   // Navigation methods

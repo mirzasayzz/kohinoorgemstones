@@ -1,3 +1,10 @@
+import dotenv from 'dotenv';
+import { fileURLToPath } from 'url';
+import path from 'path';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+dotenv.config({ path: path.resolve(__dirname, '../../.env') });
+
 import mongoose from 'mongoose';
 import User from '../src/models/User.js';
 import Customer from '../src/models/Customer.js';
@@ -41,9 +48,11 @@ try {
     name: { english: 'Playwright Emerald', urdu: 'زمرد' },
     category: 'Emerald',
     color: 'Green',
-    summary: 'A deterministic emerald used by the browser test suite.',
+    summary: 'A deterministic emerald ring gemstone used by the browser test suite.',
     description: 'This seeded emerald provides a stable catalog and detail-page contract for automated tests.',
     purpose: ['Wisdom', 'Success'],
+    tags: ['ring', 'emerald', 'astrology', 'certified'],
+    uses: 'Rings, pendants, astrological remedies',
     images: [{ url: 'https://placehold.co/600x600/png?text=Emerald', publicId: 'playwright-emerald', alt: 'Playwright Emerald' }],
     price: 25000,
     trending: true,
@@ -55,9 +64,11 @@ try {
     name: { english: 'Playwright Ruby', urdu: 'یاقوت' },
     category: 'Ruby',
     color: 'Red',
-    summary: 'A deterministic ruby used by the browser test suite.',
+    summary: 'A deterministic ruby ring gemstone used by the browser test suite.',
     description: 'This seeded ruby verifies filtering and related-catalog behavior without remote dependencies.',
     purpose: ['Love', 'Protection'],
+    tags: ['ring', 'ruby', 'love', 'certified'],
+    uses: 'Rings, jewelry, spiritual energy',
     images: [{ url: 'https://placehold.co/600x600/png?text=Ruby', publicId: 'playwright-ruby', alt: 'Playwright Ruby' }],
     price: 18000,
     addedBy: admin._id,

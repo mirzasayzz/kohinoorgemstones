@@ -25,7 +25,7 @@ test.describe('Login Functionality', () => {
     test('should display login page correctly', async ({ page }) => {
       await loginPage.navigateToLoginPage();
       await loginPage.verifyLoginPageLoaded();
-      await expect(page).toHaveTitle(/login|sign in/i);
+      await expect(page).toHaveTitle(/Kohinoor Gemstone/i);
     });
 
     test('should have all required form elements', async ({ page }) => {

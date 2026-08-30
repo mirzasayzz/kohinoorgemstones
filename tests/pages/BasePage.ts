@@ -11,15 +11,15 @@ export class BasePage {
 
   // Navigation methods
   async navigateTo(url: string): Promise<void> {
-    await this.page.goto(url, { waitUntil: 'networkidle' });
+    await this.page.goto(url, { waitUntil: 'domcontentloaded' });
   }
 
   async waitForPageLoad(): Promise<void> {
-    await this.page.waitForLoadState('networkidle');
+    await this.page.waitForLoadState('domcontentloaded');
   }
 
   async reloadPage(): Promise<void> {
-    await this.page.reload({ waitUntil: 'networkidle' });
+    await this.page.reload({ waitUntil: 'domcontentloaded' });
   }
 
   async goBack(): Promise<void> {
@@ -31,8 +31,8 @@ export class BasePage {
   }
 
   // Common element interactions
-  async click(locator: Locator): Promise<void> {
-    await locator.click();
+  async click(locator: Locator, options?: Parameters<Locator['click']>[0]): Promise<void> {
+    await locator.click({ noWaitAfter: true, ...options });
   }
 
   async doubleClick(locator: Locator): Promise<void> {

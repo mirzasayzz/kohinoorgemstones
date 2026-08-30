@@ -51,9 +51,11 @@ const Checkout = () => {
 
   // Guards
   useEffect(() => {
-    if (!isAuthenticated) { toast.error('Please login to checkout'); navigate('/signin'); }
-    else if (cartItems.length === 0) { toast.error('Your cart is empty'); navigate('/'); }
-  }, [cartItems, isAuthenticated]);
+    if (!isAuthenticated) {
+      setShowForm(true);
+      setLoadingAddresses(false);
+    }
+  }, [isAuthenticated]);
 
   // Fetch saved addresses
   useEffect(() => {

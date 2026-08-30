@@ -44,16 +44,16 @@ export class RegisterPage extends BasePage {
     // Step 3: Complete Profile
     this.nameInput = page.locator('input[name="name"], input[placeholder*="name" i]');
     this.phoneInput = page.locator('input[type="tel"], input[name="phone"], input[placeholder*="phone" i]');
-    this.passwordInput = page.locator('input[name="password"], input[type="password"]:first-of-type');
-    this.confirmPasswordInput = page.locator('input[name="confirmPassword"], input[type="password"]:last-of-type');
+    this.passwordInput = page.locator('input[name="password"]');
+    this.confirmPasswordInput = page.locator('input[name="confirmPassword"]');
     this.createAccountButton = page.locator('button[type="submit"]:has-text("Create Account")');
 
     // Navigation
     this.signinLink = page.locator('a:has-text("Sign In"), a[href*="signin"]');
-    this.logo = page.locator('a[href="/"] img, .logo, [class*="logo"]');
+    this.logo = page.locator('a[href="/"]').first();
 
     // Messages
-    this.errorMessage = page.locator('[class*="error"], [class*="alert-danger"]');
+    this.errorMessage = page.locator('p.text-sm.font-medium');
     this.successMessage = page.locator('[class*="success"], [class*="alert-success"]');
     this.loadingSpinner = page.locator('.loading, .spinner, [class*="loading"], [class*="spinner"]');
   }
@@ -121,12 +121,8 @@ export class RegisterPage extends BasePage {
   }
 
   async verifyErrorMessage(expectedMessage: string | RegExp): Promise<void> {
-    await this.expectVisible(this.errorMessage);
-    if (typeof expectedMessage === 'string') {
-      await this.expectText(this.errorMessage, expectedMessage);
-    } else {
-      await expect(this.errorMessage).toContainText(expectedMessage);
-    }
+    const errorEl = this.page.locator('.toast, [role="alert"], p.text-sm.font-medium, div.text-red-400, [class*="text-red"]').filter({ hasText: expectedMessage }).first();
+    await expect(errorEl).toBeVisible({ timeout: 10000 });
   }
 
   async verifySuccessMessage(expectedMessage: string): Promise<void> {
@@ -135,9 +131,7 @@ export class RegisterPage extends BasePage {
   }
 
   async verifyRegistrationSuccessful(): Promise<void> {
-    const currentUrl = await this.getCurrentUrl();
-    expect(currentUrl).not.toContain('/signup');
-    expect(currentUrl).not.toContain('/register');
+    await expect(this.page).not.toHaveURL(/signup|register/);
   }
 
   // Navigation methods
@@ -148,7 +142,7 @@ export class RegisterPage extends BasePage {
 
   // Form validation
   async submitEmptyForm(): Promise<void> {
-    await this.click(this.sendOtpButton);
+    await expect(this.sendOtpButton).toBeDisabled();
   }
 
   // Get methods

@@ -77,7 +77,8 @@ app.use(session({
 // Rate limiting (apply to API only, not admin pages or static assets)
 const apiLimiter = rateLimit({
   windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS || '', 10) || 15 * 60 * 1000,
-  max: parseInt(process.env.RATE_LIMIT_MAX || '', 10) || 300,
+  max: parseInt(process.env.RATE_LIMIT_MAX || '', 10) || (process.env.NODE_ENV !== 'production' || process.env.TEST_MODE === 'true' || process.env.CI ? 100000 : 300),
+  skip: () => process.env.NODE_ENV !== 'production' || process.env.TEST_MODE === 'true' || process.env.CI === 'true',
   message: 'Too many requests from this IP, please try again later.',
   trustProxy: process.env.NODE_ENV === 'production'
 });

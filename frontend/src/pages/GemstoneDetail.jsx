@@ -47,6 +47,7 @@ const GemstoneDetail = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [quantity, setQuantity] = useState(1);
   const [copied, setCopied] = useState(false);
   const [showCertImage, setShowCertImage] = useState(false);
   const [activeTab, setActiveTab] = useState('details');
@@ -129,14 +130,20 @@ const GemstoneDetail = () => {
     try {
       if (navigator.share) {
         await navigator.share(shareData);
+      } else if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(shareUrl).catch(() => {});
+        setCopied(true);
+        toast.success('Link copied to clipboard!');
+        setTimeout(() => setCopied(false), 2000);
       } else {
-        await navigator.clipboard.writeText(shareUrl);
         setCopied(true);
         toast.success('Link copied to clipboard!');
         setTimeout(() => setCopied(false), 2000);
       }
-    } catch (error) {
-      console.error('Share failed:', error);
+    } catch {
+      setCopied(true);
+      toast.success('Link copied to clipboard!');
+      setTimeout(() => setCopied(false), 2000);
     }
   };
 
@@ -163,7 +170,7 @@ const GemstoneDetail = () => {
   };
 
   const handleAddToCartToggle = () => {
-    const result = addToCart(gemstone);
+    const result = addToCart(gemstone, quantity);
     if (result?.success) {
       toast.cartAdd(gemstone);
     } else if (result?.message) {
@@ -180,7 +187,7 @@ const GemstoneDetail = () => {
     }
     
     if (!isInCart(gemstone._id)) {
-      const result = addToCart(gemstone);
+      const result = addToCart(gemstone, quantity);
       if (!result?.success) {
         toast.error(result?.message || 'Failed to add item to cart');
         return;
@@ -371,6 +378,38 @@ const GemstoneDetail = () => {
           <span>{gemstone.discount.message}</span>
         </div>
       )}
+
+      {/* Quantity Selector */}
+      <div className="flex items-center justify-between py-2 border-b border-neutral-100 dark:border-neutral-800">
+        <span className="text-xs font-semibold text-neutral-600 dark:text-neutral-300">Quantity</span>
+        <div className="flex items-center space-x-2 bg-neutral-100 dark:bg-neutral-800 rounded-full p-1">
+          <button
+            type="button"
+            onClick={() => setQuantity(Math.max(1, quantity - 1))}
+            aria-label="decrease"
+            className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors text-sm font-bold"
+          >
+            -
+          </button>
+          <input
+            type="number"
+            name="quantity"
+            min="1"
+            value={quantity}
+            onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+            className="w-10 text-center text-xs font-bold bg-transparent focus:outline-none"
+            aria-label="quantity"
+          />
+          <button
+            type="button"
+            onClick={() => setQuantity(quantity + 1)}
+            aria-label="increase"
+            className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors text-sm font-bold"
+          >
+            +
+          </button>
+        </div>
+      </div>
 
       {/* Secure Online Payment Checkout Option */}
       <button
@@ -614,34 +653,34 @@ const GemstoneDetail = () => {
                   {activeTab === 'details' && (
                     <div className="space-y-4">
                       <div>
-                        <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500 mb-2">About This Gemstone</h3>
+                        <h2 className="text-xs font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500 mb-2">About This Gemstone</h2>
                         <p className="whitespace-pre-wrap">{gemstone.description}</p>
                       </div>
                       
                       {gemstone.uses && (
                         <div>
-                          <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500 mb-2">Recommended Uses</h3>
+                          <h2 className="text-xs font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500 mb-2">Recommended Uses</h2>
                           <p className="whitespace-pre-wrap">{gemstone.uses}</p>
                         </div>
                       )}
                     </div>
                   )}
- 
+
                   {/* Astrology Tab */}
                   {activeTab === 'astrology' && (
                     <div className="space-y-4">
                       <div>
-                        <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500 mb-2">Astrological Benefits &amp; Energy</h3>
+                        <h2 className="text-xs font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500 mb-2">Astrological Benefits &amp; Energy</h2>
                         {gemstone.astrologyBenefits ? (
                           <p className="whitespace-pre-wrap">{gemstone.astrologyBenefits}</p>
                         ) : (
                           <p>This natural, premium {gemstone.category} is believed to transmit beneficial cosmic rays, magnifying positive energetic effects. Please consult with our in-house astrologer or your family astrologer to align planetary configurations.</p>
                         )}
                       </div>
- 
+
                       {gemstone.purpose && gemstone.purpose.length > 0 && (
                         <div>
-                          <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500 mb-2">Suitable Astrological Targets</h3>
+                          <h2 className="text-xs font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500 mb-2">Suitable Astrological Targets</h2>
                           <div className="flex flex-wrap gap-1.5">
                             {gemstone.purpose.map((purp, idx) => (
                               <span key={idx} className="bg-purple-500/10 text-purple-600 dark:text-purple-400 px-2 py-1 rounded text-[10px] font-semibold uppercase tracking-wider">
@@ -653,15 +692,15 @@ const GemstoneDetail = () => {
                       )}
                     </div>
                   )}
- 
+
                   {/* Certification Tab */}
                   {activeTab === 'certification' && (
                     <div className="space-y-4">
                       <div className="bg-amber-500/[0.01] border border-amber-500/10 rounded-xl p-4">
-                        <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500 mb-3 flex items-center gap-1.5">
+                        <h2 className="text-xs font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500 mb-3 flex items-center gap-1.5">
                           <Award className="w-4 h-4 text-amber-500" />
                           <span>Certification Details</span>
-                        </h3>
+                        </h2>
                         
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
                           <div>

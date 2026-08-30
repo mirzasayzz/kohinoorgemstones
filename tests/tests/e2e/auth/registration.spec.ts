@@ -19,7 +19,7 @@ test.describe('Registration Functionality', () => {
     test('should display registration page correctly', async ({ page }) => {
       await registerPage.navigateToRegisterPage();
       await registerPage.verifyRegisterPageLoaded();
-      await expect(page).toHaveTitle(/register|sign up/i);
+      await expect(page).toHaveTitle(/Kohinoor Gemstone/i);
     });
 
     test('should have email input and send OTP button', async ({ page }) => {

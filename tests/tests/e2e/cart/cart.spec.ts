@@ -21,7 +21,7 @@ test.describe('Shopping Cart', () => {
   });
 
   // Add the first home-listed product to the cart (requires login)
-  async function addFirstProduct(page: import('@playwright/test').Page) {
+  async function addFirstProduct(page: import('@playwright/test').Page): Promise<void> {
     await homePage.loginAsCustomer();
     await homePage.navigateToHomePage();
     await homePage.clickProduct(0);

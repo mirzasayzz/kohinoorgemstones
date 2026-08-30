@@ -269,8 +269,10 @@ gemstoneSchema.statics.searchGemstones = function (query) {
         $or: [
           { 'name.english': { $regex: query, $options: 'i' } },
           { 'name.urdu': { $regex: query, $options: 'i' } },
+          { category: { $regex: query, $options: 'i' } },
           { description: { $regex: query, $options: 'i' } },
           { summary: { $regex: query, $options: 'i' } },
+          { uses: { $regex: query, $options: 'i' } },
           { tags: { $in: [new RegExp(query, 'i')] } }
         ]
       }
