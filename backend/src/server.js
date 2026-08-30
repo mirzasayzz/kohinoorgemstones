@@ -94,10 +94,7 @@ const allowedOrigins = [
   'https://www.kohinoorgemstone.com',
   'http://kohinoorgemstone.com',
   'http://www.kohinoorgemstone.com',
-  'https://kohinoorgemstone.vercel.app',
-  'https://kohinoor-w94f.onrender.com',
-  'https://kohinoorgemstone-06a4b66393f6.herokuapp.com',
-  process.env.FRONTEND_URL,
+    process.env.FRONTEND_URL,
   process.env.BACKEND_URL,
   process.env.FRONTEND_DEV_URL,
   process.env.FRONTEND_DEV_URL_VITE

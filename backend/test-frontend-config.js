@@ -13,8 +13,8 @@ const originalEnv = process.env.NODE_ENV;
 
 // Test production configuration
 process.env.NODE_ENV = 'production';
-process.env.FRONTEND_URL = 'https://kohinoorgemstone.vercel.app';
-process.env.CORS_ORIGIN = 'https://kohinoorgemstone.vercel.app';
+process.env.FRONTEND_URL = 'https://www.kohinoorgemstone.com';
+process.env.CORS_ORIGIN = 'https://www.kohinoorgemstone.com';
 
 console.log('\n1️⃣ Testing Production Configuration:');
 console.log('NODE_ENV:', process.env.NODE_ENV);
@@ -25,8 +25,8 @@ console.log('CORS_ORIGIN:', process.env.CORS_ORIGIN);
 const getFrontendUrls = () => {
   if (process.env.NODE_ENV === 'production') {
     return [
-      process.env.FRONTEND_URL || 'https://kohinoorgemstone.vercel.app',
-      process.env.BACKEND_URL || 'https://kohinoor-w94f.onrender.com',
+      process.env.FRONTEND_URL || 'https://www.kohinoorgemstone.com',
+      process.env.BACKEND_URL || 'https://www.kohinoorgemstone.com',
       process.env.CORS_ORIGIN
     ].filter(Boolean);
   } else {
@@ -39,7 +39,7 @@ const getFrontendUrls = () => {
 
 const getFrontendUrl = () => {
   if (process.env.NODE_ENV === 'production') {
-    return process.env.FRONTEND_URL || 'https://kohinoorgemstone.vercel.app';
+    return process.env.FRONTEND_URL || 'https://www.kohinoorgemstone.com';
   } else {
     return process.env.FRONTEND_DEV_URL_VITE || 'https://kohinoorgemstone.com';
   }
@@ -73,7 +73,7 @@ let passed = 0;
 let failed = 0;
 
 // Test 1: Production frontend URL
-if (prodFrontendUrl === 'https://kohinoorgemstone.vercel.app') {
+if (prodFrontendUrl === 'https://www.kohinoorgemstone.com') {
   console.log('✅ Production frontend URL correct');
   passed++;
 } else {
@@ -82,7 +82,7 @@ if (prodFrontendUrl === 'https://kohinoorgemstone.vercel.app') {
 }
 
 // Test 2: Production CORS includes frontend URL
-if (prodUrls.includes('https://kohinoorgemstone.vercel.app')) {
+if (prodUrls.includes('https://www.kohinoorgemstone.com')) {
   console.log('✅ Production CORS includes frontend URL');
   passed++;
 } else {
@@ -125,8 +125,8 @@ process.env.NODE_ENV = originalEnv;
 
 console.log('\n🔗 RENDER ENVIRONMENT VARIABLES TO SET:');
 console.log('=======================================');
-console.log('FRONTEND_URL=https://kohinoorgemstone.vercel.app');
-console.log('CORS_ORIGIN=https://kohinoorgemstone.vercel.app');
+console.log('FRONTEND_URL=https://www.kohinoorgemstone.com');
+console.log('CORS_ORIGIN=https://www.kohinoorgemstone.com');
 console.log('NODE_ENV=production');
 
 process.exit(failed > 0 ? 1 : 0); 

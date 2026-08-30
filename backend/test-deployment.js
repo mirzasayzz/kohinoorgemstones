@@ -16,7 +16,7 @@ const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
 
 if (!BASE_URL) {
   console.error('❌ BASE_URL environment variable is required');
-  console.log('   Example: BASE_URL=https://kohinoor-w94f.onrender.com');
+  console.log('   Example: BASE_URL=https://www.kohinoorgemstone.com');
   process.exit(1);
 }
 
