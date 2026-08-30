@@ -1,6 +1,5 @@
 import express from 'express';
 import jwt from 'jsonwebtoken';
-import crypto from 'crypto';
 import multer from 'multer';
 import { v2 as cloudinary } from 'cloudinary';
 import { body, validationResult } from 'express-validator';
