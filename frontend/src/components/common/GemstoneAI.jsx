@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Send, X, RotateCcw, ExternalLink, Sparkles } from 'lucide-react';
+import { Send, X, RotateCcw, Sparkles } from 'lucide-react';
 import Toast from './Toast';
 import { aiService } from '../../services/api';
 
