@@ -60,7 +60,7 @@ router.post('/add', authenticateCustomer, async (req, res) => {
       return res.status(400).json({ success: false, message: 'Product ID is required' });
     }
 
-    const qty = parseInt(quantity, 10);
+    const qty = Number(quantity);
     if (!Number.isInteger(qty) || qty <= 0) {
       return res.status(400).json({ success: false, message: 'Quantity must be a positive integer' });
     }

@@ -193,9 +193,16 @@ export const getNewArrivals = asyncHandler(async (req, res, next) => {
 export const getGemstone = asyncHandler(async (req, res, next) => {
   const { identifier } = req.params;
   
+  // Validate identifier shape before looking up
+  const isValidObjectId = /^[0-9a-fA-F]{24}$/.test(identifier);
+  const isValidSlug = /^[a-z0-9]+(-[a-z0-9]+)*$/.test(identifier);
+  if (!isValidObjectId && !isValidSlug) {
+    throw new AppError('Invalid gemstone identifier', 400);
+  }
+
   // Try to find by MongoDB ID first, then by slug
   let gemstone;
-  if (identifier.match(/^[0-9a-fA-F]{24}$/)) {
+  if (isValidObjectId) {
     gemstone = await Gemstone.findById(identifier).populate('addedBy', 'name email');
   } else {
     gemstone = await Gemstone.findOne({ slug: identifier, isActive: true }).populate('addedBy', 'name email');

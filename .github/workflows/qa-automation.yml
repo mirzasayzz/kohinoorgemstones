@@ -61,7 +61,7 @@ jobs:
         uses: supercharge/mongodb-github-action@1.11.0
         with:
           mongodb-version: '7.0'
-          mongodb-name: kohinoor_playwright
+          mongodb-db: kohinoor_playwright
 
       - name: Install backend dependencies
         run: |
@@ -71,7 +71,8 @@ jobs:
       - name: Seed test data
         run: |
           cd backend
-          NODE_ENV=test TEST_MODE=true JWT_SECRET=playwright-local-secret GEMINI_API_KEY=test MONGODB_URI=mongodb://127.0.0.1:27017/kohinoor_playwright node scripts/seed-ci.js
+          NODE_ENV=test TEST_MODE=true JWT_SECRET=playwright-local-secret GEMINI_API_KEY=test MONGODB_URI=mongodb://127.0.0.1:27017/kohinoor_playwright node scripts/seed-ci.js &&
+          NODE_ENV=test TEST_MODE=true JWT_SECRET=playwright-local-secret GEMINI_API_KEY=test MONGODB_URI=mongodb://127.0.0.1:27017/kohinoor_playwright node src/scripts/seedTestData.js
 
       - name: Start backend server
         run: |
@@ -131,7 +132,7 @@ jobs:
         uses: supercharge/mongodb-github-action@1.11.0
         with:
           mongodb-version: '7.0'
-          mongodb-name: kohinoor_playwright
+          mongodb-db: kohinoor_playwright
 
       - name: Install backend dependencies
         run: |
@@ -141,7 +142,8 @@ jobs:
       - name: Seed test data
         run: |
           cd backend
-          NODE_ENV=test TEST_MODE=true JWT_SECRET=playwright-local-secret GEMINI_API_KEY=test MONGODB_URI=mongodb://127.0.0.1:27017/kohinoor_playwright node scripts/seed-ci.js
+          NODE_ENV=test TEST_MODE=true JWT_SECRET=playwright-local-secret GEMINI_API_KEY=test MONGODB_URI=mongodb://127.0.0.1:27017/kohinoor_playwright node scripts/seed-ci.js &&
+          NODE_ENV=test TEST_MODE=true JWT_SECRET=playwright-local-secret GEMINI_API_KEY=test MONGODB_URI=mongodb://127.0.0.1:27017/kohinoor_playwright node src/scripts/seedTestData.js
 
       - name: Start backend server
         run: |
@@ -213,7 +215,7 @@ jobs:
         uses: supercharge/mongodb-github-action@1.11.0
         with:
           mongodb-version: '7.0'
-          mongodb-name: kohinoor_playwright
+          mongodb-db: kohinoor_playwright
 
       - name: Install backend dependencies
         run: |
@@ -223,7 +225,8 @@ jobs:
       - name: Seed test data
         run: |
           cd backend
-          NODE_ENV=test TEST_MODE=true JWT_SECRET=playwright-local-secret GEMINI_API_KEY=test MONGODB_URI=mongodb://127.0.0.1:27017/kohinoor_playwright node scripts/seed-ci.js
+          NODE_ENV=test TEST_MODE=true JWT_SECRET=playwright-local-secret GEMINI_API_KEY=test MONGODB_URI=mongodb://127.0.0.1:27017/kohinoor_playwright node scripts/seed-ci.js &&
+          NODE_ENV=test TEST_MODE=true JWT_SECRET=playwright-local-secret GEMINI_API_KEY=test MONGODB_URI=mongodb://127.0.0.1:27017/kohinoor_playwright node src/scripts/seedTestData.js
 
       - name: Start backend server
         run: |

@@ -75,7 +75,7 @@ test.describe('Products API', () => {
     });
 
     test('should return 400 for invalid ID format', async ({ request }) => {
-      const response = await request.get(`${API_BASE_URL}/api/gemstones/invalid`);
+      const response = await request.get(`${API_BASE_URL}/api/gemstones/not_an_id!!`);
 
       expect(response.ok()).toBeFalsy();
       expect(response.status()).toBe(400);

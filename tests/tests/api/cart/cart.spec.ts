@@ -1,6 +1,10 @@
 import { test, expect } from '@playwright/test';
 import { assertApiAvailable } from '../../../helpers/api-check';
 
+// The cart is shared mutable state scoped to a single seeded customer, so these
+// tests must run serially to avoid write conflicts on the same cart document.
+test.describe.configure({ mode: 'serial' });
+
 const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:3001';
 
 // Pre-seeded customer credentials (from seed-ci.js)
@@ -412,6 +416,11 @@ test.describe('Cart API', () => {
     });
 
     test('should handle adding same product multiple times', async ({ request }) => {
+      // Start from a clean cart so the quantity assertion is deterministic
+      await request.delete(`${API_BASE_URL}/api/cart/clear`, {
+        headers: { Authorization: `Bearer ${authToken}` },
+      });
+
       const gemstonesResponse = await request.get(`${API_BASE_URL}/api/gemstones`);
       const gemstonesBody = await gemstonesResponse.json();
       const gemstoneId = gemstonesBody.data.gemstones[0]._id;
@@ -433,9 +442,8 @@ test.describe('Cart API', () => {
 
       // Should have quantity 2, not 2 items
       const item = cart.items.find((i: { product: string }) => i.product === gemstoneId);
-      if (item) {
-        expect(item.quantity).toBe(2);
-      }
+      expect(item).toBeTruthy();
+      expect(item.quantity).toBe(2);
     });
   });
 });
