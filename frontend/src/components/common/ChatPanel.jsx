@@ -1,16 +1,15 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageCircle, Send, Loader2, X, ChevronDown, Wifi, WifiOff } from 'lucide-react';
+import { MessageCircle, Send, Loader2, X, ChevronDown } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useSocket } from '../../context/SocketContext';
 import SlidePanel from './SlidePanel';
 
 const ChatPanel = ({ isOpen, onClose }) => {
-  const { user, isAuthenticated } = useAuth();
+  const { isAuthenticated } = useAuth();
   const { 
     isConnected, 
     messages, 
-    setMessages,
     isTyping, 
     sendMessage: socketSendMessage, 
     sendTyping,
