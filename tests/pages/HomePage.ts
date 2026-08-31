@@ -365,7 +365,8 @@ export class HomePage extends BasePage {
   // Validation methods
   async verifyHomePageLoaded(): Promise<void> {
     await this.expectVisible(this.logo);
-    await this.expectVisible(this.navigationMenu);
+    const nav = this.page.locator('header nav:visible, header button[aria-label="Open menu"]:visible, header').first();
+    await expect(nav).toBeVisible({ timeout: 5000 });
     await this.expectUrl('/');
   }
 

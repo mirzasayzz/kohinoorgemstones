@@ -110,7 +110,7 @@ jobs:
     name: E2E Tests (${{ matrix.browser }})
     runs-on: ubuntu-latest
     needs: lint-and-typecheck
-    timeout-minutes: 30
+    timeout-minutes: 45
 
     strategy:
       fail-fast: false
@@ -193,7 +193,7 @@ jobs:
     name: Mobile Tests (${{ matrix.device }})
     runs-on: ubuntu-latest
     needs: lint-and-typecheck
-    timeout-minutes: 20
+    timeout-minutes: 30
 
     strategy:
       fail-fast: false

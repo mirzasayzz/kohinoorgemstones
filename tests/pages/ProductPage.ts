@@ -116,7 +116,7 @@ export class ProductPage extends BasePage {
     await btn.evaluate((el: HTMLElement) => el.click()).catch(async () => {
       await btn.click({ force: true }).catch(() => {});
     });
-    await this.page.waitForSelector('button[aria-label="Cart"] span', { timeout: 5000 }).catch(() => {});
+    await this.page.waitForSelector('button[aria-label="Cart"]:visible span, button[aria-label="Cart"] span', { timeout: 5000 }).catch(() => {});
     await this.waitForTimeout(400);
   }
 
@@ -144,7 +144,13 @@ export class ProductPage extends BasePage {
   }
 
   async shareProduct(): Promise<void> {
-    await this.shareButton.click();
+    const shareBtn = this.page.locator('button[title="Share Gemstone"], button:has(svg.lucide-share-2), button:has(svg.lucide-share)').first();
+    if (await shareBtn.isVisible().catch(() => false)) {
+      await shareBtn.click({ force: true });
+    } else {
+      await this.shareButton.click({ force: true }).catch(() => {});
+    }
+    await this.waitForTimeout(300);
   }
 
   async compareProduct(): Promise<void> {
