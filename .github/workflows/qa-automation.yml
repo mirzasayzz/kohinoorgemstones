@@ -255,7 +255,11 @@ jobs:
       - name: Install Playwright browsers
         run: |
           cd tests
-          npx playwright install --with-deps chromium
+          if [ "${{ matrix.device }}" = "Mobile Safari" ]; then
+            npx playwright install --with-deps webkit
+          else
+            npx playwright install --with-deps chromium
+          fi
 
       - name: Run mobile tests
         run: |
