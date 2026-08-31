@@ -152,6 +152,7 @@ const CartDrawer = () => {
                         <div className="flex items-center justify-between mt-2">
                           <div className="flex items-center space-x-2 bg-white dark:bg-gray-700 rounded-full p-1">
                             <button
+                              aria-label="Decrease quantity"
                               onClick={() => updateQuantity(item._id, item.quantity - 1)}
                               className="w-6 h-6 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
                             >
@@ -159,6 +160,7 @@ const CartDrawer = () => {
                             </button>
                             <span className="w-6 text-center text-sm font-medium">{item.quantity}</span>
                             <button
+                              aria-label="Increase quantity"
                               onClick={() => updateQuantity(item._id, item.quantity + 1)}
                               className="w-6 h-6 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
                             >

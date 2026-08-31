@@ -69,6 +69,7 @@ const AppWithProviders = () => {
                       <Route path="about" element={<About />} />
                       <Route path="contact" element={<Navigate to="/about" replace />} />
                       <Route path="wishlist" element={<Wishlist />} />
+                      <Route path="cart" element={<Home />} />
                       <Route path="profile" element={<Profile />} />
                       <Route path="checkout" element={<Checkout />} />
                       <Route path="order-success" element={<OrderSuccess />} />

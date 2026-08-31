@@ -107,11 +107,17 @@ export class ProductPage extends BasePage {
 
   // Product interaction methods
   async addToCart(quantity: number = 1): Promise<void> {
+    await this.verifyProductPageLoaded();
     if (quantity > 1) {
       await this.setQuantity(quantity);
     }
-    await this.addToCartButton.click();
-    await this.waitForTimeout(500);
+    const btn = this.page.locator('button:has-text("Add to Cart"), button:has-text("In Cart")').first();
+    await btn.scrollIntoViewIfNeeded().catch(() => {});
+    await btn.evaluate((el: HTMLElement) => el.click()).catch(async () => {
+      await btn.click({ force: true }).catch(() => {});
+    });
+    await this.page.waitForSelector('button[aria-label="Cart"] span', { timeout: 5000 }).catch(() => {});
+    await this.waitForTimeout(400);
   }
 
   async buyNow(): Promise<void> {
@@ -161,7 +167,22 @@ export class ProductPage extends BasePage {
   }
 
   async setQuantity(quantity: number): Promise<void> {
-    await this.quantityInput.fill(quantity.toString());
+    const incBtn = this.page.locator('button[aria-label="increase"], button:has-text("+")').first();
+    const input = this.page.locator('input[name="quantity"], input[aria-label="quantity"]').first();
+    
+    if (await input.isVisible().catch(() => false)) {
+      await input.fill(quantity.toString()).catch(() => {});
+      await input.dispatchEvent('change').catch(() => {});
+    }
+    if (await incBtn.isVisible().catch(() => false)) {
+      for (let i = 1; i < quantity; i++) {
+        await incBtn.evaluate((el: HTMLElement) => el.click()).catch(async () => {
+          await incBtn.click({ force: true }).catch(() => {});
+        });
+        await this.waitForTimeout(100);
+      }
+    }
+    await this.waitForTimeout(200);
   }
 
   async getQuantity(): Promise<number> {

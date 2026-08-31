@@ -37,3 +37,6 @@ backend/uploads/
 coverage/
 *.tmp
 tests/.env
+tests/test-results/
+tests/html-report/
+tests/playwright-report/

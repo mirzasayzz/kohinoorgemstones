@@ -255,17 +255,25 @@ const Header = () => {
 
             {/* Mobile Actions - Compact & Responsive */}
             <div className="md:hidden flex items-center gap-1 flex-shrink-0">
-              {/* Mobile Search Toggle */}
-              {location.pathname !== '/' && (
-                <motion.button
-                  whileTap={{ scale: 0.9 }}
-                  onClick={handleSearchToggle}
-                  className="p-1.5 rounded-lg bg-white/50 dark:bg-white/10 backdrop-blur-sm text-neutral-600 dark:text-neutral-300 transition-all duration-300"
-                  aria-label="Search"
-                >
-                  <Search className="w-[18px] h-[18px]" />
-                </motion.button>
-              )}
+              {/* Mobile Cart Button */}
+              <motion.button
+                whileTap={{ scale: 0.9 }}
+                onClick={openCart}
+                className="relative p-1.5 rounded-lg bg-white/50 dark:bg-white/10 backdrop-blur-sm text-neutral-600 dark:text-neutral-300 transition-all duration-300"
+                aria-label="Cart"
+              >
+                <ShoppingCart className="w-[18px] h-[18px]" />
+                {cartCount > 0 && (
+                  <motion.span 
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    className="absolute -top-1 -right-1 bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-[9px] rounded-full min-w-[15px] h-[15px] flex items-center justify-center font-bold"
+                  >
+                    {cartCount > 99 ? '99+' : cartCount}
+                  </motion.span>
+                )}
+              </motion.button>
+
 
               {/* Mobile Dark Mode - Compact Slider */}
               <button

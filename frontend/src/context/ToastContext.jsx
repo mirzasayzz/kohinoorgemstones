@@ -82,12 +82,14 @@ const Toast = ({ toast, onRemove }) => {
 
   return (
     <motion.div
+      role="alert"
+      aria-live="assertive"
       layout
       initial={{ opacity: 0, x: 100, scale: 0.9 }}
       animate={{ opacity: 1, x: 0, scale: 1 }}
       exit={{ opacity: 0, x: 100, scale: 0.9 }}
       transition={{ type: "spring", damping: 25, stiffness: 300 }}
-      className={`w-full max-w-sm rounded-xl shadow-xl text-white overflow-hidden ${getToastStyles()}`}
+      className={`toast w-full max-w-sm rounded-xl shadow-xl text-white overflow-hidden ${getToastStyles()}`}
     >
       <div className="px-4 py-3">
         <div className="flex items-center gap-3">

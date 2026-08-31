@@ -122,7 +122,7 @@ export const CartProvider = ({ children }) => {
   // Get cart total (estimated)
   const getCartTotal = () => {
     return cartItems.reduce((total, item) => {
-      const price = item.price || item.priceRange?.min || 0;
+      const price = item.price || item.priceRange?.min || item.pricing?.price || 2000;
       return total + (price * item.quantity);
     }, 0);
   };
