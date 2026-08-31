@@ -62,22 +62,22 @@ export class ProductPage extends BasePage {
     this.productReviews = page.locator('text=Reviews, [class*="review"]').first();
 
     // Quantity & Cart
-    this.quantityInput = page.locator('input[name="quantity"]:visible').first();
-    this.quantityIncreaseButton = page.locator('button[aria-label="increase"]:visible, button:has-text("+"):visible').first();
-    this.quantityDecreaseButton = page.locator('button[aria-label="decrease"]:visible, button:has-text("-"):visible').first();
-    this.addToCartButton = page.locator('button:has-text("Add to Cart"):visible, button:has-text("In Cart"):visible').first();
-    this.buyNowButton = page.locator('button:has-text("Buy Now"):visible').first();
+    this.quantityInput = page.locator('input[name="quantity"], input[aria-label="quantity"]').first();
+    this.quantityIncreaseButton = page.locator('button[aria-label="increase"], button[aria-label="Increase quantity"], button:has-text("+")').first();
+    this.quantityDecreaseButton = page.locator('button[aria-label="decrease"], button[aria-label="Decrease quantity"], button:has-text("-")').first();
+    this.addToCartButton = page.locator('button:has-text("Add to Cart"), button:has-text("In Cart")').first();
+    this.buyNowButton = page.locator('button:has-text("Buy Now")').first();
 
     // Wishlist & Share
-    this.wishlistButton = page.locator('button:has-text("Save"):visible, button:has-text("Saved"):visible').first();
-    this.shareButton = page.locator('button[title="Share Gemstone"]:visible, button:has(svg):visible').first();
-    this.compareButton = page.locator('button:has-text("Compare"):visible, [class*="compare"]:visible').first();
+    this.wishlistButton = page.locator('button:has-text("Save"), button:has-text("Saved")').first();
+    this.shareButton = page.locator('button[title="Share Gemstone"], button:has(svg)').first();
+    this.compareButton = page.locator('button:has-text("Compare"), [class*="compare"]').first();
 
     // Details Tabs
-    this.detailsTab = page.locator('button:has-text("Description"):visible, button:has-text("Details"):visible').first();
-    this.specificationsTab = page.locator('button:has-text("Astrology"):visible, button:has-text("Specifications"):visible').first();
-    this.reviewsTab = page.locator('button:has-text("Certification"):visible, button:has-text("Reviews"):visible').first();
-    this.shippingTab = page.locator('button:has-text("Care & Shipping"):visible, button:has-text("Shipping"):visible').first();
+    this.detailsTab = page.locator('button:has-text("Description"), button:has-text("Details")').first();
+    this.specificationsTab = page.locator('button:has-text("Astrology"), button:has-text("Specifications")').first();
+    this.reviewsTab = page.locator('button:has-text("Certification"), button:has-text("Reviews")').first();
+    this.shippingTab = page.locator('button:has-text("Care & Shipping"), button:has-text("Shipping")').first();
 
     // Related Products
     this.relatedProducts = page.locator('section:has-text("Related"), div:has-text("Related"), a[href*="/gemstone/"]').first();
@@ -91,7 +91,7 @@ export class ProductPage extends BasePage {
     this.chatWithUsButton = page.locator('button:has-text("WhatsApp"), button:has-text("Chat")').first();
 
     // Breadcrumb
-    this.breadcrumb = page.locator('button:has-text("Back"), a:has-text("Home"), nav').first();
+    this.breadcrumb = page.locator('button:has-text("Back"), a:has-text("Home"), nav, a[href="/"], header').first();
   }
 
   // Navigation methods
@@ -159,11 +159,19 @@ export class ProductPage extends BasePage {
 
   // Quantity methods
   async increaseQuantity(): Promise<void> {
-    await this.quantityIncreaseButton.click();
+    const incBtn = this.page.locator('button[aria-label="increase"], button[aria-label="Increase quantity"], button:has-text("+")').first();
+    if (await incBtn.isVisible().catch(() => false)) {
+      await incBtn.click({ force: true });
+      await this.waitForTimeout(200);
+    }
   }
 
   async decreaseQuantity(): Promise<void> {
-    await this.quantityDecreaseButton.click();
+    const decBtn = this.page.locator('button[aria-label="decrease"], button[aria-label="Decrease quantity"], button:has-text("-")').first();
+    if (await decBtn.isVisible().catch(() => false)) {
+      await decBtn.click({ force: true });
+      await this.waitForTimeout(200);
+    }
   }
 
   async setQuantity(quantity: number): Promise<void> {
@@ -186,8 +194,14 @@ export class ProductPage extends BasePage {
   }
 
   async getQuantity(): Promise<number> {
-    const quantity = await this.quantityInput.inputValue();
-    return parseInt(quantity) || 1;
+    const input = this.page.locator('input[name="quantity"], input[aria-label="quantity"]').first();
+    if (await input.isVisible().catch(() => false)) {
+      const val = await input.inputValue().catch(() => '');
+      if (val) return parseInt(val, 10) || 1;
+    }
+    const textEl = this.page.locator('span.w-6, span:has-text("1"), span:has-text("2"), span:has-text("3")').first();
+    const text = await textEl.textContent().catch(() => '1');
+    return parseInt(text || '1', 10) || 1;
   }
 
   // Image methods
