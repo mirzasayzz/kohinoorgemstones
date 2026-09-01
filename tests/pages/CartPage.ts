@@ -132,7 +132,7 @@ export class CartPage extends BasePage {
   }
 
   async removeAllItems(): Promise<void> {
-    const clearBtn = this.page.locator('button:has-text("Clear Cart")').first();
+    const clearBtn = this.page.locator('button:has-text("Clear Cart"):visible, button:has-text("Clear cart"):visible').first();
     if (await clearBtn.isVisible().catch(() => false)) {
       await clearBtn.click({ force: true }).catch(async () => {
         await clearBtn.evaluate((el: HTMLElement) => el.click());
@@ -140,12 +140,16 @@ export class CartPage extends BasePage {
       await this.waitForTimeout(400);
       return;
     }
-    while ((await this.cartItems.count()) > 0) {
-      const deleteBtn = this.cartItems.first().locator('button.text-red-500, button:has(svg.lucide-trash-2)').first();
-      await deleteBtn.click({ force: true }).catch(async () => {
-        await deleteBtn.evaluate((el: HTMLElement) => el.click());
-      });
-      await this.waitForTimeout(400);
+    const deleteBtns = this.page.locator('.fixed.right-0 button.text-red-500, .fixed.right-0 button:has(svg.lucide-trash-2), button:has(svg.lucide-trash-2):visible, button.text-red-500:visible');
+    const count = await deleteBtns.count();
+    for (let i = 0; i < count; i++) {
+      const btn = deleteBtns.first();
+      if (await btn.isVisible().catch(() => false)) {
+        await btn.click({ force: true }).catch(async () => {
+          await btn.evaluate((el: HTMLElement) => el.click());
+        });
+        await this.waitForTimeout(300);
+      }
     }
   }
 

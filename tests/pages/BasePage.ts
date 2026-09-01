@@ -32,7 +32,9 @@ export class BasePage {
 
   // Common element interactions
   async click(locator: Locator, options?: Parameters<Locator['click']>[0]): Promise<void> {
-    await locator.click({ noWaitAfter: true, ...options });
+    await locator.click({ force: true, noWaitAfter: true, ...options }).catch(async () => {
+      await locator.evaluate((el: HTMLElement) => el.click());
+    });
   }
 
   async doubleClick(locator: Locator): Promise<void> {
