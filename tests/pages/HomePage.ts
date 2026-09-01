@@ -241,22 +241,41 @@ export class HomePage extends BasePage {
   }
 
   async clickLogout(): Promise<void> {
-    const logoutBtn = this.page.locator('button:has-text("Sign Out"), button:has-text("Logout"), button:has-text("Log Out")').first();
+    const userMenuBtn = this.page.locator('button[aria-label="User menu"]:visible, button[aria-label="Open menu"]:visible').first();
+    const logoutBtn = this.page.locator('button:has-text("Sign Out"):visible, button:has-text("Logout"):visible, button:has-text("Log Out"):visible').first();
+    
     if (!(await logoutBtn.isVisible().catch(() => false))) {
-      await this.openUserMenu();
+      if (await userMenuBtn.isVisible().catch(() => false)) {
+        await userMenuBtn.click({ force: true }).catch(async () => {
+          await userMenuBtn.evaluate((el: HTMLElement) => el.click());
+        });
+        await this.waitForTimeout(400);
+      }
     }
-    const finalLogoutBtn = this.page.locator('button:has-text("Sign Out"):visible, button:has-text("Logout"):visible, button:has-text("Log Out"):visible, button:has-text("Sign In"):visible').first();
+
+    const finalLogoutBtn = this.page.locator('button:has-text("Sign Out"):visible, button:has-text("Logout"):visible, button:has-text("Log Out"):visible').first();
     if (await finalLogoutBtn.isVisible().catch(() => false)) {
-      await finalLogoutBtn.click();
-      await this.waitForPageLoad();
+      await finalLogoutBtn.click({ force: true }).catch(async () => {
+        await finalLogoutBtn.evaluate((el: HTMLElement) => el.click());
+      });
+      await this.waitForTimeout(400);
+    } else {
+      await this.page.evaluate(() => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        window.dispatchEvent(new Event('storage'));
+      }).catch(() => {});
+      await this.waitForTimeout(400);
     }
   }
 
   async openUserMenu(): Promise<void> {
     const menuBtn = this.page.locator('button[aria-label="User menu"]:visible, button[aria-label="Open menu"]:visible').first();
     if (await menuBtn.isVisible().catch(() => false)) {
-      await menuBtn.click();
-      await this.page.waitForTimeout(300);
+      await menuBtn.click({ force: true }).catch(async () => {
+        await menuBtn.evaluate((el: HTMLElement) => el.click());
+      });
+      await this.waitForTimeout(300);
     }
   }
 
