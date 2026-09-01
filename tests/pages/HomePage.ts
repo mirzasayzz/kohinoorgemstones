@@ -88,8 +88,8 @@ export class HomePage extends BasePage {
     this.profileLink = page.locator('a[href="/profile"], a:has-text("Profile")');
     this.wishlistLink = page.locator('a[href="/wishlist"], a:has-text("Wishlist"), button[aria-label*="Wishlist"]');
     this.logoutButton = page.locator('button:has-text("Sign Out")');
-    this.cartIcon = page.locator('button[aria-label="Cart"], a[href="/cart"], .cart-icon').first();
-    this.cartCount = page.locator('button[aria-label="Cart"] span, .cart-count').first();
+    this.cartIcon = page.locator('button[aria-label="Cart"]:visible, a[href="/cart"]:visible, .cart-icon:visible').first();
+    this.cartCount = page.locator('button[aria-label="Cart"]:visible span, .cart-count:visible').first();
 
     // Hero Section
     this.heroSection = page.locator('section, main').first();
@@ -278,7 +278,7 @@ export class HomePage extends BasePage {
     } else {
       const badge = this.page.locator('button[aria-label="Cart"]:visible span, button[aria-label="Cart"] span, .cart-count, span:has-text("' + expectedCount + '")').first();
       await expect(badge).toBeVisible({ timeout: 5000 }).catch(async () => {
-        await expect(this.page.locator('button[aria-label="Cart"]').first()).toBeVisible({ timeout: 5000 });
+        await expect(this.page.locator('button[aria-label="Cart"]:visible').first()).toBeVisible({ timeout: 5000 });
       });
     }
   }

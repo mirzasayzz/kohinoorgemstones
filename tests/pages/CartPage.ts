@@ -74,7 +74,7 @@ export class CartPage extends BasePage {
 
     if (await this.drawerHeader.isVisible().catch(() => false)) return;
 
-    const cartBtn = this.page.locator('button[aria-label="Cart"]').first();
+    const cartBtn = this.page.locator('button[aria-label="Cart"]:visible').first();
     await cartBtn.waitFor({ state: 'visible', timeout: 10000 }).catch(() => {});
     await cartBtn.click({ force: true }).catch(async () => {
       await cartBtn.evaluate((el: HTMLElement) => el.click());
