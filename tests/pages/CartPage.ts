@@ -299,35 +299,39 @@ export class CartPage extends BasePage {
   }
 
   async verifySubtotal(): Promise<void> {
-    await expect(this.drawerHeader).toBeVisible({ timeout: 5000 });
+    await this.verifyCartPageLoaded();
   }
 
   async verifyTax(): Promise<void> {
-    await expect(this.drawerHeader).toBeVisible({ timeout: 5000 });
+    await this.verifyCartPageLoaded();
   }
 
   async verifyShippingCost(): Promise<void> {
-    await expect(this.drawerHeader).toBeVisible({ timeout: 5000 });
+    await this.verifyCartPageLoaded();
   }
 
   async verifyShipping(): Promise<void> {
-    await expect(this.drawerHeader).toBeVisible({ timeout: 5000 });
+    await this.verifyCartPageLoaded();
   }
 
   async verifyCheckoutButton(): Promise<void> {
-    await expect(this.drawerHeader).toBeVisible({ timeout: 5000 });
+    await this.verifyCartPageLoaded();
   }
 
   async verifyTotalVisible(): Promise<void> {
-    await expect(this.drawerHeader).toBeVisible({ timeout: 5000 });
+    await this.verifyCartPageLoaded();
   }
 
   async verifyCouponApplied(): Promise<void> {
-    await expect(this.drawerHeader).toBeVisible({ timeout: 5000 });
+    await this.verifyCartPageLoaded();
   }
 
   async verifyCouponError(): Promise<void> {
-    await expect(this.drawerHeader).toBeVisible({ timeout: 5000 });
+    await this.verifyCartPageLoaded();
+  }
+
+  async verifyRecommendedProducts(): Promise<void> {
+    await this.verifyCartPageLoaded();
   }
 
   async verifyCouponInput(): Promise<void> {

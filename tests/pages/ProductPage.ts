@@ -105,19 +105,25 @@ export class ProductPage extends BasePage {
     await this.waitForPageLoad();
   }
 
-  // Product interaction methods
   async addToCart(quantity: number = 1): Promise<void> {
     await this.verifyProductPageLoaded();
     if (quantity > 1) {
       await this.setQuantity(quantity);
     }
-    const btn = this.page.locator('button:has-text("Add to Cart"), button:has-text("In Cart")').first();
+    const btn = this.page.locator('button:has-text("Add to Cart"):visible, button:has-text("In Cart"):visible').first();
     await btn.scrollIntoViewIfNeeded().catch(() => {});
     await btn.evaluate((el: HTMLElement) => el.click()).catch(async () => {
       await btn.click({ force: true }).catch(() => {});
     });
     await this.page.waitForSelector('button[aria-label="Cart"]:visible span, button[aria-label="Cart"] span', { timeout: 5000 }).catch(() => {});
     await this.waitForTimeout(400);
+    const closeBtn = this.page.locator('.fixed.right-0 button:has(svg.lucide-x):visible, button[aria-label="Close cart"]:visible').first();
+    if (await closeBtn.isVisible().catch(() => false)) {
+      await closeBtn.click({ force: true }).catch(async () => {
+        await closeBtn.evaluate((el: HTMLElement) => el.click());
+      });
+      await this.waitForTimeout(300);
+    }
   }
 
   async buyNow(): Promise<void> {
