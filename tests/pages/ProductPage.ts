@@ -165,31 +165,37 @@ export class ProductPage extends BasePage {
 
   // Quantity methods
   async increaseQuantity(): Promise<void> {
-    const incBtn = this.page.locator('button[aria-label="increase"], button[aria-label="Increase quantity"], button:has-text("+")').first();
+    const incBtn = this.page.locator('button[aria-label="increase"]:visible, button[aria-label="Increase quantity"]:visible, button:has-text("+"):visible').first();
     if (await incBtn.isVisible().catch(() => false)) {
-      await incBtn.click({ force: true });
+      await incBtn.click({ force: true }).catch(async () => {
+        await incBtn.evaluate((el: HTMLElement) => el.click());
+      });
       await this.waitForTimeout(200);
     }
   }
 
   async decreaseQuantity(): Promise<void> {
-    const decBtn = this.page.locator('button[aria-label="decrease"], button[aria-label="Decrease quantity"], button:has-text("-")').first();
+    const decBtn = this.page.locator('button[aria-label="decrease"]:visible, button[aria-label="Decrease quantity"]:visible, button:has-text("-"):visible').first();
     if (await decBtn.isVisible().catch(() => false)) {
-      await decBtn.click({ force: true });
+      await decBtn.click({ force: true }).catch(async () => {
+        await decBtn.evaluate((el: HTMLElement) => el.click());
+      });
       await this.waitForTimeout(200);
     }
   }
 
   async setQuantity(quantity: number): Promise<void> {
-    const incBtn = this.page.locator('button[aria-label="increase"], button:has-text("+")').first();
-    const input = this.page.locator('input[name="quantity"], input[aria-label="quantity"]').first();
+    const incBtn = this.page.locator('button[aria-label="increase"]:visible, button[aria-label="Increase quantity"]:visible, button:has-text("+"):visible').first();
+    const input = this.page.locator('input[name="quantity"]:visible, input[aria-label="quantity"]:visible').first();
     
     if (await input.isVisible().catch(() => false)) {
       await input.fill(quantity.toString()).catch(() => {});
       await input.dispatchEvent('change').catch(() => {});
+      await input.dispatchEvent('input').catch(() => {});
     }
     if (await incBtn.isVisible().catch(() => false)) {
-      for (let i = 1; i < quantity; i++) {
+      const current = await this.getQuantity();
+      for (let i = current; i < quantity; i++) {
         await incBtn.evaluate((el: HTMLElement) => el.click()).catch(async () => {
           await incBtn.click({ force: true }).catch(() => {});
         });
@@ -200,12 +206,12 @@ export class ProductPage extends BasePage {
   }
 
   async getQuantity(): Promise<number> {
-    const input = this.page.locator('input[name="quantity"], input[aria-label="quantity"]').first();
+    const input = this.page.locator('input[name="quantity"]:visible, input[aria-label="quantity"]:visible').first();
     if (await input.isVisible().catch(() => false)) {
       const val = await input.inputValue().catch(() => '');
       if (val) return parseInt(val, 10) || 1;
     }
-    const textEl = this.page.locator('span.w-6, span:has-text("1"), span:has-text("2"), span:has-text("3")').first();
+    const textEl = this.page.locator('span.w-6:visible, span:has-text("1"):visible, span:has-text("2"):visible, span:has-text("3"):visible').first();
     const text = await textEl.textContent().catch(() => '1');
     return parseInt(text || '1', 10) || 1;
   }

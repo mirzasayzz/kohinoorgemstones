@@ -106,6 +106,15 @@ export class CartPage extends BasePage {
 
   // Cart operations
   async removeFromCart(index: number): Promise<void> {
+    const deleteBtns = this.page.locator('.fixed.right-0 button.text-red-500, .fixed.right-0 button:has(svg.lucide-trash-2), button:has(svg.lucide-trash-2):visible, button.text-red-500:visible');
+    if (await deleteBtns.count() > index) {
+      const deleteBtn = deleteBtns.nth(index);
+      await deleteBtn.evaluate((el: HTMLElement) => el.click()).catch(async () => {
+        await deleteBtn.click({ force: true }).catch(() => {});
+      });
+      await this.waitForTimeout(400);
+      return;
+    }
     const items = this.page.locator('.fixed.right-0 div[class*="rounded-xl"]:has(button:has(svg.lucide-trash-2)), .fixed.right-0 div[class*="rounded-xl"]:has(button:has(svg.lucide-minus))');
     if (await items.count() > index) {
       const deleteBtn = items.nth(index).locator('button:has(svg.lucide-trash-2), button.text-red-500').first();
