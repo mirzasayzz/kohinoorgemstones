@@ -6,6 +6,7 @@ const router = express.Router();
 
 // ============================================
 // MULTI-PROVIDER FALLBACK AI SYSTEM
+// Tier 0: DeepSeek V4 Flash (primary) — fast, high quality
 // Tier 1: Groq (llama-3.3-70b-versatile) — ultra fast, free
 // Tier 2: Groq (llama-3.1-8b-instant) — smaller but reliable
 // Tier 3: Mistral (mistral-small-latest) — good quality
@@ -20,7 +21,42 @@ const router = express.Router();
 const callAIMessages = async (messages) => {
   let lastError = null;
 
+  // Tier 0: DeepSeek V4 Flash — PRIMARY provider
+  const deepseekKey = process.env.DEEPSEEK_API_KEY;
+  const deepseekBaseUrl = process.env.DEEPSEEK_BASE_URL;
+  if (deepseekKey && deepseekBaseUrl) {
+    try {
+      console.log('[AI] Trying deepseek/deepseek-v4-flash');
+      const res = await fetch(`${deepseekBaseUrl}/chat/completions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${deepseekKey}`
+        },
+        body: JSON.stringify({
+          model: 'deepseek/deepseek-v4-flash',
+          messages,
+          max_tokens: 500,
+          temperature: 0.85
+        }),
+        signal: AbortSignal.timeout(10000)
+      });
+      const data = await res.json();
+      const text = data.choices?.[0]?.message?.content;
+      if (text && text.trim().length > 5) {
+        console.log('[AI] ✅ deepseek/deepseek-v4-flash');
+        return text.trim();
+      }
+    } catch (err) {
+      lastError = err;
+      console.warn('[AI] ❌ deepseek:', err.message);
+    }
+  } else {
+    console.warn('[AI] DEEPSEEK_API_KEY or DEEPSEEK_BASE_URL not set — skipping DeepSeek tier');
+  }
+
   // Tier 1 & 2: Groq — OpenAI-compatible, uses messages[] natively
+  const groqKey = process.env.GROQ_API_KEY || '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';
   const groqModels = ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant'];
   for (const model of groqModels) {
     try {
@@ -29,7 +65,7 @@ const callAIMessages = async (messages) => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer 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'
+          'Authorization': `Bearer ${groqKey}`
         },
         body: JSON.stringify({ model, messages, max_tokens: 500, temperature: 0.85 }),
         signal: AbortSignal.timeout(8000)
@@ -47,13 +83,14 @@ const callAIMessages = async (messages) => {
   }
 
   // Tier 3: Mistral — also OpenAI-compatible
+  const mistralKey = process.env.MISTRAL_API_KEY || 'v2SqFAZuImAflsiKwXC6KBsPN1SJoLZS';
   try {
     console.log('[AI] Trying mistral');
     const res = await fetch('https://api.mistral.ai/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer v2SqFAZuImAflsiKwXC6KBsPN1SJoLZS'
+        'Authorization': `Bearer ${mistralKey}`
       },
       body: JSON.stringify({ model: 'mistral-small-latest', messages, max_tokens: 500, temperature: 0.85 }),
       signal: AbortSignal.timeout(8000)
@@ -94,7 +131,10 @@ const callAIMessages = async (messages) => {
 };
 
 // Stub for backward compat (status endpoint)
-const getAIClient = async () => ({ provider: 'groq', model: 'llama-3.3-70b-versatile' });
+const getAIClient = async () => ({
+  provider: process.env.DEEPSEEK_API_KEY ? 'deepseek' : 'groq',
+  model: process.env.DEEPSEEK_API_KEY ? 'deepseek-v4-flash' : 'llama-3.3-70b-versatile'
+});
 
 // ============================================
 // KOHINOOR AI - HUMAN-LIKE CONVERSATION SYSTEM
