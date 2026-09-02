@@ -6,12 +6,13 @@ const router = express.Router();
 
 // ============================================
 // MULTI-PROVIDER FALLBACK AI SYSTEM
-// Tier 0: DeepSeek V4 Flash (primary) — fast, high quality
-// Tier 1: Groq (llama-3.3-70b-versatile) — ultra fast, free
-// Tier 2: Groq (llama-3.1-8b-instant) — smaller but reliable
-// Tier 3: Mistral (mistral-small-latest) — good quality
-// Tier 4: Pollinations (no auth, always free)
-// Tier 5: Smart hardcoded fallback — NEVER fails
+// Tier 0a: agentrouter deepseek-v4-flash (primary) — fast, high quality
+// Tier 0b: agentrouter deepseek-v4-pro   (reasoning fallback)
+// Tier 1:  Groq llama-3.3-70b-versatile  — ultra fast, free
+// Tier 2:  Groq llama-3.1-8b-instant     — smaller but reliable
+// Tier 3:  Mistral mistral-small-latest   — good quality
+// Tier 4:  Pollinations                   — no auth, always free
+// Tier 5:  Smart hardcoded fallback       — NEVER fails
 // ============================================
 
 // ============================================
@@ -21,38 +22,44 @@ const router = express.Router();
 const callAIMessages = async (messages) => {
   let lastError = null;
 
-  // Tier 0: DeepSeek V4 Flash — PRIMARY provider
+  // Tier 0a & 0b: agentrouter — deepseek-v4-flash (fast) then deepseek-v4-pro (reasoning)
   const deepseekKey = process.env.DEEPSEEK_API_KEY;
   const deepseekBaseUrl = process.env.DEEPSEEK_BASE_URL;
   if (deepseekKey && deepseekBaseUrl) {
-    try {
-      console.log('[AI] Trying deepseek/deepseek-v4-flash');
-      const res = await fetch(`${deepseekBaseUrl}/chat/completions`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${deepseekKey}`
-        },
-        body: JSON.stringify({
-          model: 'deepseek/deepseek-v4-flash',
-          messages,
-          max_tokens: 500,
-          temperature: 0.85
-        }),
-        signal: AbortSignal.timeout(10000)
-      });
-      const data = await res.json();
-      const text = data.choices?.[0]?.message?.content;
-      if (text && text.trim().length > 5) {
-        console.log('[AI] ✅ deepseek/deepseek-v4-flash');
-        return text.trim();
+    const deepseekModels = [
+      { id: 'deepseek/deepseek-v4-flash', label: 'deepseek-v4-flash' },
+      { id: 'deepseek/deepseek-v4-pro',   label: 'deepseek-v4-pro'   }
+    ];
+    for (const { id, label } of deepseekModels) {
+      try {
+        console.log(`[AI] Trying agentrouter/${label}`);
+        const res = await fetch(`${deepseekBaseUrl}/chat/completions`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${deepseekKey}`
+          },
+          body: JSON.stringify({
+            model: id,
+            messages,
+            max_tokens: 500,
+            temperature: 0.85
+          }),
+          signal: AbortSignal.timeout(10000)
+        });
+        const data = await res.json();
+        const text = data.choices?.[0]?.message?.content;
+        if (text && text.trim().length > 5) {
+          console.log(`[AI] ✅ agentrouter/${label}`);
+          return text.trim();
+        }
+      } catch (err) {
+        lastError = err;
+        console.warn(`[AI] ❌ agentrouter/${label}:`, err.message);
       }
-    } catch (err) {
-      lastError = err;
-      console.warn('[AI] ❌ deepseek:', err.message);
     }
   } else {
-    console.warn('[AI] DEEPSEEK_API_KEY or DEEPSEEK_BASE_URL not set — skipping DeepSeek tier');
+    console.warn('[AI] DEEPSEEK_API_KEY or DEEPSEEK_BASE_URL not set — skipping agentrouter tier');
   }
 
   // Tier 1 & 2: Groq — OpenAI-compatible, uses messages[] natively
