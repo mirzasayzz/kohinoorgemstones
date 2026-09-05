@@ -1,6 +1,7 @@
 import express from 'express';
 import {
   login,
+  oauthToken,
   logout,
   getMe,
   updateProfile,
@@ -35,6 +36,10 @@ const changePasswordValidation = [
 
 // Public routes
 router.post('/login', loginValidation, login);
+
+// OAuth2-compatible token endpoint for the Swagger UI password flow.
+// Accepts form-encoded or JSON username/password, admin accounts only.
+router.post('/token', oauthToken);
 
 // Protected routes (All authenticated users)
 router.use(protect); // All routes after this are protected

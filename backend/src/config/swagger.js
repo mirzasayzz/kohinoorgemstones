@@ -1,15 +1,25 @@
 /**
  * Swagger / OpenAPI 3.0.3 specification for the Kohinoor Gemstone Backend API.
  *
- * Served by swagger-ui-express at /api-docs (see ../server.js).
- * The raw spec JSON is also available at /api-docs.json.
+ * Served by swagger-ui-express at /admin/api-docs (see ../server.js), behind
+ * the admin dashboard session. The raw spec JSON is available at
+ * /admin/api-docs.json.
  *
  * Auth model:
- *   - Admin auth routes use the `adminAuth` scheme (JWT from POST /api/auth/login).
- *   - Customer routes (cart, payment, customer profile, chat, addresses)
- *     use the `customerAuth` scheme (JWT from POST /api/customer/login).
- *   - Both schemes use `Authorization: Bearer <token>`.
+ *   - `adminAuth` is an OAuth2 password flow. In the Authorize dialog, enter
+ *     the admin email and password directly. The token endpoint
+ *     POST /api/auth/token only issues tokens to admin / super_admin accounts;
+ *     customer credentials are rejected with 401 invalid_grant.
+ *   - `customerAuth` is a Bearer scheme: paste the JWT from POST /api/customer/login.
+ *   - Both tokens are sent as `Authorization: Bearer <token>`.
  */
+
+// Server URLs are auto-detected from the environment at boot:
+//   hosted URL from BACKEND_URL (fallback BASE_URL, then the production domain)
+//   local URL from PORT (default 3001)
+const hostedUrl = process.env.BACKEND_URL || process.env.BASE_URL || 'https://www.kohinoorgemstone.com';
+const localUrl = `http://localhost:${process.env.PORT || 3001}`;
+
 export default {
   openapi: '3.0.3',
   info: {
@@ -22,8 +32,8 @@ export default {
     }
   },
   servers: [
-    { url: 'http://localhost:3001', description: 'Local development' },
-    { url: 'https://www.kohinoorgemstone.com', description: 'Production' }
+    { url: hostedUrl, description: 'Hosted (production)' },
+    { url: localUrl, description: 'Local development' }
   ],
   tags: [
     { name: 'Health', description: 'Server health checks' },
@@ -40,10 +50,14 @@ export default {
   components: {
     securitySchemes: {
       adminAuth: {
-        type: 'http',
-        scheme: 'bearer',
-        bearerFormat: 'JWT',
-        description: 'Admin or super-admin JWT obtained from POST /api/auth/login'
+        type: 'oauth2',
+        description: 'Admin email/password. Only admin or super_admin accounts work; customer credentials are rejected with 401 invalid_grant.',
+        flows: {
+          password: {
+            tokenUrl: '/api/auth/token',
+            scopes: {}
+          }
+        }
       },
       customerAuth: {
         type: 'http',
@@ -385,8 +399,8 @@ export default {
     '/api/auth/login': {
       post: {
         tags: ['Admin Auth'],
-        summary: 'Admin login',
-        description: 'Authenticates an admin and returns a JWT for the `adminAuth` scheme.',
+        summary: 'Admin login (JSON API)',
+        description: 'Authenticates an admin and returns a JWT. For the Swagger UI Authorize dialog, use the OAuth2 password flow (email/password) which targets POST /api/auth/token instead.',
         requestBody: {
           required: true,
           content: { 'application/json': { schema: { $ref: '#/components/schemas/LoginRequest' } } }
@@ -395,6 +409,86 @@ export default {
           200: { description: 'Login successful, JWT returned', content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiSuccess' } } } },
           400: { $ref: '#/components/responses/BadRequest' },
           401: { $ref: '#/components/responses/Unauthorized' },
+          500: { $ref: '#/components/responses/ServerError' }
+        }
+      }
+    },
+    '/api/auth/token': {
+      post: {
+        tags: ['Admin Auth'],
+        summary: 'OAuth2 token endpoint (Swagger UI Authorize flow)',
+        description: 'Issues a bearer token from email/password. Used automatically by the Swagger UI Authorize dialog (OAuth2 password flow). Only admin or super_admin credentials are accepted: customers and other accounts receive 401 invalid_grant. Accepts both form-encoded (grant_type=password style) and JSON bodies.',
+        requestBody: {
+          required: true,
+          content: {
+            'application/x-www-form-urlencoded': {
+              schema: {
+                type: 'object',
+                required: ['username', 'password'],
+                properties: {
+                  username: { type: 'string', format: 'email', description: 'Admin email' },
+                  password: { type: 'string', format: 'password' },
+                  grant_type: { type: 'string', description: 'Ignored; accepted for OAuth2 client compatibility', default: 'password' },
+                  client_id: { type: 'string', description: 'Ignored; accepted for OAuth2 client compatibility' }
+                }
+              }
+            },
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['username', 'password'],
+                properties: {
+                  username: { type: 'string', format: 'email' },
+                  password: { type: 'string', format: 'password' }
+                }
+              }
+            }
+          }
+        },
+        responses: {
+          200: {
+            description: 'Token issued',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    access_token: { type: 'string' },
+                    token_type: { type: 'string', example: 'bearer' },
+                    expires_in: { type: 'integer', example: 2592000 }
+                  }
+                }
+              }
+            }
+          },
+          400: {
+            description: 'Missing username or password',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    error: { type: 'string', example: 'invalid_request' },
+                    error_description: { type: 'string' }
+                  }
+                }
+              }
+            }
+          },
+          401: {
+            description: 'Invalid credentials, deactivated account, or non-admin (customer) credentials',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    error: { type: 'string', example: 'invalid_grant' },
+                    error_description: { type: 'string' }
+                  }
+                }
+              }
+            }
+          },
           500: { $ref: '#/components/responses/ServerError' }
         }
       }

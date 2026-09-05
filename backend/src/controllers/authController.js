@@ -1,5 +1,5 @@
 import { asyncHandler, AppError } from '../middleware/errorHandler.js';
-import { sendTokenResponse } from '../middleware/auth.js';
+import { sendTokenResponse, generateToken } from '../middleware/auth.js';
 import User from '../models/User.js';
 
 // @desc    Login admin user
@@ -37,6 +37,61 @@ export const login = asyncHandler(async (req, res, next) => {
 
   // Send token response
   sendTokenResponse(user, 200, res, 'Login successful');
+});
+
+// @desc    OAuth2-compatible token endpoint (used by Swagger UI password flow)
+// @route   POST /api/auth/token
+// @access  Public (admin / super_admin only; customer credentials are rejected)
+export const oauthToken = asyncHandler(async (req, res, next) => {
+  const username = req.body.username || req.body.email;
+  const password = req.body.password;
+
+  if (!username || !password) {
+    return res.status(400).json({
+      error: 'invalid_request',
+      error_description: 'username and password are required'
+    });
+  }
+
+  // Only admin users live in the User collection, so customer accounts
+  // (Customer collection) never match this lookup.
+  const user = await User.findOne({ email: username.toLowerCase().trim() }).select('+password');
+
+  if (!user || !(await user.comparePassword(password))) {
+    return res.status(401).json({
+      error: 'invalid_grant',
+      error_description: 'Invalid email or password'
+    });
+  }
+
+  // Hard role gate: customers and any non-admin account cannot authorize here.
+  if (user.role !== 'admin' && user.role !== 'super_admin') {
+    return res.status(401).json({
+      error: 'invalid_grant',
+      error_description: 'Admin credentials required. Customer accounts cannot authorize.'
+    });
+  }
+
+  if (!user.isActive) {
+    return res.status(401).json({
+      error: 'invalid_grant',
+      error_description: 'Account is deactivated'
+    });
+  }
+
+  // Update last login
+  await user.updateLastLogin();
+
+  // Same token format as the regular login (protect middleware compatible)
+  const token = generateToken(user._id);
+  const expiresIn = process.env.JWT_EXPIRES_IN || '30d';
+  const days = parseInt(expiresIn, 10) || 30;
+
+  res.status(200).json({
+    access_token: token,
+    token_type: 'bearer',
+    expires_in: days * 24 * 60 * 60
+  });
 });
 
 // @desc    Logout user / clear cookie
