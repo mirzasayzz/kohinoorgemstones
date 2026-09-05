@@ -45,7 +45,8 @@
     "openai": "^6.10.0",
     "razorpay": "^2.9.6",
     "resend": "^6.9.2",
-    "socket.io": "^4.7.2"
+    "socket.io": "^4.7.2",
+    "swagger-ui-express": "^5.0.1"
   },
   "devDependencies": {
     "concurrently": "^9.0.1",

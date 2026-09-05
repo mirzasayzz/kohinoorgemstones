@@ -24,6 +24,8 @@ import paymentRoutes from './routes/paymentRoutes.js';
 import cartRoutes from './routes/cartRoutes.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { setupDefaultAdmin, displayStartupInfo } from './utils/setupAdmin.js';
+import swaggerUi from 'swagger-ui-express';
+import swaggerSpec from './config/swagger.js';
 
 // Load environment variables
 dotenv.config();
@@ -165,6 +167,23 @@ app.get('/api/health', (req, res) => {
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV
   });
+});
+
+// Swagger API documentation
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
+  customSiteTitle: 'Kohinoor Gemstone API Docs',
+  customCss: '.swagger-ui .topbar { display: none; }',
+  swaggerOptions: {
+    persistAuthorization: true,
+    displayRequestDuration: true,
+    docExpansion: 'list'
+  }
+}));
+
+// Raw OpenAPI spec JSON (for tooling / clients)
+app.get('/api-docs.json', (req, res) => {
+  res.setHeader('Content-Type', 'application/json');
+  res.send(swaggerSpec);
 });
 
 // Handle React Router - serve index.html for all non-API, non-admin routes
