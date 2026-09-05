@@ -22,7 +22,6 @@ import gemstoneRoutes from './routes/gemstoneRoutes.js';
 import businessRoutes from './routes/businessRoutes.js';
 import uploadRoutes from './routes/uploadRoutes.js';
 import adminRoutes from './routes/adminDashboardRoutes.js';
-import { requireAuth } from './controllers/adminDashboardController.js';
 import gemstoneAIRoutes from './routes/gemstoneAIRoutes.js';
 import customerAuthRoutes from './routes/customerAuthRoutes.js';
 import paymentRoutes from './routes/paymentRoutes.js';
@@ -174,21 +173,20 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Swagger API documentation - behind admin dashboard session auth.
+// Swagger API documentation - served directly at /admin/api-docs with no login
+// gate. The documented endpoints stay protected: admins authorize inside
+// Swagger via the OAuth2 password flow (email/password).
 // Registered before the production SPA catch-all so /admin/api-docs is not
 // swallowed by the React router.
 
-// Raw OpenAPI spec JSON (admin only, for tooling / clients)
+// Raw OpenAPI spec JSON (for tooling / clients)
 app.get('/admin/api-docs.json', (req, res) => {
-  if (!req.session || !req.session.user) {
-    return res.status(401).json({ success: false, message: 'Not authenticated' });
-  }
   res.setHeader('Content-Type', 'application/json');
   res.send(swaggerSpec);
 });
 
-// Swagger UI (admin only; unauthenticated users are redirected to /admin/login)
-app.use('/admin/api-docs', requireAuth, swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
+// Swagger UI
+app.use('/admin/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
   customSiteTitle: 'Kohinoor Gemstone API Docs',
   customCss: '.swagger-ui .topbar { display: none; }',
   swaggerOptions: {

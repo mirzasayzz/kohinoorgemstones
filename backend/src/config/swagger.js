@@ -1,9 +1,10 @@
 /**
  * Swagger / OpenAPI 3.0.3 specification for the Kohinoor Gemstone Backend API.
  *
- * Served by swagger-ui-express at /admin/api-docs (see ../server.js), behind
- * the admin dashboard session. The raw spec JSON is available at
- * /admin/api-docs.json.
+ * Served by swagger-ui-express at /admin/api-docs (see ../server.js), with no
+ * login gate on the docs page itself. The raw spec JSON is available at
+ * /admin/api-docs.json. The documented endpoints remain protected by JWT;
+ * admins authorize inside the UI via the OAuth2 password flow.
  *
  * Auth model:
  *   - `adminAuth` is an OAuth2 password flow. In the Authorize dialog, enter
